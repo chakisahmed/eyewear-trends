@@ -26,8 +26,10 @@ class LLMProvider(Protocol):
 
 class AnthropicProvider:
     def __init__(self, client: anthropic.Anthropic | None = None) -> None:
-        # Resolves ANTHROPIC_API_KEY or an `ant auth login` profile.
-        self.client = client or anthropic.Anthropic()
+        # backend/.env key first; otherwise the SDK resolves ANTHROPIC_API_KEY or an `ant auth login` profile.
+        if client is None:
+            client = anthropic.Anthropic(api_key=settings.anthropic_api_key) if settings.anthropic_api_key else anthropic.Anthropic()
+        self.client = client
 
     def extract(self, system: str, user: str, schema: type[T]) -> T:
         response = self.client.messages.parse(
