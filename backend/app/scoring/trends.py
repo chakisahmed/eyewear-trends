@@ -6,7 +6,7 @@ For each taxonomy attribute and week, two separate signals:
   tone           TONE over the last 4 weeks, pooled: (rising − declining) / all mentions, in −1..+1
   decline_share  share of those pooled mentions that describe the attribute as fading (0..1)
   momentum       volume growth vs the previous 4 weeks, blended with Google Trends growth
-  status         en_hausse | au_pic | stable | en_baisse
+  status         en_hausse | au_pic | stable | en_baisse | faible
 
 Status rules (see classify):
   en_hausse  momentum ≥ +25 %, OR near its 8-week high and still climbing at an
@@ -16,6 +16,8 @@ Status rules (see classify):
   en_baisse  momentum ≤ −25 %, OR at least half of the last 4 weeks' mentions call it fading
              (tone overrides volume: lots of "it's over" articles are a decline, not a rise)
   stable     everything else
+  faible     fewer than MIN_SAMPLE weighted mentions over the last 4 weeks: too little data for any
+             trend claim (3 mentions going to 9 is not "+200 %" news). Overrides the rules above.
 Pace is a least-squares slope over 4 weeks (vs the 4 before), which smooths weekly noise.
 """
 
@@ -43,6 +45,8 @@ PACE_WEEKS = 4  # pace = least-squares slope over the last 4 weeks, compared wit
 TONE_WEEKS = 4  # tone is pooled over the last 4 weeks so one article cannot flip it
 FADING_SHARE = 0.5  # ≥ 50 % of pooled mentions calling it fading => en_baisse
 MIN_TONE_MENTIONS = 3.0  # weighted mentions needed over TONE_WEEKS before tone may decide the status
+MIN_SAMPLE = 5.0  # weighted mentions over the last 4 weeks needed before any status other than "faible"
+SAMPLE_WEEKS = 4
 
 
 def week_start(d: date) -> date:
@@ -124,6 +128,8 @@ def score_series(
             _, decline_share = pooled_tone(stances[max(0, i - TONE_WEEKS + 1) : i + 1])
             if decline_share is not None and decline_share >= FADING_SHARE:
                 status = "en_baisse"
+        if sum(hist[-SAMPLE_WEEKS:]) < MIN_SAMPLE:
+            status = "faible"  # not enough evidence, whatever the percentages say
         out.append((round(m, 4), status))
     return out
 

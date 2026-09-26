@@ -22,12 +22,14 @@ export function Visual({ dimension, attr }: { dimension: Dimension; attr: Attrib
 export function StatusBadge({ status, momentum, tone }: { status: Status; momentum: number; tone?: Partial<Tone> }) {
   const st = STATUS[status];
   const fading = status === "en_baisse" && tone?.decline_reason === "tonalite" && tone.decline_share != null;
-  const value = fading ? `${pct(tone!.decline_share!)} d'avis en recul` : pct(momentum, true);
+  // Too little data: no percentage at all (a +300 % on 3 mentions would mislead buyers).
+  const value = status === "faible" ? "Peu de données"
+    : fading ? `${pct(tone!.decline_share!)} d'avis en recul` : pct(momentum, true);
   return (
     <span className={`badge badge-${st.variant}`} title={st.label}>
       <Icon name={st.variant} strokeWidth={2.4} />
       {value}
-      <span className="sr-only"> · {st.label}</span>
+      {status !== "faible" && <span className="sr-only"> · {st.label}</span>}
     </span>
   );
 }

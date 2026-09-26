@@ -16,8 +16,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.db import get_session, init_db
-from app.jobs.pipeline import ALL_STEPS, active_run, execute_run, start_run
+from app.db import SessionLocal, get_session, init_db
+from app.jobs.pipeline import ALL_STEPS, active_run, execute_run, interrupt_orphaned_runs, start_run
 from app.models import Document, JobRun, Mention, SearchInterest, Source, TrendSnapshot, WeeklySummary
 from app.scoring.summary import latest_week
 from app.demo import clear_demo, seed_demo
@@ -28,6 +28,8 @@ from app.taxonomy import load_taxonomy
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    with SessionLocal() as session:
+        interrupt_orphaned_runs(session)  # runs from a previous process died with it
     yield
 
 
@@ -36,7 +38,7 @@ app.add_middleware(CORSMiddleware, allow_origins=[settings.frontend_origin], all
 DB = Annotated[Session, Depends(get_session)]
 
 SPARK_WEEKS = 8
-STATUS_FR = {"en_hausse": "En hausse", "au_pic": "Au pic", "stable": "Stable", "en_baisse": "En baisse"}
+STATUS_FR = {"en_hausse": "En hausse", "au_pic": "Au pic", "stable": "Stable", "en_baisse": "En baisse", "faible": "Peu de données"}
 DIM_SLUG = {"shape": "formes", "color": "couleurs", "material": "matieres", "style": "styles"}
 
 
@@ -212,7 +214,8 @@ def overview(db: DB, week: date | None = None, top: int = Query(5, ge=1, le=20))
     current = [cells[end] for cells in grid.values() if end in cells]
     rising = {
         dim: [row(dim, s) for s in sorted(
-            (s for s in current if s.dimension == dim and s.mentions > 0 and s.status != "en_baisse"), key=lambda s: -s.momentum
+            (s for s in current if s.dimension == dim and s.mentions > 0 and s.status != "en_baisse"),
+            key=lambda s: (s.status == "faible", -s.momentum),  # too-little-data attributes go last, whatever their %
         )[:top]]
         for dim in tax.dimensions
     }

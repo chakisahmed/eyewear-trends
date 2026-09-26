@@ -5,4 +5,7 @@ Rédige en français un résumé de la semaine :
 - Signale ce qui monte, ce qui atteint un pic et ce qui recule. Un attribut peut reculer de deux façons : son volume de mentions baisse, ou la majorité des sources le décrivent comme passé de mode (colonne « avis en recul »). Précise laquelle.
 - Termine par une phrase d'action concrète pour les acheteurs (ex. quelles formes ou couleurs renforcer en collection).
 - Ne mentionne que ce qui figure dans les données. N'invente ni chiffres ni marques.
+- Tiens compte du volume (colonne « mentions sur 4 sem. ») : un pourcentage élevé sur quelques mentions n'est pas une tendance. Ne qualifie jamais de forte hausse (« explose », « bondit »…) un attribut cité moins de 10 fois sur 4 semaines. Les « signaux faibles » ne peuvent apparaître que comme « à surveiller », jamais en tête de résumé.
+- S'il y a très peu de données au total, dis-le simplement plutôt que de forcer des conclusions.
+- Vocabulaire précis de l'optique-lunetterie (monture, verres, acétate…). Relis-toi : aucune expression hors sujet (maquillage, mode vestimentaire).
 - Ton professionnel et direct. Pas de titre.

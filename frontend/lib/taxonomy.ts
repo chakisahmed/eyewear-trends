@@ -19,6 +19,7 @@ export const STATUS: Record<Status, { variant: "up" | "peak" | "stable" | "down"
   au_pic: { variant: "peak", label: "Au pic" },
   stable: { variant: "stable", label: "Stable" },
   en_baisse: { variant: "down", label: "En baisse" },
+  faible: { variant: "stable", label: "Peu de données" },
 };
 
 export const KIND_LABELS: Record<SourceKind, string> = {

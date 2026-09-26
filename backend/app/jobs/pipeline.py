@@ -12,14 +12,18 @@ from app.collectors.google_trends import collect_google_trends
 from app.collectors.news_gdelt import collect_news
 from app.collectors.rss_blogs import collect_rss
 from app.db import SessionLocal, init_db
+from app.demo import clear_demo
 from app.extraction.llm import get_provider
 from app.extraction.service import extract_pending
-from app.models import JobRun
+from app.models import Document, JobRun
 from app.scoring.summary import generate_weekly_summary
 from app.scoring.trends import compute_snapshots
 
 log = logging.getLogger(__name__)
 ALL_STEPS = ("rss", "news", "google_trends", "extract", "score", "summary")
+# Steps that bring in real data: a run with any of them first removes the demo data set,
+# so demo and real mentions are never scored or summarized together.
+COLLECTION_STEPS = ("rss", "news", "google_trends", "extract")
 # A run still "running" after this long is assumed dead (process killed, server restarted).
 STALE_AFTER = timedelta(hours=3)
 
@@ -36,6 +40,21 @@ def active_run(session: Session) -> JobRun | None:
         session.commit()
         return None
     return run
+
+
+def interrupt_orphaned_runs(session: Session) -> int:
+    """Mark runs left "running" by a previous process as failed.
+
+    Runs execute in the API process (background task), so none can survive a restart; without this, a
+    killed run would block new ones until STALE_AFTER. Assumes a single API process, as deployed today.
+    """
+    orphans = session.scalars(select(JobRun).where(JobRun.status == "running")).all()
+    for run in orphans:
+        run.status = "failed"
+        run.error = "Interrompu : le serveur a redémarré pendant la collecte. Relancez « Actualiser les données »."
+        run.finished_at = datetime.now(timezone.utc)
+    session.commit()
+    return len(orphans)
 
 
 def start_run(session: Session, steps: tuple[str, ...], trigger: str) -> JobRun:
@@ -68,6 +87,9 @@ def execute_run(run_id: int) -> dict:
             return progress
 
         try:
+            if any(step in steps for step in COLLECTION_STEPS) and session.scalar(select(Document.id).where(Document.is_demo).limit(1)):
+                clear_demo(session)
+                report["demo_removed"] = True
             if "rss" in steps:
                 report["rss"] = collect_rss(session, progress=begin("rss"))
             if "news" in steps:

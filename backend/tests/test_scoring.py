@@ -119,3 +119,20 @@ def test_one_negative_article_cannot_flip_status():
 def test_tone_values():
     tone, share = pooled_tone([{"rising": 3, "neutral": 1, "declining": 0}, {"rising": 1, "neutral": 1, "declining": 2}])
     assert tone == pytest.approx((4 - 2) / 8) and share == pytest.approx(2 / 8)
+
+
+# --- minimum sample: tiny volumes never become headline trends ---
+
+def test_tiny_volume_is_faible_not_a_huge_rise():
+    # 0, 0, 0, 1 then 3 mentions: "+200 %" on paper, but only 4 mentions in 4 weeks
+    momentum, status = score_series([0, 0, 0, 0, 0, 1, 3])[-1]
+    assert momentum > 1 and status == "faible"
+
+
+def test_just_enough_volume_gets_a_real_status():
+    assert score_series([0, 0, 0, 0, 1, 1, 1, 3])[-1][1] == "en_hausse"  # 6 mentions in 4 weeks
+
+
+def test_tone_decline_needs_the_minimum_sample_too():
+    stances = [{"declining": 1.0} for _ in range(4)]  # 4 "fading" mentions in 4 weeks: tone rule would fire
+    assert score_series([1, 1, 1, 1], stances=stances)[-1][1] == "faible"

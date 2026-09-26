@@ -1,7 +1,8 @@
 // Shapes of the FastAPI responses (backend/app/api/main.py).
 
 export type Dimension = "shape" | "color" | "material" | "style";
-export type Status = "en_hausse" | "au_pic" | "stable" | "en_baisse";
+/** "faible" = too few mentions over 4 weeks for any trend claim. */
+export type Status = "en_hausse" | "au_pic" | "stable" | "en_baisse" | "faible";
 export type Stance = "rising" | "neutral" | "declining";
 export type SourceKind = "press" | "news" | "store" | "social";
 

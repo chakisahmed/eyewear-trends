@@ -171,7 +171,7 @@ def test_extraction_reports_articles_done(client):
     from app.models import Document, Source
 
     with SessionLocal() as s:
-        src = s.query(Source).first()
+        src = s.query(Source).filter_by(url="test:progress-source").first() or Source(name="Test", kind="press", url="test:progress-source", lang="fr")
         # no eyewear keyword: skipped by the free pre-filter, so no LLM call is made
         s.add_all([Document(source=src, url=f"test:progress:{i}", title="Météo", text="Soleil demain.", lang="fr") for i in range(3)])
         s.commit()
@@ -179,3 +179,31 @@ def test_extraction_reports_articles_done(client):
         stats = extract_pending(s, provider=None, progress=lambda d, t: calls.append((d, t)))
     assert stats["irrelevant"] == 3
     assert calls == [(0, 3), (1, 3), (2, 3), (3, 3)]
+
+
+def test_collection_run_removes_demo_data_first(client, monkeypatch):
+    import app.jobs.pipeline as pipeline
+    from app.demo import seed_demo
+
+    with SessionLocal() as s:
+        seed_demo(s)
+    assert client.get("/api/meta").json()["has_demo"] is True
+    monkeypatch.setattr(pipeline, "collect_rss", lambda session, progress=None: 0)
+
+    client.post("/api/jobs/run", json={"steps": ["score"]})  # scoring only: demo stays
+    assert client.get("/api/meta").json()["has_demo"] is True
+
+    client.post("/api/jobs/run", json={"steps": ["rss", "score"]})  # real collection: demo goes first
+    last = client.get("/api/jobs/status").json()["last"]
+    assert last["status"] == "success" and last["report"]["demo_removed"] is True
+    assert client.get("/api/meta").json()["has_demo"] is False
+
+
+def test_restart_interrupts_runs_left_running(client):
+    with SessionLocal() as s:
+        s.add(JobRun(steps=["rss"], status="running"))  # e.g. a run killed by a server restart
+        s.commit()
+    with TestClient(app) as restarted:  # startup marks it as interrupted
+        status = restarted.get("/api/jobs/status").json()
+    assert status["running"] is False
+    assert status["last"]["status"] == "failed" and "redémarré" in status["last"]["error"]

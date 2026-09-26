@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -21,17 +21,25 @@ def latest_week(session: Session) -> date | None:
 def build_brief(session: Session, week: date) -> str:
     tax = load_taxonomy()
     snaps = session.scalars(select(TrendSnapshot).where(TrendSnapshot.week == week)).all()
+    # Sample size behind each score: weighted mentions over the last 4 weeks.
+    volume_4w: dict[tuple[str, str], float] = {}
+    for s in session.scalars(select(TrendSnapshot).where(TrendSnapshot.week > week - timedelta(weeks=4), TrendSnapshot.week <= week)):
+        volume_4w[(s.dimension, s.code)] = volume_4w.get((s.dimension, s.code), 0.0) + s.mentions
+
+    def line(s: TrendSnapshot) -> str:
+        fading = f"{s.decline_share:.0%}" if s.decline_share is not None else "n/d"
+        return (f"{tax.dimension_labels[s.dimension]} | {tax.label(s.dimension, s.code)} | {s.mentions:.1f} | "
+                f"{volume_4w.get((s.dimension, s.code), 0.0):.0f} | {s.momentum:+.0%} | {s.status} | {fading}")
+
+    ranked = sorted((s for s in snaps if s.mentions > 0 or s.search), key=lambda s: -s.momentum)
     lines = [
         f"Semaine du {week.isoformat()}", "",
-        "Scores (dimension | attribut | mentions pondérées | momentum du volume | statut | part des avis « en recul » sur 4 sem.):",
+        "Scores (dimension | attribut | mentions pondérées cette semaine | mentions sur 4 sem. | momentum du volume | statut | part des avis « en recul » sur 4 sem.):",
+        *[line(s) for s in ranked if s.status != "faible"],
     ]
-    for s in sorted(snaps, key=lambda s: -s.momentum):
-        if s.mentions == 0 and not s.search:
-            continue
-        fading = f"{s.decline_share:.0%}" if s.decline_share is not None else "n/d"
-        lines.append(
-            f"{tax.dimension_labels[s.dimension]} | {tax.label(s.dimension, s.code)} | {s.mentions:.1f} | {s.momentum:+.0%} | {s.status} | {fading}"
-        )
+    weak = [line(s) for s in ranked if s.status == "faible"]
+    if weak:
+        lines += ["", "Signaux faibles (trop peu de mentions pour conclure, à citer seulement comme « à surveiller ») :", *weak]
     extracts = session.scalars(
         select(Document.summary_fr)
         .join(Mention)
