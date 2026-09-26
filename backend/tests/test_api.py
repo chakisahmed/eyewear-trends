@@ -145,3 +145,37 @@ def test_failed_run_is_recorded(client, monkeypatch):
     last = client.get("/api/jobs/status").json()["last"]
     assert last["id"] == run_id and last["status"] == "failed"
     assert "collecteur en panne" in last["error"]
+
+
+def test_run_progress_is_saved_during_each_step(client, monkeypatch):
+    import app.jobs.pipeline as pipeline
+
+    seen = {}
+
+    def fake_rss(session, progress=None):
+        progress(2, 5)  # e.g. 2 of 5 feeds done
+        with SessionLocal() as other:  # what the status endpoint would read right now
+            run = other.query(JobRun).order_by(JobRun.id.desc()).first()
+            seen["mid"] = (run.current_step, run.step_done, run.step_total)
+        return 0
+
+    monkeypatch.setattr(pipeline, "collect_rss", fake_rss)
+    client.post("/api/jobs/run", json={"steps": ["rss", "score"]})
+    assert seen["mid"] == ("rss", 2, 5)
+    progress = client.get("/api/jobs/status").json()["last"]["progress"]
+    assert progress == {"step": "score", "label": "Calcul des tendances", "index": 2, "count": 2, "done": None, "total": None}
+
+
+def test_extraction_reports_articles_done(client):
+    from app.extraction.service import extract_pending
+    from app.models import Document, Source
+
+    with SessionLocal() as s:
+        src = s.query(Source).first()
+        # no eyewear keyword: skipped by the free pre-filter, so no LLM call is made
+        s.add_all([Document(source=src, url=f"test:progress:{i}", title="Météo", text="Soleil demain.", lang="fr") for i in range(3)])
+        s.commit()
+        calls = []
+        stats = extract_pending(s, provider=None, progress=lambda d, t: calls.append((d, t)))
+    assert stats["irrelevant"] == 3
+    assert calls == [(0, 3), (1, 3), (2, 3), (3, 3)]

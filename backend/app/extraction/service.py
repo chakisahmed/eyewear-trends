@@ -15,6 +15,7 @@ from app.config import settings
 from app.extraction.llm import LLMProvider, LLMRefused
 from app.extraction.schema import extraction_model
 from app.models import Document, Mention
+from app.progress import Progress, report
 from app.taxonomy import load_taxonomy
 
 log = logging.getLogger(__name__)
@@ -74,12 +75,13 @@ def extract_document(session: Session, doc: Document, provider: LLMProvider) -> 
     doc.status = "extracted"
 
 
-def extract_pending(session: Session, provider: LLMProvider, limit: int = 100) -> dict[str, int]:
+def extract_pending(session: Session, provider: LLMProvider, limit: int = 100, progress: Progress = None) -> dict[str, int]:
     docs = session.scalars(
         select(Document).where(Document.status == "pending").order_by(Document.collected_at).limit(limit)
     ).all()
     stats = {"extracted": 0, "irrelevant": 0, "failed": 0}
-    for doc in docs:
+    for i, doc in enumerate(docs):
+        report(progress, i, len(docs))  # articles analysed so far
         try:
             extract_document(session, doc, provider)
         except anthropic.RateLimitError:
@@ -93,4 +95,6 @@ def extract_pending(session: Session, provider: LLMProvider, limit: int = 100) -
             doc.status = "failed"
         stats[doc.status] = stats.get(doc.status, 0) + 1
         session.commit()
+    else:
+        report(progress, len(docs), len(docs))
     return stats

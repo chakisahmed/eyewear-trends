@@ -115,6 +115,14 @@ export interface JobRun {
   finished_at: string | null;
   report: Record<string, unknown> | null;
   error: string | null;
+  progress: {
+    step: string | null;
+    label: string | null;
+    index: number | null;
+    count: number;
+    done: number | null;
+    total: number | null;
+  };
 }
 
 export interface Meta {

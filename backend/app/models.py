@@ -132,6 +132,10 @@ class JobRun(Base):
     steps: Mapped[list] = mapped_column(JSON)
     report: Mapped[dict | None] = mapped_column(JSON)
     error: Mapped[str | None] = mapped_column(Text)
+    # live progress, shown in the UI while the run is going
+    current_step: Mapped[str | None] = mapped_column(String(20))  # one of pipeline.ALL_STEPS
+    step_done: Mapped[int | None] = mapped_column(Integer)  # items done in the current step
+    step_total: Mapped[int | None] = mapped_column(Integer)  # items in the current step (None = not countable)
 
 
 class WeeklySummary(Base):

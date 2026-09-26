@@ -46,23 +46,41 @@ def start_run(session: Session, steps: tuple[str, ...], trigger: str) -> JobRun:
 
 
 def execute_run(run_id: int) -> dict:
-    """Run the steps of an already-created JobRun and record the outcome."""
+    """Run the steps of an already-created JobRun and record the outcome.
+
+    Progress (current step, items done / total) is saved on the run as it goes, using the pipeline's
+    own session: steps call it right after their own commits, so it never commits half-built rows,
+    and there is no second writer to contend with SQLite's single write lock.
+    """
     report: dict = {}
     with SessionLocal() as session:
         run = session.get(JobRun, run_id)
         steps = tuple(run.steps)
+
+        def begin(step: str):
+            run.current_step, run.step_done, run.step_total = step, None, None
+            session.commit()
+
+            def progress(done: int, total: int) -> None:
+                run.step_done, run.step_total = done, total
+                session.commit()
+
+            return progress
+
         try:
             if "rss" in steps:
-                report["rss"] = collect_rss(session)
+                report["rss"] = collect_rss(session, progress=begin("rss"))
             if "news" in steps:
-                report["news"] = collect_news(session)
+                report["news"] = collect_news(session, progress=begin("news"))
             if "google_trends" in steps:
-                report["google_trends"] = collect_google_trends(session)
+                report["google_trends"] = collect_google_trends(session, progress=begin("google_trends"))
             if "extract" in steps:
-                report["extract"] = extract_pending(session, get_provider())
+                report["extract"] = extract_pending(session, get_provider(), progress=begin("extract"))
             if "score" in steps:
+                begin("score")
                 report["score"] = compute_snapshots(session)
             if "summary" in steps:
+                begin("summary")
                 report["summary"] = bool(generate_weekly_summary(session, get_provider()))
             run.status = "success"
         except Exception as e:  # record any failure so the UI can show it, then re-raise for logs

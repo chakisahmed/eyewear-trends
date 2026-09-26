@@ -65,3 +65,9 @@ a.trend-row { color: inherit; text-decoration: none; }
 .card, .chart-layout > *, .charts-grid > *, .detail-grid > *, .table-scroll { min-width: 0; }
 /* position: relative keeps absolutely-positioned children (e.g. .sr-only labels) inside the scroll box */
 .table-scroll, .mini-table-wrap { max-width: 100%; position: relative; }
+
+/* Live collection progress ("Étape 4/6 · Analyse IA · 12/40") under the header actions */
+.run-progress { display: flex; align-items: center; gap: 10px; flex-basis: 100%; justify-content: flex-end; margin: 0; }
+.run-bar { width: 120px; height: 6px; border-radius: 999px; background: var(--surface-subtle); overflow: hidden; flex: none; }
+.run-bar > span { display: block; height: 100%; background: var(--brand-blue); border-radius: inherit; transition: width .4s ease; }
+@media (max-width: 768px) { .run-progress { justify-content: flex-start; } }

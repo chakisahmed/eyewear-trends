@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.collectors.base import add_document, document_exists, fetch_article_text, get_or_create_source, http_client
 from app.config import settings
+from app.progress import Progress, report
 
 log = logging.getLogger(__name__)
 GDELT_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
@@ -43,11 +44,12 @@ def _query(client: httpx.Client, params: dict, attempts: int = 4) -> list[dict] 
     return None
 
 
-def collect_news(session: Session, timespan: str = "1w", per_query: int = 30) -> int:
+def collect_news(session: Session, timespan: str = "1w", per_query: int = 30, progress: Progress = None) -> int:
     queries = yaml.safe_load(FEEDS_PATH.read_text(encoding="utf-8"))["news_queries"]
     added = 0
     with http_client() as client:
         for i, q in enumerate(queries):
+            report(progress, i, len(queries))
             if i:
                 time.sleep(MIN_INTERVAL_S)
             source = get_or_create_source(
@@ -72,5 +74,6 @@ def collect_news(session: Session, timespan: str = "1w", per_query: int = 30) ->
                 )
                 added += 1
             session.commit()
+    report(progress, len(queries), len(queries))
     log.info("News: %d new documents", added)
     return added

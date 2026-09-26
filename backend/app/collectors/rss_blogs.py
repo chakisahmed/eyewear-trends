@@ -21,6 +21,7 @@ from app.collectors.base import (
 )
 from app.config import settings
 from app.extraction.service import EYEWEAR_RE
+from app.progress import Progress, report
 
 log = logging.getLogger(__name__)
 FEEDS_PATH = Path(__file__).with_name("feeds.yaml")
@@ -35,11 +36,13 @@ def _published(entry) -> datetime | None:
     return datetime.fromtimestamp(timegm(parsed), tz=timezone.utc) if parsed else None
 
 
-def collect_rss(session: Session, limit: int | None = None) -> int:
+def collect_rss(session: Session, limit: int | None = None, progress: Progress = None) -> int:
     limit = limit or settings.max_articles_per_run
     added = 0
     with http_client() as client:
-        for feed in load_feeds():
+        feeds = load_feeds()
+        for i, feed in enumerate(feeds):
+            report(progress, i, len(feeds))  # feeds done so far (session is committed here)
             source = get_or_create_source(
                 session, name=feed["name"], kind="press", url=feed["url"], lang=feed["lang"], country=feed.get("country")
             )
@@ -66,5 +69,6 @@ def collect_rss(session: Session, limit: int | None = None) -> int:
                 )
                 added += 1
             session.commit()
+    report(progress, len(feeds), len(feeds))
     log.info("RSS: %d new documents", added)
     return added

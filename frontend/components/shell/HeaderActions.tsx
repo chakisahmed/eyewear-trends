@@ -67,26 +67,38 @@ export function ExportMenu({ week, dimension }: { week: string | null; dimension
   );
 }
 
-type RunState = { running: boolean; message: string | null; failed: boolean };
+type Progress = JobRun["progress"];
+type RunState = { running: boolean; message: string | null; failed: boolean; progress: Progress | null };
 
-/** Starts a collection run, then polls its status and refreshes the page when it ends. */
+/** "Étape 4/6 · Analyse IA · 12/40" — or "…" while a step has no countable items. */
+function describe(p: Progress | null): string {
+  if (!p?.label) return "Démarrage de la collecte…";
+  const counted = p.total != null && p.total > 0 ? ` · ${p.done ?? 0}/${p.total}` : "…";
+  return `Étape ${p.index ?? "?"}/${p.count} · ${p.label}${counted}`;
+}
+
+/** Starts a collection run, then polls its status (showing the current step) and refreshes the page when it ends. */
 export function RefreshButton({ initiallyRunning }: { initiallyRunning: boolean }) {
   const router = useRouter();
-  const [state, setState] = useState<RunState>({ running: initiallyRunning, message: null, failed: false });
+  const [state, setState] = useState<RunState>({ running: initiallyRunning, message: null, failed: false, progress: null });
 
   const poll = useCallback(async () => {
     for (;;) {
-      await new Promise(r => setTimeout(r, 3000));
       try {
         const s = await (await fetch("/api/jobs/status", { cache: "no-store" })).json();
-        if (s.running) continue;
+        if (s.running) {
+          const current: JobRun | null = s.current;
+          setState(prev => ({ ...prev, running: true, progress: current?.progress ?? null }));
+          await new Promise(r => setTimeout(r, 3000));
+          continue;
+        }
         const last: JobRun | null = s.last;
         const failed = last?.status === "failed";
-        setState({ running: false, failed, message: failed ? `La collecte a échoué : ${last?.error ?? "erreur inconnue"}` : "Collecte terminée, données mises à jour." });
+        setState({ running: false, failed, progress: null, message: failed ? `La collecte a échoué : ${last?.error ?? "erreur inconnue"}` : "Collecte terminée, données mises à jour." });
         router.refresh();
         return;
       } catch {
-        setState({ running: false, failed: true, message: "Impossible de joindre l'API pendant la collecte." });
+        setState({ running: false, failed: true, progress: null, message: "Impossible de joindre l'API pendant la collecte." });
         return;
       }
     }
@@ -100,15 +112,17 @@ export function RefreshButton({ initiallyRunning }: { initiallyRunning: boolean 
   }, [initiallyRunning, poll]);
 
   async function start() {
-    setState({ running: true, message: null, failed: false });
+    setState({ running: true, message: null, failed: false, progress: null });
     const res = await fetch("/api/jobs/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
     if (res.status === 202 || res.status === 409) {
       void poll(); // 409 = a run is already going: follow it
     } else {
-      setState({ running: false, failed: true, message: `Impossible de lancer la collecte (HTTP ${res.status}).` });
+      setState({ running: false, failed: true, progress: null, message: `Impossible de lancer la collecte (HTTP ${res.status}).` });
     }
   }
 
+  const p = state.progress;
+  const pct = p?.total ? Math.round(100 * (p.done ?? 0) / p.total) : null;
   return (
     <>
       <button className={`btn btn-primary${state.running ? " is-loading" : ""}`} type="button" disabled={state.running} onClick={start}>
@@ -116,7 +130,16 @@ export function RefreshButton({ initiallyRunning }: { initiallyRunning: boolean 
         <span className="btn-spinner" aria-hidden="true" />
         <span className="btn-label">{state.running ? "Collecte en cours…" : "Actualiser les données"}</span>
       </button>
-      {state.message && (
+      {state.running ? (
+        <p className="run-note run-progress" role="status" aria-live="polite">
+          <span>{describe(p)}</span>
+          {pct != null && (
+            <span className="run-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Avancement de l'étape">
+              <span style={{ width: `${pct}%` }} />
+            </span>
+          )}
+        </p>
+      ) : state.message && (
         <p className={`run-note${state.failed ? " failed" : ""}`} role="status">{state.message}</p>
       )}
     </>

@@ -109,14 +109,30 @@ def _aware(dt: datetime | None) -> datetime | None:
     return dt if dt is None or dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
+STEP_LABELS = {
+    "rss": "Presse (flux RSS)", "news": "Actualités", "google_trends": "Google Trends",
+    "extract": "Analyse IA", "score": "Calcul des tendances", "summary": "Résumé IA",
+}
+
+
 def _run_dict(run: JobRun | None) -> dict | None:
     if run is None:
         return None
+    steps = run.steps or []
+    step = run.current_step
     return {
-        "id": run.id, "status": run.status, "trigger": run.trigger, "steps": run.steps,
+        "id": run.id, "status": run.status, "trigger": run.trigger, "steps": steps,
         "started_at": _aware(run.started_at).isoformat(),
         "finished_at": _aware(run.finished_at).isoformat() if run.finished_at else None,
         "report": run.report, "error": run.error,
+        "progress": {
+            "step": step,
+            "label": STEP_LABELS.get(step, step) if step else None,
+            "index": steps.index(step) + 1 if step in steps else None,  # 1-based position of the step
+            "count": len(steps),
+            "done": run.step_done,
+            "total": run.step_total,
+        },
     }
 
 

@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.progress import Progress, report
 from app.models import SearchInterest
 from app.taxonomy import load_taxonomy
 
@@ -22,7 +23,9 @@ ANCHORS = {"fr": "lunettes", "en": "glasses"}
 BATCH = 4  # pytrends allows 5 keywords per request: 4 + anchor
 
 
-def collect_google_trends(session: Session, dimensions: tuple[str, ...] = ("shape", "color", "material")) -> int:
+def collect_google_trends(
+    session: Session, dimensions: tuple[str, ...] = ("shape", "color", "material"), progress: Progress = None
+) -> int:
     try:
         from pytrends.request import TrendReq
     except ImportError:
@@ -32,9 +35,14 @@ def collect_google_trends(session: Session, dimensions: tuple[str, ...] = ("shap
     tax = load_taxonomy()
     pytrends = TrendReq(hl="fr-FR", tz=60)
     stored = 0
-    for lang, geo in (("fr", settings.market_geo), ("en", "")):
+    langs = (("fr", settings.market_geo), ("en", ""))
+    n_items = sum(len(tax.items[d]) for d in dimensions)
+    total_batches, batch_no = len(langs) * -(-n_items // BATCH), 0
+    for lang, geo in langs:
         items = [it for d in dimensions for it in tax.items[d].values()]
         for i in range(0, len(items), BATCH):
+            report(progress, batch_no, total_batches)
+            batch_no += 1
             chunk = items[i : i + BATCH]
             keywords = [it.query_fr if lang == "fr" else it.query_en for it in chunk]
             anchor = ANCHORS[lang]
@@ -67,5 +75,6 @@ def collect_google_trends(session: Session, dimensions: tuple[str, ...] = ("shap
                     stored += 1
             session.commit()
             time.sleep(2)  # be gentle: Google rate-limits aggressively
+    report(progress, total_batches, total_batches)
     log.info("Google Trends: %d weekly values stored", stored)
     return stored
