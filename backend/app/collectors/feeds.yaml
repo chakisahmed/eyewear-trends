@@ -1,19 +1,37 @@
-# Press / blog RSS feeds. Checked reachable on 2026-09-26.
-# Many general fashion feeds: entries are pre-filtered on eyewear keywords before
-# the full article is downloaded.
+# Press / blog RSS feeds. All checked on 2026-09-26: valid RSS, and robots.txt allows the articles.
+# Entries are pre-filtered on eyewear keywords before the full article is downloaded, so general
+# fashion feeds cost only an HTTP request when they have nothing about glasses.
+#
+# Yield measured on 2026-09-26 (eyewear items / items in the feed):
+#   optical trade press: Optique Mag 8/10, Invision 8/20, Vision Monday 3/10  <- most of the signal
+#   fashion & streetwear: Hypebeast 4/20; the general fashion titles were 0 that day
 feeds:
+  # Optical trade press: written for opticians and eyewear buyers
+  - {name: Optique Mag, url: "https://www.optiquemag.fr/feed", lang: fr, country: FR}
+  - {name: Vision Monday, url: "https://www.visionmonday.com/rss/latest-news/", lang: en, country: US}
+  - {name: Invision, url: "https://www.invisionmag.com/feed/", lang: en, country: US}
+
+  # Fashion press, France
   - {name: Vogue France, url: "https://www.vogue.fr/feed/rss", lang: fr, country: FR}
   - {name: GQ France, url: "https://www.gqmagazine.fr/feed/rss", lang: fr, country: FR}
+  - {name: Grazia, url: "https://www.grazia.fr/feed", lang: fr, country: FR}
+  - {name: L'Express Styles, url: "https://www.lexpress.fr/rss/styles.xml", lang: fr, country: FR}
+  - {name: M Le Monde, url: "https://www.lemonde.fr/m-styles/rss_full.xml", lang: fr, country: FR}
   - {name: Madmoizelle, url: "https://www.madmoizelle.com/feed", lang: fr, country: FR}
+
+  # Fashion & streetwear press, English
   - {name: Vogue, url: "https://www.vogue.com/feed/rss", lang: en, country: US}
   - {name: GQ, url: "https://www.gq.com/feed/rss", lang: en, country: US}
   - {name: Harper's Bazaar, url: "https://www.harpersbazaar.com/rss/all.xml/", lang: en, country: US}
   - {name: Esquire, url: "https://www.esquire.com/rss/all.xml/", lang: en, country: US}
   - {name: Who What Wear, url: "https://www.whowhatwear.com/rss", lang: en, country: US}
   - {name: Fashionista, url: "https://fashionista.com/.rss/full/", lang: en, country: US}
+  - {name: WWD, url: "https://wwd.com/feed/", lang: en, country: US}
+  - {name: Hypebeast, url: "https://www.hypebeast.com/feed", lang: en, country: US}
 
 # News discovery through the GDELT DOC API (free, open data): finds eyewear
 # articles across thousands of publishers in both languages. Max 1 request / 5 s.
+# Best effort: GDELT rate-limits some networks outright (HTTP 429 even on the first request).
 news_queries:
   - {lang: fr, query: '(lunettes OR monture OR "lunettes de soleil") (tendance OR tendances OR mode) sourcelang:french'}
   - {lang: en, query: '(eyewear OR eyeglasses OR sunglasses) (trend OR trends OR trending) sourcelang:english'}
