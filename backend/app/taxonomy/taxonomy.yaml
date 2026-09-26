@@ -1,0 +1,217 @@
+# Eyewear trend taxonomy: the single source of truth.
+# Codes are language-neutral and stored in the database; `fr` is the UI label.
+# Synonyms (FR + EN) feed the LLM prompt, keyword normalization and search queries.
+# `query` marks the synonym used to build bilingual search / Google Trends keywords.
+
+dimensions:
+  shape:
+    label_fr: Forme de monture
+    items:
+      cat_eye:
+        fr: Œil de chat
+        synonyms_fr: [œil de chat, oeil de chat, papillon relevé]
+        synonyms_en: [cat-eye, cat eye, cateye]
+        query: {fr: lunettes œil de chat, en: cat eye glasses}
+      round:
+        fr: Ronde / Panto
+        synonyms_fr: [ronde, rondes, panto, pantos]
+        synonyms_en: [round, panto, circle]
+        query: {fr: lunettes rondes, en: round glasses}
+      oval:
+        fr: Ovale
+        synonyms_fr: [ovale, ovales]
+        synonyms_en: [oval]
+        query: {fr: lunettes ovales, en: oval glasses}
+      aviator:
+        fr: Aviateur
+        synonyms_fr: [aviateur, pilote, goutte]
+        synonyms_en: [aviator, pilot, teardrop]
+        query: {fr: lunettes aviateur, en: aviator glasses}
+      rectangle:
+        fr: Rectangulaire
+        synonyms_fr: [rectangulaire, rectangulaires, rectangle]
+        synonyms_en: [rectangle, rectangular, slim rectangle]
+        query: {fr: lunettes rectangulaires, en: rectangle glasses}
+      square:
+        fr: Carrée
+        synonyms_fr: [carrée, carrées, carré]
+        synonyms_en: [square]
+        query: {fr: lunettes carrées, en: square glasses}
+      oversized:
+        fr: Oversize
+        synonyms_fr: [oversize, xxl, grandes lunettes]
+        synonyms_en: [oversized, oversize, xl, big frames]
+        query: {fr: lunettes oversize, en: oversized glasses}
+      geometric:
+        fr: Géométrique
+        synonyms_fr: [géométrique, hexagonale, octogonale]
+        synonyms_en: [geometric, hexagonal, octagonal]
+        query: {fr: lunettes hexagonales, en: hexagonal glasses}
+      browline:
+        fr: Browline / Clubmaster
+        synonyms_fr: [browline, clubmaster, sourcil]
+        synonyms_en: [browline, clubmaster]
+        query: {fr: lunettes clubmaster, en: browline glasses}
+      wayfarer:
+        fr: Wayfarer
+        synonyms_fr: [wayfarer, trapèze]
+        synonyms_en: [wayfarer, trapezoid]
+        query: {fr: lunettes wayfarer, en: wayfarer glasses}
+      rimless:
+        fr: Sans monture / Percées
+        synonyms_fr: [sans monture, percées, invisibles, nylor, semi-cerclée]
+        synonyms_en: [rimless, semi-rimless, half-rim, frameless]
+        query: {fr: lunettes sans monture, en: rimless glasses}
+      shield:
+        fr: Masque / Enveloppante
+        synonyms_fr: [masque, écran, enveloppante, wrap]
+        synonyms_en: [shield, wraparound, wrap, visor]
+        query: {fr: lunettes masque, en: shield sunglasses}
+      butterfly:
+        fr: Papillon
+        synonyms_fr: [papillon]
+        synonyms_en: [butterfly]
+        query: {fr: lunettes papillon, en: butterfly glasses}
+
+  color:
+    label_fr: Couleur
+    items:
+      black:
+        fr: Noir
+        hex: "#1a1a1a"
+        synonyms_fr: [noir, noire, noir mat]
+        synonyms_en: [black, matte black]
+        query: {fr: lunettes noires, en: black glasses}
+      tortoiseshell:
+        fr: Écaille
+        hex: "#8b5a2b"
+        synonyms_fr: [écaille, écaille de tortue, havane]
+        synonyms_en: [tortoiseshell, tortoise, havana]
+        query: {fr: lunettes écaille, en: tortoiseshell glasses}
+      clear:
+        fr: Transparent / Cristal
+        hex: "#e8eef2"
+        synonyms_fr: [transparent, transparente, cristal]
+        synonyms_en: [clear, transparent, crystal]
+        query: {fr: lunettes transparentes, en: clear frame glasses}
+      gold:
+        fr: Doré
+        hex: "#c9a227"
+        synonyms_fr: [doré, dorée, or]
+        synonyms_en: [gold, golden]
+        query: {fr: lunettes dorées, en: gold glasses}
+      silver:
+        fr: Argenté
+        hex: "#b8bcc2"
+        synonyms_fr: [argenté, argentée, argent, chrome]
+        synonyms_en: [silver, chrome, gunmetal]
+        query: {fr: lunettes argentées, en: silver glasses}
+      brown:
+        fr: Marron / Cognac
+        hex: "#6b4226"
+        synonyms_fr: [marron, brun, cognac, caramel, chocolat]
+        synonyms_en: [brown, cognac, caramel, chocolate]
+        query: {fr: lunettes marron, en: brown glasses}
+      beige:
+        fr: Beige / Nude
+        hex: "#d8c3a5"
+        synonyms_fr: [beige, nude, crème, champagne]
+        synonyms_en: [beige, nude, cream, champagne]
+        query: {fr: lunettes beige, en: beige glasses}
+      pastel:
+        fr: Pastel
+        hex: "#f4c2d7"
+        synonyms_fr: [pastel, rose poudré, lilas, vert d'eau]
+        synonyms_en: [pastel, blush, lilac, mint]
+        query: {fr: lunettes pastel, en: pastel glasses}
+      bold:
+        fr: Couleurs vives
+        hex: "#e63946"
+        synonyms_fr: [couleurs vives, rouge, vert, bleu électrique, fluo, jaune]
+        synonyms_en: [bold color, red, green, cobalt, neon, yellow]
+        query: {fr: lunettes colorées, en: colorful glasses}
+      two_tone:
+        fr: Bicolore
+        hex: "#5c677d"
+        synonyms_fr: [bicolore, dégradé, bi-matière]
+        synonyms_en: [two-tone, gradient, color-block]
+        query: {fr: lunettes bicolores, en: two tone glasses}
+      tinted_lens:
+        fr: Verres teintés
+        hex: "#7a9e9f"
+        synonyms_fr: [verres teintés, verres colorés, verres miroir]
+        synonyms_en: [tinted lenses, colored lenses, mirrored lenses]
+        query: {fr: lunettes verres teintés, en: tinted lens glasses}
+
+  material:
+    label_fr: Matière
+    items:
+      acetate:
+        fr: Acétate
+        synonyms_fr: [acétate, acétate épais]
+        synonyms_en: [acetate, chunky acetate]
+        query: {fr: lunettes acétate, en: acetate glasses}
+      metal:
+        fr: Métal
+        synonyms_fr: [métal, métallique, fil fin]
+        synonyms_en: [metal, wire, thin metal]
+        query: {fr: lunettes métal, en: metal glasses}
+      titanium:
+        fr: Titane
+        synonyms_fr: [titane]
+        synonyms_en: [titanium]
+        query: {fr: lunettes titane, en: titanium glasses}
+      tr90:
+        fr: TR90 / Nylon
+        synonyms_fr: [tr90, nylon, injecté]
+        synonyms_en: [tr90, nylon, injected]
+        query: {fr: lunettes tr90, en: tr90 glasses}
+      wood:
+        fr: Bois / Corne
+        synonyms_fr: [bois, corne, bambou]
+        synonyms_en: [wood, horn, bamboo]
+        query: {fr: lunettes en bois, en: wooden glasses}
+      recycled:
+        fr: Recyclé / Biosourcé
+        synonyms_fr: [recyclé, biosourcé, bio-acétate, écoresponsable]
+        synonyms_en: [recycled, bio-based, bio-acetate, sustainable]
+        query: {fr: lunettes écoresponsables, en: sustainable eyewear}
+
+  style:
+    label_fr: Style
+    items:
+      retro:
+        fr: Rétro / Vintage
+        synonyms_fr: [rétro, vintage, années 70, années 90]
+        synonyms_en: [retro, vintage, 70s, 90s]
+        query: {fr: lunettes vintage, en: vintage glasses}
+      minimalist:
+        fr: Minimaliste
+        synonyms_fr: [minimaliste, épuré, discret]
+        synonyms_en: [minimalist, minimal, understated]
+        query: {fr: lunettes minimalistes, en: minimalist glasses}
+      y2k:
+        fr: Y2K
+        synonyms_fr: [y2k, années 2000]
+        synonyms_en: [y2k, 2000s]
+        query: {fr: lunettes y2k, en: y2k sunglasses}
+      luxury:
+        fr: Luxe
+        synonyms_fr: [luxe, haut de gamme, bijou]
+        synonyms_en: [luxury, high-end, jewelry]
+        query: {fr: lunettes de luxe, en: luxury eyewear}
+      sporty:
+        fr: Sport
+        synonyms_fr: [sport, sportif, techno]
+        synonyms_en: [sporty, athletic, techwear]
+        query: {fr: lunettes sport, en: sport sunglasses}
+      geek_chic:
+        fr: Geek-chic / Intello
+        synonyms_fr: [intello, geek chic, bibliothécaire]
+        synonyms_en: [geek chic, nerdy, librarian]
+        query: {fr: lunettes intello, en: geek chic glasses}
+      statement:
+        fr: Statement / Audacieux
+        synonyms_fr: [audacieux, statement, extravagant]
+        synonyms_en: [statement, bold, extravagant]
+        query: {fr: lunettes originales, en: statement glasses}

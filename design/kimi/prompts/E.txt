@@ -1,0 +1,1430 @@
+# Design brief: Noé & Noah trend dashboard
+
+You are a senior product designer and front-end engineer. Design and code a **production-quality internal web dashboard**. Output **one self-contained HTML file** per request (inline `<style>` and `<script>`, no build step). The HTML will later be ported to Next.js + Tailwind v4, so keep the markup semantic, the CSS variable-based and the components clearly separated.
+
+## 1. Product
+- **Client:** Noé & Noah, an eyewear retailer (optical frames + sunglasses). Single tenant, internal tool.
+- **Users:** the buying and merchandising team. They open it every Monday and in buying meetings to decide which frames to stock.
+- **What it does:** an AI reads fashion press, news, eyewear stores and social media in French and English every day, and extracts eyewear attributes: **frame shape, color, material and style**. It scores each attribute weekly (mention volume, growth vs the previous 4 weeks, Google Trends search interest) and writes a weekly summary in French.
+- **UI language: French** (fr-FR). Number format `1 284`, `+42 %` (narrow space before %), dates `21 sept. 2026`.
+- **Tone:** premium, calm and data-dense but airy. Think Linear or Stripe dashboard quality, with a fashion touch. No stock illustrations or emoji.
+
+## 2. Brand
+- Logo: a coral "N" monogram above the wordmark **NOÉ & NOAH** (wide geometric sans, uppercase). Use `<img src="brand/noe-noah-logo-coral.png" alt="Noé & Noah">` (transparent PNG, 618×325), about 120 px wide in the sidebar.
+- Fonts (Google Fonts): **Montserrat** 600/700 for headings and big numbers, **Inter** 400/500/600 for everything else. Use `font-variant-numeric: tabular-nums` on figures.
+
+### Tokens (use exactly these CSS custom properties)
+| token | light | dark |
+|---|---|---|
+| --brand-blue | #2157A1 | #4A7FCC |
+| --brand-coral | #DC8B71 | #E59C84 |
+| --surface-page | #F7F6F3 | #121417 |
+| --surface-card | #FFFFFF | #1A1D21 |
+| --surface-subtle | #F1EFEA | #22262B |
+| --surface-sidebar | #2157A1 | #15325C |
+| --surface-sidebar-active | #1A4885 | #1E4273 |
+| --text-primary | #14171C | #F3F4F6 |
+| --text-secondary | #4E5561 | #C2C7D0 |
+| --text-muted | #7B8290 | #8A919C |
+| --text-on-brand | #FFFFFF | #FFFFFF |
+| --text-on-brand-muted | #C9D6EC | #A9BCDB |
+| --text-link | #2157A1 | #7FA6E0 |
+| --border | #E4E2DD | #2A2E34 |
+| --border-strong | #CFCCC5 | #3A3F47 |
+| --status-up / --status-up-bg | #0CA30C / #E7F6E7 | #0CA30C / #16301A |
+| --status-peak / --status-peak-bg | #FAB219 / #FEF4DC | #FAB219 / #3A2E10 |
+| --status-stable / --status-stable-bg | #8A919C / #EEF0F2 | #8A919C / #262A30 |
+| --status-down / --status-down-bg | #D03B3B / #FBE9E9 | #D03B3B / #3A1B1B |
+| --banner-demo-bg | #FBEDE7 | #3A2620 |
+| --chart-grid | #ECEAE5 | #2A2E34 |
+| --series-1…6 | #2157A1 #EB6834 #1BAF7A #EDA100 #E87BA4 #008300 | #4A7FCC #D95926 #199E70 #C98500 #D55181 #008300 |
+
+- Spacing is a 4-px scale (4, 8, 12, 16, 20, 24, 32, 40).
+- Radius: 6 for controls, 12 for cards, 999 for pills.
+- Card shadow in light mode: `0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05)`. In dark mode: border only, no shadow.
+- **Dark mode:** define dark values under `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {…} }` and again under `:root[data-theme="dark"]`. Add a working theme toggle in the sidebar that sets `data-theme` on `<html>`.
+- Coral is an accent only (logo, active-nav marker, AI icon, quote bar). **Never use coral for text on white** (contrast is too low).
+
+## 3. Hard rules for data display (non-negotiable)
+1. **Status is never color alone.** Every status badge shows an icon, the value and a tinted background. **The value text is always `--text-primary`; only the icon takes the status color** (status colors on their tints fail WCAG AA, e.g. yellow on cream is 1.7:1):
+   - ↑ en hausse (momentum ≥ +25 %)
+   - ▲ au pic (near its 8-week high after a real climb, but growth has slowed or stopped)
+   - → stable
+   - ↓ en baisse (mention volume ≤ −25 %, OR most recent coverage calls it fading). For the second case, show why, e.g. "↓ 100 % d'avis en recul" instead of a volume percentage.
+2. **Never use a dual-axis chart.** Mentions and Google Trends interest are always separate charts.
+3. Chart series use `--series-1…6` in that fixed order, with at most 6 series (fold the rest into "Autres"). A color always follows the same entity when filters change.
+4. **Sparklines and small charts must not exaggerate noise.** Never stretch a series to its own min and max. Use a vertical range of at least 60 % of the series' peak, centered on the data and never below 0: `span = max(hi − lo, 0.6 × hi, 1)`, `min = max(0, (hi + lo) / 2 − span / 2)`. A stable 8, 8, 9, 8 must look almost flat, while 3 → 14 still fills the height.
+5. Charts need a legend when there are 2+ series. Also direct-label the line ends when there are 4 or fewer series. Thin 2-px lines, recessive grid (`--chart-grid`), and a hover crosshair with a tooltip listing every series for that week.
+6. Frame **colors** (écaille, doré…) are shown only as round swatch chips with a 1-px `--border-strong` ring, so white and clear colors stay visible. Never use them as chart line colors.
+7. Text uses text tokens, never series or status colors.
+8. Every chart has a "Vue tableau" toggle that shows the same data as an accessible table.
+9. Charts are hand-written **inline SVG** (no chart library), responsive via `viewBox`.
+
+## 4. App shell (every screen)
+- **Sidebar**, 240 px, `--surface-sidebar`:
+  - Logo at the top.
+  - Navigation with 20-px line icons (Lucide style, inline SVG): **Vue d'ensemble · Tendances · Demande · Sources**.
+  - The active item gets a 3-px coral bar on the left and the `--surface-sidebar-active` background.
+  - Footer: "Mis à jour il y a 3 h" + "26 sept. 2026 · 06:02", then the "Mode sombre" toggle.
+- **Main area** (`--surface-page`, 32-px padding). **Cap the content at 1,280 px wide, centered**, so on wide screens labels, sparklines and badges stay close together:
+  - Top bar: page title (Montserrat 28/700) plus a one-line subtitle.
+  - Top-bar controls on the right: week selector ("Semaine du 21 sept." with a chevron), a secondary button **Exporter** (download icon, opens a small menu: "Tableau (CSV)", "Rapport PDF"), and a primary blue button **Actualiser les données** (refresh icon).
+  - When clicked, the primary button becomes a disabled "Collecte en cours…" state with a spinner.
+- **Demo banner** under the top bar: `--banner-demo-bg` background, 1-px coral border, AI sparkle icon, the text "Données de démonstration : les tendances affichées sont fictives en attendant la première collecte." and a "Retirer la démo" link.
+- **Responsive:** desktop first (1440). At 768 px or less, the sidebar collapses into a top bar with the logo and a hamburger that opens a drawer, grids become one column, and tables scroll horizontally inside their card.
+
+## 5. Components to design and reuse
+- **KPI tile:** uppercase label (11 px, letter-spacing 0.06em, muted), big value (Montserrat 28/700), small detail line.
+- **Trend row:** a 36-px visual slot, the label (single line, ellipsis), an 8-week sparkline (72×24, `--series-1`, dot on the last point) and a status badge. The whole row is clickable, with a subtle hover.
+  - The visual slot shows a **frame-shape glyph** for shapes: small inline SVG line drawings of two lenses and a bridge (cat-eye, round, rectangle, aviator, oversize, geometric/hexagonal).
+  - It shows a **color swatch** for colors, and a neutral dot for materials and styles.
+  - *Sans monture* (rimless) is drawn as frameless lenses: thin dashed lens outlines with only the bridge and temples solid.
+- **Status badge**, **chip/pill**, **tabs** (underline style, blue 2-px underline when active), **select**, **source card**, **empty state**, **skeleton loader** and **error card** (with a "Réessayer" button).
+- **Source card:** source name (600) · date · language pill (FR/EN) · external-link icon, then a verbatim quote with a 3-px coral left bar. Below it, an "Résumé IA" line in secondary text and attribute chips.
+
+## 6. Screens
+Build the requested screen with this realistic demo data.
+
+### A. Vue d'ensemble
+1. **KPI row:**
+   - Articles analysés **1 284** (+86 cette semaine)
+   - Mentions d'attributs **4 912** (+312 cette semaine)
+   - Sources suivies **47** (FR 21 · EN 26)
+   - En attente d'analyse **12** (Prochaine collecte à 06:00)
+2. **Card "Résumé de la semaine":** AI sparkle icon in coral, pill "Généré par IA · Claude", and on the right "Basé sur 312 mentions · 26 sept.". The bullets:
+   - Œil de chat : +68 % de mentions, portée par la presse FR et EN. C'est la forme la plus citée de la semaine.
+   - Transparent / cristal : +52 %, souvent associé aux montures oversize en acétate.
+   - Matières recyclées et biosourcées : +47 %, un signal en hausse continue depuis 6 semaines.
+   - L'écaille atteint un pic (+9 %) : toujours très présente, mais sa croissance ralentit.
+   - Rectangulaire fine (−38 %) et style Y2K (−41 %) reculent nettement.
+
+   Close the card with a highlighted action box: "**À faire côté achats :** renforcer l'œil de chat et l'oversize en acétate transparent ou écaille ; limiter les réassorts de rectangulaires fines."
+3. **"Tendances de la semaine"** (note: "Classées par momentum sur 4 semaines · les attributs en baisse sont listés plus bas"): a 2×2 grid of cards (Formes, Couleurs, Matières, Styles), each with its top 5 attributes by momentum, **never including attributes that are en baisse** (those appear only in the "En baisse" card), and a "Voir tout →" link:
+   - **Formes:** Œil de chat +68 % ↑ · Oversize +41 % ↑ · Géométrique +37 % ↑ · Aviateur +9 % ▲ · Ronde / Panto +3 % →
+   - **Couleurs:** Transparent / Cristal #E8EEF2 +52 % ↑ · Marron / Cognac #6B4226 +34 % ↑ · Écaille #8B5A2B +9 % ▲ · Doré #C9A227 +6 % → · Noir #1A1A1A +1 % →
+   - **Matières:** Recyclé / Biosourcé +47 % ↑ · Acétate +29 % ↑ · Titane +15 % ▲ · Bois / Corne +2 % → · Métal −4 % →
+   - **Styles:** Rétro / Vintage +38 % ↑ · Statement +33 % ↑ · Luxe +11 % ▲ · Minimaliste −6 % → · Geek-chic / Intello −8 % →
+4. **Bottom row:**
+   - Card "En baisse": Pastel −44 %, Y2K −41 %, Rectangulaire fine −38 %, Sans monture −27 %.
+   - Card "Dernières sources", with 4 one-line quotes:
+     - Vogue France FR: « L'œil de chat revient en force cet automne… »
+     - GQ EN: « Clear frames are the quiet It-accessory of the season. »
+     - Harper's Bazaar EN: « Recycled acetate is no longer niche… »
+     - Madmoizelle FR: « Adieu les petites lunettes rectangulaires… »
+
+### B. Tendances (`?dim=shape`)
+- **Filter row:** tabs Formes · Couleurs · Matières · Styles, plus a period select (8 / 12 / 26 semaines).
+- **Main line chart:** weekly weighted mentions over 12 weeks for the top 6 attributes of the tab, with crosshair tooltip, legend and direct labels. Make up plausible series consistent with section A. For example, Œil de chat goes from 3 to 14 per week, and Rectangulaire from 10 to 4.
+- **Right panel:** horizontal bars of "Part de voix cette semaine" (%). On the Couleurs tab, add a "Palette de la semaine" strip where each real swatch's width follows its share.
+- **Table:** Attribut, Part, Mentions (sem.), Momentum (badge), Statut, and a "Détail →" link.
+
+### C. Détail d'une tendance (Œil de chat)
+- **Header:** glyph, "Œil de chat", badge ↑ +68 %, and the subtitle "Forme de monture · en hausse depuis 5 semaines".
+- **Stat tiles:** Mentions cette semaine **14**, Moyenne 4 sem. **8,3**, Part des formes **21 %**, Intérêt de recherche FR **62/100**.
+- **Two charts side by side:**
+  1. "Mentions par semaine", 12 weeks, 1 series, so no legend box.
+  2. "Intérêt de recherche Google" with 2 lines, France and Monde, on a 0–100 scale.
+- **Tonalité des mentions:** a 100 % stacked bar (en hausse 71 %, neutre 24 %, en recul 5 %) with labels.
+- **Marques citées:** chips (Gucci, Jimmy Fairly, Ray-Ban, Celine, Krys).
+- **Evidence list:** 4 source cards.
+
+### D. Demande (`?dim=shape`)
+- A grid of small cards (3 per row), one per attribute and sorted by growth. Each card has the label, a badge, and a mini chart with France and Monde lines (0–100, same scale), plus the legend "France / Monde".
+- A note card explains: « L'intérêt Google Trends est relatif (0–100) : 100 = pic de popularité du mot-clé sur la période. Les mots-clés sont suivis en français et en anglais. »
+
+### E. Sources
+- **Filter row:** Dimension, Attribut, Langue (Toutes/FR/EN), Type (Presse, Actualités, Boutique, Réseaux sociaux), Période.
+- **Result count:** "128 extraits".
+- A list of 6 source cards, then pagination.
+
+### F. Rapport PDF (`/rapport`)
+- An A4 print-optimized page, always in the light theme, with an `@media print` stylesheet.
+- **Header:** logo, "Rapport tendances lunettes", "Semaine du 21 septembre 2026".
+- **Content:** the summary, a compact table of top trends per dimension with badges, the declining trends, and 3 key quotes.
+- **Footer:** "Généré automatiquement · Noé & Noah · page 1/1".
+
+## 7. Quality bar
+- Pixel-perfect alignment, a consistent 24-px grid gap and generous white space.
+- Hover and focus states on every interactive element. Keyboard focus ring: 2 px `--brand-blue` with 2-px offset.
+- WCAG AA contrast for all text. Icons in buttons carry `aria-label` or visible text.
+- Check both themes visually before answering. Nothing overflows at 1440, 1024 or 390 px.
+
+## 8. Shared design system (screens B–F)
+The design system already exists in two shared files, attached below the brief with screen A's page markup as the reference:
+- **`shared.css`**: all tokens (light + dark), the app shell, and the components (card, KPI tile, trend row, badge, pill, swatch, tabs, buttons, select…).
+- **`shell.js`**: theme toggle, mobile drawer, demo banner, export menu, refresh button, frame-shape glyphs (`<span data-glyph="cat-eye|oversize|geometric|aviator|round|rectangle|square|rimless">`) and sparklines (`<svg class="spark" data-points="…">`).
+
+Rules:
+- **Link them; never copy them.** Put `<link rel="stylesheet" href="shared.css">` in `<head>` (after the Google Fonts link) and `<script src="shell.js"></script>` at the end of `<body>`, before the page's own script. **Do not repeat any CSS rule from shared.css or any code from shell.js.** Duplicating them wastes the output budget.
+- **Do copy the shell markup** from the screen A reference (mobile top bar, sidebar, top bar, demo banner), keeping every `id` that shell.js relies on. Change only the page title, subtitle and the active nav item.
+- Use the existing classes before creating new ones. The page's own `<style>` holds **only** CSS for components that shared.css lacks (charts, tables, filters, small multiples…), written with the same tokens.
+- The page's own `<script>` holds **only** this screen's data and behavior.
+- Do not re-derive the design system: spend your effort on the new screen's content, charts and interactions.
+
+## 9. Output format
+Reply with **only** one ```html code block containing the complete file. For screens B–F, the file links `shared.css` and `shell.js` (section 8) instead of repeating the token block and shell code.
+
+
+---
+
+## Attached: shared.css (link it, do not copy it)
+```css
+/* Noé & Noah dashboard: shared design system (tokens, shell, components), extracted from screen A.
+   Every screen links this file; page-specific CSS stays in the page. */
+/* ============================================================
+   DESIGN TOKENS — Noé & Noah
+   ============================================================ */
+:root {
+  --brand-blue: #2157A1;
+  --brand-coral: #DC8B71;
+  --surface-page: #F7F6F3;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F1EFEA;
+  --surface-sidebar: #2157A1;
+  --surface-sidebar-active: #1A4885;
+  --text-primary: #14171C;
+  --text-secondary: #4E5561;
+  --text-muted: #7B8290;
+  --text-on-brand: #FFFFFF;
+  --text-on-brand-muted: #C9D6EC;
+  --text-link: #2157A1;
+  --border: #E4E2DD;
+  --border-strong: #CFCCC5;
+  --status-up: #0CA30C;
+  --status-up-bg: #E7F6E7;
+  --status-peak: #FAB219;
+  --status-peak-bg: #FEF4DC;
+  --status-stable: #8A919C;
+  --status-stable-bg: #EEF0F2;
+  --status-down: #D03B3B;
+  --status-down-bg: #FBE9E9;
+  --banner-demo-bg: #FBEDE7;
+  --chart-grid: #ECEAE5;
+  --series-1: #2157A1;
+  --series-2: #EB6834;
+  --series-3: #1BAF7A;
+  --series-4: #EDA100;
+  --series-5: #E87BA4;
+  --series-6: #008300;
+
+  --shadow-card: 0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05);
+  --radius-control: 6px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+  --font-heading: "Montserrat", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --sidebar-w: 240px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-blue: #4A7FCC;
+    --brand-coral: #E59C84;
+    --surface-page: #121417;
+    --surface-card: #1A1D21;
+    --surface-subtle: #22262B;
+    --surface-sidebar: #15325C;
+    --surface-sidebar-active: #1E4273;
+    --text-primary: #F3F4F6;
+    --text-secondary: #C2C7D0;
+    --text-muted: #8A919C;
+    --text-on-brand: #FFFFFF;
+    --text-on-brand-muted: #A9BCDB;
+    --text-link: #7FA6E0;
+    --border: #2A2E34;
+    --border-strong: #3A3F47;
+    --status-up: #0CA30C;
+    --status-up-bg: #16301A;
+    --status-peak: #FAB219;
+    --status-peak-bg: #3A2E10;
+    --status-stable: #8A919C;
+    --status-stable-bg: #262A30;
+    --status-down: #D03B3B;
+    --status-down-bg: #3A1B1B;
+    --banner-demo-bg: #3A2620;
+    --chart-grid: #2A2E34;
+    --series-1: #4A7FCC;
+    --series-2: #D95926;
+    --series-3: #199E70;
+    --series-4: #C98500;
+    --series-5: #D55181;
+    --series-6: #008300;
+    --shadow-card: none;
+  }
+}
+:root[data-theme="dark"] {
+  --brand-blue: #4A7FCC;
+  --brand-coral: #E59C84;
+  --surface-page: #121417;
+  --surface-card: #1A1D21;
+  --surface-subtle: #22262B;
+  --surface-sidebar: #15325C;
+  --surface-sidebar-active: #1E4273;
+  --text-primary: #F3F4F6;
+  --text-secondary: #C2C7D0;
+  --text-muted: #8A919C;
+  --text-on-brand: #FFFFFF;
+  --text-on-brand-muted: #A9BCDB;
+  --text-link: #7FA6E0;
+  --border: #2A2E34;
+  --border-strong: #3A3F47;
+  --status-up: #0CA30C;
+  --status-up-bg: #16301A;
+  --status-peak: #FAB219;
+  --status-peak-bg: #3A2E10;
+  --status-stable: #8A919C;
+  --status-stable-bg: #262A30;
+  --status-down: #D03B3B;
+  --status-down-bg: #3A1B1B;
+  --banner-demo-bg: #3A2620;
+  --chart-grid: #2A2E34;
+  --series-1: #4A7FCC;
+  --series-2: #D95926;
+  --series-3: #199E70;
+  --series-4: #C98500;
+  --series-5: #D55181;
+  --series-6: #008300;
+  --shadow-card: none;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--font-heading); margin: 0; }
+p { margin: 0; }
+a { color: var(--text-link); }
+button { font-family: inherit; }
+.num, .kpi-value, .badge { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 2px; border-radius: var(--radius-control); }
+.sidebar :focus-visible, .mobile-topbar :focus-visible { outline-color: #FFFFFF; }
+
+/* ============================================================
+   APP SHELL — SIDEBAR
+   ============================================================ */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  background: var(--surface-sidebar);
+  color: var(--text-on-brand);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: transform .25s ease;
+}
+.sidebar-brand { padding: 24px 24px 20px; }
+.sidebar-brand img { width: 120px; height: auto; display: block; }
+.sidebar-nav { padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  color: var(--text-on-brand-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+.nav-link svg { width: 20px; height: 20px; flex: none; }
+.nav-link:hover { color: var(--text-on-brand); background: rgba(255,255,255,.07); }
+.nav-link[aria-current="page"] {
+  color: var(--text-on-brand);
+  background: var(--surface-sidebar-active);
+  font-weight: 600;
+}
+.nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--brand-coral);
+}
+.sidebar-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(255,255,255,.14);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.updated { font-size: 12.5px; color: var(--text-on-brand); font-weight: 500; }
+.updated-sub { font-size: 12px; color: var(--text-on-brand-muted); font-variant-numeric: tabular-nums; }
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: var(--radius-control);
+  color: var(--text-on-brand);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.14); }
+.theme-toggle svg { width: 16px; height: 16px; flex: none; }
+.switch {
+  margin-left: auto;
+  width: 32px; height: 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.28);
+  position: relative;
+  flex: none;
+  transition: background .2s;
+}
+.knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+}
+.theme-toggle[aria-pressed="true"] .switch { background: var(--brand-coral); }
+.theme-toggle[aria-pressed="true"] .knob { transform: translateX(14px); }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,14,20,.45);
+  z-index: 45;
+}
+.mobile-topbar { display: none; }
+
+/* ============================================================
+   MAIN AREA
+   ============================================================ */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  padding: 32px;
+}
+.main > * {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+.page-subtitle { color: var(--text-secondary); margin-top: 4px; font-size: 14px; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* ============================================================
+   BUTTONS / CONTROLS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn-primary { background: var(--brand-blue); color: #FFFFFF; }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--brand-blue) 86%, #000); }
+.btn-primary:disabled { opacity: .75; cursor: default; }
+.btn-secondary { background: var(--surface-card); color: var(--text-primary); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-subtle); }
+.btn-spinner {
+  display: none;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  flex: none;
+}
+.btn.is-loading .btn-spinner { display: inline-block; }
+.btn.is-loading .btn-icon { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card);
+  padding: 4px;
+  display: none;
+  z-index: 30;
+}
+.menu.open { display: block; }
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.menu button:hover { background: var(--surface-subtle); }
+.menu svg { width: 14px; height: 14px; color: var(--text-muted); }
+
+/* ============================================================
+   DEMO BANNER
+   ============================================================ */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--banner-demo-bg);
+  border: 1px solid var(--brand-coral);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 13.5px;
+}
+.demo-banner svg { width: 18px; height: 18px; color: var(--brand-coral); flex: none; }
+.demo-banner p { color: var(--text-primary); flex: 1; min-width: 0; }
+.demo-banner a { font-weight: 600; white-space: nowrap; }
+
+/* ============================================================
+   CARDS / KPI
+   ============================================================ */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.kpi-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.kpi-detail svg { width: 12px; height: 12px; flex: none; }
+.kpi-detail .up { color: var(--status-up); }
+
+/* ============================================================
+   AI SUMMARY
+   ============================================================ */
+.summary-card { margin-bottom: 24px; }
+.summary-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.summary-head svg.ai-icon { width: 20px; height: 20px; color: var(--brand-coral); flex: none; }
+.summary-title { font-size: 18px; font-weight: 700; margin-right: 4px; }
+.summary-meta {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill svg { width: 12px; height: 12px; color: var(--brand-coral); }
+.summary-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.summary-list li {
+  position: relative;
+  padding-left: 22px;
+  color: var(--text-secondary);
+}
+.summary-list li strong { color: var(--text-primary); font-weight: 600; }
+.summary-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .62em;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--brand-coral);
+}
+.action-box {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--surface-subtle);
+  border-left: 3px solid var(--brand-coral);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.action-box strong { color: var(--text-primary); }
+
+/* ============================================================
+   TREND GRID
+   ============================================================ */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; gap: 16px; }
+.section-title { font-size: 18px; font-weight: 700; }
+.section-note { font-size: 12.5px; color: var(--text-muted); }
+.trend-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.trend-card { padding: 20px; display: flex; flex-direction: column; }
+.trend-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.trend-card-title { font-size: 15px; font-weight: 700; }
+.trend-rows { display: flex; flex-direction: column; }
+.trend-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 72px auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s;
+}
+.trend-row:hover { background: var(--surface-subtle); }
+.trend-visual { width: 36px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); flex: none; }
+.trend-visual svg { width: 36px; height: 24px; }
+.swatch {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--sw, transparent);
+  border: 1px solid var(--border-strong);
+  flex: none;
+}
+.neutral-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 28%, transparent);
+  border: 1px solid var(--border-strong);
+  flex: none;
+}
+.trend-label {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.spark { width: 72px; height: 24px; flex: none; }
+.trend-card-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.link-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-link);
+}
+.link-more svg { width: 14px; height: 14px; transition: transform .15s; }
+.link-more:hover svg { transform: translateX(2px); }
+
+/* ============================================================
+   BADGES / PILLS
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.badge svg { width: 12px; height: 12px; flex: none; }
+/* Value text stays in --text-primary (WCAG AA on every tint); the status color is carried by the icon. */
+.badge { color: var(--text-primary); }
+.badge-up     { background: var(--status-up-bg); }
+.badge-peak   { background: var(--status-peak-bg); }
+.badge-stable { background: var(--status-stable-bg); }
+.badge-down   { background: var(--status-down-bg); }
+.badge-up svg     { color: var(--status-up); }
+.badge-peak svg   { color: var(--status-peak); }
+.badge-stable svg { color: var(--status-stable); }
+.badge-down svg   { color: var(--status-down); }
+.lang-pill {
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex: none;
+}
+
+/* ============================================================
+   BOTTOM ROW
+   ============================================================ */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 24px;
+}
+.decline-card .trend-row,
+.sources-card .source-line { cursor: default; }
+.decline-card .trend-row:hover,
+.sources-card .source-line:hover { background: none; }
+.source-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.source-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.source-line:last-child { border-bottom: none; }
+.source-name { font-weight: 600; flex: none; }
+.source-quote {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+  font-size: 13.5px;
+}
+
+/* ============================================================
+   COMPONENT LIBRARY (réutilisé sur les autres écrans)
+   ============================================================ */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
+.tab {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.tab:hover { color: var(--text-primary); }
+.tab[aria-selected="true"] { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--brand-blue); }
+.select {
+  appearance: none;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--surface-card);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237B8290' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.select:hover { background-color: var(--surface-subtle); }
+.empty-state {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+}
+.empty-state svg { width: 28px; height: 28px; color: var(--text-muted); margin-bottom: 8px; }
+.skeleton {
+  border-radius: var(--radius-control);
+  background: linear-gradient(90deg, var(--surface-subtle) 25%, var(--border) 50%, var(--surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.error-card {
+  background: var(--status-down-bg);
+  border: 1px solid color-mix(in srgb, var(--status-down) 40%, transparent);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.error-card h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+.error-card p { font-size: 13.5px; color: var(--text-secondary); }
+.error-card .btn { margin-left: auto; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: 56px;
+    padding: 0 16px;
+    background: var(--surface-sidebar);
+  }
+  .mobile-topbar img { width: 88px; height: auto; display: block; }
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-control);
+    color: #fff;
+    cursor: pointer;
+  }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .sidebar { transform: translateX(-105%); box-shadow: none; }
+  .sidebar.open { transform: none; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; padding: 20px 16px 32px; }
+  .kpi-grid, .trend-grid, .bottom-grid { grid-template-columns: 1fr; }
+  .page-header { margin-bottom: 16px; }
+  .page-title { font-size: 24px; }
+  .card { padding: 20px 16px; }
+  .summary-meta { margin-left: 0; width: 100%; }
+  .trend-row { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .trend-row .spark { display: none; }
+  .demo-banner { align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-actions .btn { flex: 1; justify-content: center; }
+  .menu-wrap { flex: 1; }
+  .menu-wrap > .btn { width: 100%; }
+}
+
+```
+
+## Attached: shell.js (link it, do not copy it)
+```js
+/* Noé & Noah dashboard: shared shell behavior (theme, drawer, demo banner, export menu, refresh)
+   and shared components (frame-shape glyphs via [data-glyph], sparklines via .spark[data-points]).
+   Load at the end of <body>. Extracted from screen A. */
+(function () {
+  "use strict";
+
+  /* ---------- Theme toggle ---------- */
+  var root = document.documentElement;
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  var themeBtn = document.getElementById("themeToggle");
+  function effectiveTheme() {
+    return root.dataset.theme || (mq.matches ? "dark" : "light");
+  }
+  function syncToggle() {
+    themeBtn.setAttribute("aria-pressed", String(effectiveTheme() === "dark"));
+  }
+  themeBtn.addEventListener("click", function () {
+    root.dataset.theme = effectiveTheme() === "dark" ? "light" : "dark";
+    syncToggle();
+  });
+  if (mq.addEventListener) mq.addEventListener("change", syncToggle);
+  syncToggle();
+
+  /* ---------- Mobile drawer ---------- */
+  var sidebar = document.getElementById("sidebar");
+  var overlay = document.getElementById("sidebarOverlay");
+  var burger = document.getElementById("menuBtn");
+  function closeDrawer() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
+  }
+  burger.addEventListener("click", function () {
+    var open = sidebar.classList.toggle("open");
+    overlay.classList.toggle("open", open);
+    burger.setAttribute("aria-expanded", String(open));
+  });
+  overlay.addEventListener("click", closeDrawer);
+  sidebar.querySelectorAll(".nav-link").forEach(function (a) {
+    a.addEventListener("click", function () {
+      if (window.innerWidth <= 768) closeDrawer();
+    });
+  });
+
+  /* ---------- Demo banner ---------- */
+  var banner = document.getElementById("demoBanner");
+  document.getElementById("removeDemo").addEventListener("click", function (e) {
+    e.preventDefault();
+    banner.remove();
+  });
+
+  /* ---------- Export menu ---------- */
+  var exportBtn = document.getElementById("exportBtn");
+  var exportMenu = document.getElementById("exportMenu");
+  exportBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = exportMenu.classList.toggle("open");
+    exportBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", function (e) {
+    if (!exportMenu.contains(e.target)) {
+      exportMenu.classList.remove("open");
+      exportBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* ---------- Refresh (loading state) ---------- */
+  var refreshBtn = document.getElementById("refreshBtn");
+  refreshBtn.addEventListener("click", function () {
+    if (refreshBtn.disabled) return;
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add("is-loading");
+    refreshBtn.querySelector(".btn-label").textContent = "Collecte en cours…";
+    setTimeout(function () {
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove("is-loading");
+      refreshBtn.querySelector(".btn-label").textContent = "Actualiser les données";
+    }, 2200);
+  });
+
+  /* ---------- Frame-shape glyphs ---------- */
+  var GLYPHS = {
+    "cat-eye":
+      '<path d="M2 9Q5.5 5 10 6.5L14.5 8.5Q16 9.5 16 12Q16 14.5 14.5 15.5L10 17.5Q5.5 19 2 15Q4 12 2 9Z"/>' +
+      '<path d="M34 9Q30.5 5 26 6.5L21.5 8.5Q20 9.5 20 12Q20 14.5 21.5 15.5L26 17.5Q30.5 19 34 15Q32 12 34 9Z"/>' +
+      '<path d="M16 11Q18 10 20 11"/>',
+    "oversize":
+      '<rect x="1.5" y="4" width="14" height="16" rx="6"/>' +
+      '<rect x="20.5" y="4" width="14" height="16" rx="6"/>' +
+      '<path d="M15.5 10.5Q18 9 20.5 10.5"/>',
+    "geometric":
+      '<path d="M10 4L15.5 7V13L10 16L4.5 13V7Z"/>' +
+      '<path d="M26 4L31.5 7V13L26 16L20.5 13V7Z"/>' +
+      '<path d="M15.5 11Q18 10 20.5 11"/>',
+    "aviator":
+      '<path d="M15.5 8Q14 5.5 10 5.5Q3.5 5.5 3 11Q2.7 15 6 17.5Q10 20 13 17Q15.5 14.5 15.5 8Z"/>' +
+      '<path d="M20.5 8Q22 5.5 26 5.5Q32.5 5.5 33 11Q33.3 15 30 17.5Q26 20 23 17Q20.5 14.5 20.5 8Z"/>' +
+      '<path d="M15.5 9Q18 8 20.5 9"/>',
+    "round":
+      '<circle cx="10" cy="12" r="7"/>' +
+      '<circle cx="26" cy="12" r="7"/>' +
+      '<path d="M17 10.8Q18 9.8 19 10.8"/>',
+    "rectangle":
+      '<rect x="2" y="7" width="14" height="10" rx="2.5"/>' +
+      '<rect x="20" y="7" width="14" height="10" rx="2.5"/>' +
+      '<path d="M16 10.5H20"/>',
+    "square":
+      '<rect x="3.5" y="5" width="12.5" height="14" rx="3.5"/>' +
+      '<rect x="20" y="5" width="12.5" height="14" rx="3.5"/>' +
+      '<path d="M16 10.5Q18 9.5 20 10.5"/>',
+    "rimless":
+      '<ellipse cx="10" cy="12" rx="6.5" ry="5" stroke-width="1.2" stroke-dasharray="1.8 2.2"/>' +
+      '<ellipse cx="26" cy="12" rx="6.5" ry="5" stroke-width="1.2" stroke-dasharray="1.8 2.2"/>' +
+      '<path d="M16.5 10.5Q18 9.5 19.5 10.5"/>' +
+      '<path d="M3.5 10.5H1.5M32.5 10.5H34.5"/>'
+  };
+  document.querySelectorAll("[data-glyph]").forEach(function (el) {
+    el.innerHTML =
+      '<svg viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      (GLYPHS[el.dataset.glyph] || "") +
+      "</svg>";
+  });
+
+  /* ---------- Sparklines (hand-written SVG, generated) ---------- */
+  document.querySelectorAll(".spark[data-points]").forEach(function (svg) {
+    var pts = svg.dataset.points.split(",").map(Number);
+    var w = 72, h = 24, p = 3, n = pts.length;
+    var lo = Math.min.apply(null, pts);
+    var hi = Math.max.apply(null, pts);
+    // Stretching every series to full height makes 8,8,9,8 look as dramatic as 3→14.
+    // Use a range of at least 60 % of the peak value, centered on the data, never below 0.
+    var span = Math.max(hi - lo, 0.6 * hi, 1);
+    var min = Math.max(0, (hi + lo) / 2 - span / 2);
+    var step = (w - 2 * p) / (n - 1);
+    var coords = pts.map(function (v, i) {
+      return [
+        +(p + i * step).toFixed(2),
+        +(h - p - ((v - min) / span) * (h - 2 * p)).toFixed(2)
+      ];
+    });
+    var line = coords.map(function (c) { return c.join(","); }).join(" ");
+    var last = coords[n - 1];
+    svg.innerHTML =
+      '<polyline points="' + line + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="2.5" fill="var(--series-1)"/>';
+  });
+})();
+
+```
+
+## Attached: screen A page markup (reference for the shell markup and component usage)
+```html
+</head>
+<body>
+
+<!-- ===== Mobile top bar ===== -->
+<header class="mobile-topbar">
+  <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah">
+  <button class="icon-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===== Sidebar ===== -->
+<aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+  <div class="sidebar-brand">
+    <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah" width="120" height="63">
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-link" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Vue d'ensemble
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Tendances
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 13 3-3 4 4 5-5"/></svg>
+      Demande
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V9"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+      Sources
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div>
+      <p class="updated">Mis à jour il y a 3 h</p>
+      <p class="updated-sub">26 sept. 2026 · 06:02</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      <span>Mode sombre</span>
+      <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== Main ===== -->
+<main class="main">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Vue d'ensemble</h1>
+      <p class="page-subtitle">Tendances lunettes · semaine du 21 sept. 2026</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        Semaine du 21 sept.
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="menu-wrap">
+        <button class="btn btn-secondary" id="exportBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter
+        </button>
+        <div class="menu" id="exportMenu" role="menu" aria-label="Options d'export">
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Tableau (CSV)
+          </button>
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+            Rapport PDF
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="refreshBtn" type="button">
+        <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg></span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span class="btn-label">Actualiser les données</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Demo banner ===== -->
+  <div class="demo-banner" id="demoBanner" role="status">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+    <p>Données de démonstration : les tendances affichées sont fictives en attendant la première collecte. <a href="#" id="removeDemo">Retirer la démo</a></p>
+  </div>
+
+  <!-- ===== KPI row ===== -->
+  <section class="kpi-grid" aria-label="Indicateurs clés">
+    <div class="card kpi-tile">
+      <p class="kpi-label">Articles analysés</p>
+      <p class="kpi-value num">1&#8239;284</p>
+      <p class="kpi-detail">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        <span class="num">+86</span> cette semaine
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">Mentions d'attributs</p>
+      <p class="kpi-value num">4&#8239;912</p>
+      <p class="kpi-detail">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        <span class="num">+312</span> cette semaine
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">Sources suivies</p>
+      <p class="kpi-value num">47</p>
+      <p class="kpi-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
+        FR 21 · EN 26
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">En attente d'analyse</p>
+      <p class="kpi-value num">12</p>
+      <p class="kpi-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+        Prochaine collecte à 06:00
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== AI weekly summary ===== -->
+  <section class="card summary-card" aria-labelledby="summaryTitle">
+    <div class="summary-head">
+      <svg class="ai-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+      <h2 class="summary-title" id="summaryTitle">Résumé de la semaine</h2>
+      <span class="pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+        Généré par IA · Claude
+      </span>
+      <span class="summary-meta">Basé sur 312 mentions · 26 sept.</span>
+    </div>
+    <ul class="summary-list">
+      <li><strong>Œil de chat : +68&#8239;% de mentions</strong>, portée par la presse FR et EN. C'est la forme la plus citée de la semaine.</li>
+      <li><strong>Transparent / cristal : +52&#8239;%</strong>, souvent associé aux montures oversize en acétate.</li>
+      <li><strong>Matières recyclées et biosourcées : +47&#8239;%</strong>, un signal en hausse continue depuis 6 semaines.</li>
+      <li><strong>L'écaille atteint un pic (+9&#8239;%)</strong> : toujours très présente, mais sa croissance ralentit.</li>
+      <li><strong>Rectangulaire fine (−38&#8239;%) et style Y2K (−41&#8239;%)</strong> reculent nettement.</li>
+    </ul>
+    <div class="action-box">
+      <strong>À faire côté achats :</strong> renforcer l'œil de chat et l'oversize en acétate transparent ou écaille ; limiter les réassorts de rectangulaires fines.
+    </div>
+  </section>
+
+  <!-- ===== Rising trends 2×2 ===== -->
+  <section aria-labelledby="trendsTitle">
+    <div class="section-head">
+      <h2 class="section-title" id="trendsTitle">Tendances de la semaine</h2>
+      <span class="section-note">Classées par momentum sur 4 semaines · les attributs en baisse sont listés plus bas</span>
+    </div>
+    <div class="trend-grid">
+
+      <!-- Formes -->
+      <article class="card trend-card" aria-label="Formes">
+        <div class="trend-card-head"><h3 class="trend-card-title">Formes</h3><span class="pill">5 attributs</span></div>
+        <div class="trend-rows">
+          <button class="trend-row" type="button">
+            <span class="trend-visual" data-glyph="cat-eye"></span>
+            <span class="trend-label">Œil de chat</span>
+            <svg class="spark" data-points="3,4,4,5,7,8,11,14" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+68&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual" data-glyph="oversize"></span>
+            <span class="trend-label">Oversize</span>
+            <svg class="spark" data-points="5,5,6,7,8,9,10,12" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+41&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual" data-glyph="geometric"></span>
+            <span class="trend-label">Géométrique</span>
+            <svg class="spark" data-points="4,4,5,5,6,7,8,9" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+37&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual" data-glyph="aviator"></span>
+            <span class="trend-label">Aviateur</span>
+            <svg class="spark" data-points="9,9,10,10,10,11,11,12" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : au pic"></svg>
+            <span class="badge badge-peak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5 19 18H5Z"/></svg>+9&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual" data-glyph="round"></span>
+            <span class="trend-label">Ronde / Panto</span>
+            <svg class="spark" data-points="8,8,8,9,8,8,9,8" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>+3&#8239;%</span>
+          </button>
+        </div>
+        <div class="trend-card-foot">
+          <a class="link-more" href="#">Voir tout<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </article>
+
+      <!-- Couleurs -->
+      <article class="card trend-card" aria-label="Couleurs">
+        <div class="trend-card-head"><h3 class="trend-card-title">Couleurs</h3><span class="pill">5 attributs</span></div>
+        <div class="trend-rows">
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="swatch" style="--sw:#E8EEF2"></span></span>
+            <span class="trend-label">Transparent / Cristal</span>
+            <svg class="spark" data-points="4,5,6,6,7,8,10,14" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+52&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="swatch" style="--sw:#6B4226"></span></span>
+            <span class="trend-label">Marron / Cognac</span>
+            <svg class="spark" data-points="6,6,7,7,8,8,9,11" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+34&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="swatch" style="--sw:#8B5A2B"></span></span>
+            <span class="trend-label">Écaille</span>
+            <svg class="spark" data-points="12,12,13,13,13,14,14,15" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : au pic"></svg>
+            <span class="badge badge-peak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5 19 18H5Z"/></svg>+9&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="swatch" style="--sw:#C9A227"></span></span>
+            <span class="trend-label">Doré</span>
+            <svg class="spark" data-points="8,8,8,9,9,8,9,9" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>+6&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="swatch" style="--sw:#1A1A1A"></span></span>
+            <span class="trend-label">Noir</span>
+            <svg class="spark" data-points="15,15,15,15,16,15,16,16" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>+1&#8239;%</span>
+          </button>
+        </div>
+        <div class="trend-card-foot">
+          <a class="link-more" href="#">Voir tout<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </article>
+
+      <!-- Matières -->
+      <article class="card trend-card" aria-label="Matières">
+        <div class="trend-card-head"><h3 class="trend-card-title">Matières</h3><span class="pill">5 attributs</span></div>
+        <div class="trend-rows">
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Recyclé / Biosourcé</span>
+            <svg class="spark" data-points="3,3,4,4,5,6,7,9" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+47&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Acétate</span>
+            <svg class="spark" data-points="8,9,9,10,10,11,12,13" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+29&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Titane</span>
+            <svg class="spark" data-points="8,8,9,9,9,10,10,11" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : au pic"></svg>
+            <span class="badge badge-peak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5 19 18H5Z"/></svg>+15&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Bois / Corne</span>
+            <svg class="spark" data-points="5,5,5,5,6,5,6,5" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>+2&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Métal</span>
+            <svg class="spark" data-points="12,12,11,12,11,11,11,12" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>−4&#8239;%</span>
+          </button>
+        </div>
+        <div class="trend-card-foot">
+          <a class="link-more" href="#">Voir tout<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </article>
+
+      <!-- Styles -->
+      <article class="card trend-card" aria-label="Styles">
+        <div class="trend-card-head"><h3 class="trend-card-title">Styles</h3><span class="pill">5 attributs</span></div>
+        <div class="trend-rows">
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Rétro / Vintage</span>
+            <svg class="spark" data-points="5,6,6,7,8,9,10,11" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+38&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Statement</span>
+            <svg class="spark" data-points="4,4,5,6,6,7,8,9" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en hausse"></svg>
+            <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+33&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Luxe</span>
+            <svg class="spark" data-points="8,8,9,9,9,10,10,10" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : au pic"></svg>
+            <span class="badge badge-peak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5 19 18H5Z"/></svg>+11&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Minimaliste</span>
+            <svg class="spark" data-points="9,9,9,8,9,8,9,8" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>−6&#8239;%</span>
+          </button>
+          <button class="trend-row" type="button">
+            <span class="trend-visual"><span class="neutral-dot"></span></span>
+            <span class="trend-label">Geek-chic / Intello</span>
+            <svg class="spark" data-points="5,5,6,5,5,6,5,5" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : stable"></svg>
+            <span class="badge badge-stable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>−8&#8239;%</span>
+          </button>
+        </div>
+        <div class="trend-card-foot">
+          <a class="link-more" href="#">Voir tout<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== Bottom row ===== -->
+  <section class="bottom-grid">
+    <article class="card trend-card decline-card" aria-label="Tendances en baisse">
+      <div class="trend-card-head">
+        <h3 class="trend-card-title">En baisse</h3>
+        <span class="pill">4 attributs</span>
+      </div>
+      <div class="trend-rows">
+        <div class="trend-row">
+          <span class="trend-visual"><span class="swatch" style="--sw:#D9C7E8"></span></span>
+          <span class="trend-label">Pastel</span>
+          <svg class="spark" data-points="9,10,10,9,8,7,6,5" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en baisse"></svg>
+          <span class="badge badge-down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 8v9H8"/></svg>−44&#8239;%</span>
+        </div>
+        <div class="trend-row">
+          <span class="trend-visual"><span class="neutral-dot"></span></span>
+          <span class="trend-label">Y2K</span>
+          <svg class="spark" data-points="11,10,9,8,7,6,5,4" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en baisse"></svg>
+          <span class="badge badge-down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 8v9H8"/></svg>−41&#8239;%</span>
+        </div>
+        <div class="trend-row">
+          <span class="trend-visual" data-glyph="rectangle"></span>
+          <span class="trend-label">Rectangulaire fine</span>
+          <svg class="spark" data-points="10,9,9,8,7,6,5,4" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en baisse"></svg>
+          <span class="badge badge-down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 8v9H8"/></svg>−38&#8239;%</span>
+        </div>
+        <div class="trend-row">
+          <span class="trend-visual" data-glyph="rimless"></span>
+          <span class="trend-label">Sans monture</span>
+          <svg class="spark" data-points="8,8,7,7,6,6,5,5" viewBox="0 0 72 24" role="img" aria-label="Tendance sur 8 semaines : en baisse"></svg>
+          <span class="badge badge-down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 8v9H8"/></svg>−27&#8239;%</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="card trend-card sources-card" aria-label="Dernières sources">
+      <div class="trend-card-head">
+        <h3 class="trend-card-title">Dernières sources</h3>
+        <a class="link-more" href="#">Toutes les sources<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </div>
+      <ul class="source-list">
+        <li class="source-line">
+          <span class="source-name">Vogue France</span>
+          <span class="lang-pill">FR</span>
+          <span class="source-quote">« L'œil de chat revient en force cet automne… »</span>
+        </li>
+        <li class="source-line">
+          <span class="source-name">GQ</span>
+          <span class="lang-pill">EN</span>
+          <span class="source-quote">« Clear frames are the quiet It-accessory of the season. »</span>
+        </li>
+        <li class="source-line">
+          <span class="source-name">Harper's Bazaar</span>
+          <span class="lang-pill">EN</span>
+          <span class="source-quote">« Recycled acetate is no longer niche… »</span>
+        </li>
+        <li class="source-line">
+          <span class="source-name">Madmoizelle</span>
+          <span class="lang-pill">FR</span>
+          <span class="source-quote">« Adieu les petites lunettes rectangulaires… »</span>
+        </li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+```
+
+---
+
+## Your task now
+Build screen **E. Sources** as a single HTML file that links shared.css and shell.js, following every rule above (app shell markup included, the nav item for this screen active).

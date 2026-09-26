@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Sources · Noé &amp; Noah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ===== Écran Sources : filtres ===== */
+  .filter-bar { padding: 20px 24px; }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .filter-field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .filter-field .select { width: 100%; }
+  .select:disabled { opacity: .55; cursor: default; }
+  .select:disabled:hover { background-color: var(--surface-card); }
+
+  /* ===== En-tête des résultats ===== */
+  .results-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 16px;
+  }
+  .result-count { font-size: 13.5px; color: var(--text-secondary); }
+  .result-count strong { color: var(--text-primary); font-weight: 600; }
+  .filter-reset {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: var(--text-link);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filter-reset:hover { text-decoration: underline; }
+
+  /* ===== Cartes source ===== */
+  .source-cards { display: flex; flex-direction: column; gap: 16px; }
+  .src-card { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .src-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+  .src-name { font-weight: 600; }
+  .src-sep { color: var(--text-muted); }
+  .src-date { color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .src-ext {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-control);
+    color: var(--text-muted);
+    flex: none;
+  }
+  .src-ext:hover { color: var(--brand-blue); background: var(--surface-subtle); }
+  .src-ext svg { width: 16px; height: 16px; }
+  .src-quote {
+    margin: 0;
+    padding: 2px 0 2px 14px;
+    border-left: 3px solid var(--brand-coral);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-primary);
+  }
+  .src-ai {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+  }
+  .src-ai svg { width: 14px; height: 14px; flex: none; margin-top: 2px; color: var(--brand-coral); }
+  .src-ai strong { color: var(--text-primary); font-weight: 600; }
+  .src-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .attr-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface-subtle);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .chip-sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--sw, transparent);
+    flex: none;
+  }
+  .chip-dim { color: var(--text-muted); }
+
+  /* ===== État vide ===== */
+  .empty-state p strong { color: var(--text-primary); }
+  .empty-state p + p { margin-top: 4px; font-size: 13.5px; }
+  .empty-state .btn { margin-top: 16px; }
+
+  /* ===== Pagination ===== */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .page-info { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-control);
+    background: var(--surface-card);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .page-btn:hover:not(:disabled):not([aria-current]) { background: var(--surface-subtle); }
+  .page-btn[aria-current="page"] {
+    background: var(--brand-blue);
+    border-color: var(--brand-blue);
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+  .page-btn:disabled { opacity: .45; cursor: default; }
+  .page-btn svg { width: 14px; height: 14px; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1100px) {
+    .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 768px) {
+    .filter-bar { padding: 16px; }
+    .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .src-card { padding: 16px; }
+    .src-quote { font-size: 14.5px; }
+    .pagination { justify-content: center; }
+  }
+  @media (max-width: 480px) {
+    .filter-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Mobile top bar ===== -->
+<header class="mobile-topbar">
+  <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah">
+  <button class="icon-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===== Sidebar ===== -->
+<aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+  <div class="sidebar-brand">
+    <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah" width="120" height="63">
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Vue d'ensemble
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Tendances
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 13 3-3 4 4 5-5"/></svg>
+      Demande
+    </a>
+    <a class="nav-link" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V9"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+      Sources
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div>
+      <p class="updated">Mis à jour il y a 3 h</p>
+      <p class="updated-sub">26 sept. 2026 · 06:02</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      <span>Mode sombre</span>
+      <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== Main ===== -->
+<main class="main">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Sources</h1>
+      <p class="page-subtitle">Extraits de presse, actualités, boutiques et réseaux sociaux · semaine du 21 sept. 2026</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        Semaine du 21 sept.
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="menu-wrap">
+        <button class="btn btn-secondary" id="exportBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter
+        </button>
+        <div class="menu" id="exportMenu" role="menu" aria-label="Options d'export">
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Tableau (CSV)
+          </button>
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+            Rapport PDF
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="refreshBtn" type="button">
+        <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg></span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span class="btn-label">Actualiser les données</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Demo banner ===== -->
+  <div class="demo-banner" id="demoBanner" role="status">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+    <p>Données de démonstration : les tendances affichées sont fictives en attendant la première collecte. <a href="#" id="removeDemo">Retirer la démo</a></p>
+  </div>
+
+  <!-- ===== Filtres ===== -->
+  <section class="card filter-bar" aria-label="Filtres des sources">
+    <div class="filter-grid">
+      <div class="filter-field">
+        <label for="fDimension">Dimension</label>
+        <select class="select" id="fDimension">
+          <option value="all">Toutes</option>
+          <option value="shape">Formes</option>
+          <option value="color">Couleurs</option>
+          <option value="material">Matières</option>
+          <option value="style">Styles</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="fAttr">Attribut</label>
+        <select class="select" id="fAttr" disabled>
+          <option value="all">Tous</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="fLang">Langue</label>
+        <select class="select" id="fLang">
+          <option value="all">Toutes</option>
+          <option value="FR">FR</option>
+          <option value="EN">EN</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="fType">Type</label>
+        <select class="select" id="fType">
+          <option value="all">Tous</option>
+          <option value="presse">Presse</option>
+          <option value="actualites">Actualités</option>
+          <option value="boutique">Boutique</option>
+          <option value="reseaux">Réseaux sociaux</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="fPeriod">Période</label>
+        <select class="select" id="fPeriod">
+          <option value="7">7 derniers jours</option>
+          <option value="30" selected>30 derniers jours</option>
+          <option value="90">3 derniers mois</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== En-tête résultats ===== -->
+  <div class="results-head">
+    <p class="result-count" id="resultCount" aria-live="polite"><strong>128 extraits</strong></p>
+    <button class="filter-reset" id="resetFilters" type="button" hidden>Réinitialiser les filtres</button>
+  </div>
+
+  <!-- ===== Liste des extraits (rendue en JS) ===== -->
+  <div class="source-cards" id="sourceCards"></div>
+
+  <!-- ===== Pagination ===== -->
+  <nav class="pagination" id="pagination" aria-label="Pagination des extraits"></nav>
+</main>
+
+<script src="shell.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Références ---------- */
+  var NOW = new Date(2026, 8, 26);          // 26 sept. 2026 (date de référence de la démo)
+  var PER_PAGE = 6;
+  var dtf = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+
+  var DIM_LABELS = { shape: "Forme", color: "Couleur", material: "Matière", style: "Style" };
+  var DIM_PLURAL = { shape: "Formes", color: "Couleurs", material: "Matières", style: "Styles" };
+  var TYPE_LABELS = { presse: "Presse", actualites: "Actualités", boutique: "Boutique", reseaux: "Réseaux sociaux" };
+  var COLOR_HEX = {
+    "Transparent / Cristal": "#E8EEF2",
+    "Marron / Cognac": "#6B4226",
+    "Écaille": "#8B5A2B",
+    "Doré": "#C9A227",
+    "Noir": "#1A1A1A",
+    "Pastel": "#D9C7E8"
+  };
+  var ATTRIBUTES = {
+    shape: ["Œil de chat", "Oversize", "Géométrique", "Aviateur", "Ronde / Panto", "Rectangulaire fine", "Sans monture"],
+    color: ["Transparent / Cristal", "Marron / Cognac", "Écaille", "Doré", "Noir", "Pastel"],
+    material: ["Recyclé / Biosourcé", "Acétate", "Titane", "Bois / Corne", "Métal"],
+    style: ["Rétro / Vintage", "Statement", "Luxe", "Minimaliste", "Geek-chic / Intello", "Y2K"]
+  };
+
+  /* ---------- Données de démonstration (18 extraits) ---------- */
+  /* attrs : [dimension, libellé] */
+  var SOURCES = [
+    { name: "Vogue France", type: "presse", lang: "FR", date: "2026-09-24",
+      quote: "« L’œil de chat revient en force cet automne, des podiums parisiens aux vitrines des opticiens. »",
+      summary: "la forme œil de chat domine la couverture mode française, portée par le retour du style rétro.",
+      attrs: [["shape", "Œil de chat"], ["style", "Rétro / Vintage"]] },
+    { name: "Jimmy Fairly — Le Journal", type: "boutique", lang: "FR", date: "2026-09-24",
+      quote: "« Notre modèle œil de chat Rive Gauche est épuisé pour la troisième fois ce mois-ci. »",
+      summary: "les ruptures de stock répétées confirment une demande soutenue sur la forme œil de chat.",
+      attrs: [["shape", "Œil de chat"]] },
+    { name: "GQ", type: "presse", lang: "EN", date: "2026-09-23",
+      quote: "« Clear frames are the quiet It-accessory of the season. »",
+      summary: "les montures transparentes sont présentées comme l’accessoire incontournable et discret de la saison.",
+      attrs: [["color", "Transparent / Cristal"], ["material", "Acétate"]] },
+    { name: "Harper’s Bazaar", type: "presse", lang: "EN", date: "2026-09-22",
+      quote: "« Recycled acetate is no longer niche — it is the new baseline for premium eyewear. »",
+      summary: "l’acétate recyclé devient un standard du segment premium selon la presse spécialisée anglophone.",
+      attrs: [["material", "Recyclé / Biosourcé"], ["material", "Acétate"]] },
+    { name: "Madmoizelle", type: "actualites", lang: "FR", date: "2026-09-21",
+      quote: "« Adieu les petites lunettes rectangulaires : le minimalisme Y2K s’essouffle. »",
+      summary: "la presse lifestyle française annonce le recul des formes rectangulaires fines et de l’esthétique Y2K.",
+      attrs: [["shape", "Rectangulaire fine"], ["style", "Y2K"]] },
+    { name: "Highsnobiety", type: "presse", lang: "EN", date: "2026-09-21",
+      quote: "« Y2K wraparounds are cooling off. What replaces them? Sharp cat-eyes. »",
+      summary: "la presse streetwear anglophone signale l’essoufflement du style Y2K au profit de l’œil de chat.",
+      attrs: [["style", "Y2K"], ["shape", "Œil de chat"]] },
+    { name: "Elle France", type: "presse", lang: "FR", date: "2026-09-20",
+      quote: "« Les montures oversize en acétate transparent s’imposent comme la pièce statement de la rentrée. »",
+      summary: "l’oversize transparent est cité comme pièce forte de la rentrée par la presse féminine.",
+      attrs: [["shape", "Oversize"], ["color", "Transparent / Cristal"], ["style", "Statement"]] },
+    { name: "@lalunetterie · Instagram", type: "reseaux", lang: "FR", date: "2026-09-25",
+      quote: "« Vous étiez des centaines à réclamer de l’écaille : le réassort arrive jeudi. »",
+      summary: "forte demande de la communauté pour l’écaille chez les opticiens indépendants sur Instagram.",
+      attrs: [["color", "Écaille"]] },
+    { name: "@paris.style · TikTok", type: "reseaux", lang: "FR", date: "2026-09-25",
+      quote: "« POV : tu troques tes lunettes noires pour une monture cristal » — 214 k vues en 48 h.",
+      summary: "les contenus « monture cristal » performent fortement sur TikTok France cette semaine.",
+      attrs: [["color", "Transparent / Cristal"], ["color", "Noir"]] },
+    { name: "The Cut", type: "presse", lang: "EN", date: "2026-09-12",
+      quote: "« Geometric frames are the nerd-chic detail fashion people cannot stop wearing. »",
+      summary: "les formes géométriques gagnent la presse mode anglophone sur un registre geek-chic.",
+      attrs: [["shape", "Géométrique"], ["style", "Geek-chic / Intello"]] },
+    { name: "FashionNetwork", type: "actualites", lang: "FR", date: "2026-09-09",
+      quote: "« SILMO 2026 : les matériaux biosourcés au cœur des collections présentées. »",
+      summary: "le salon SILMO confirme la montée des matières recyclées et biosourcées chez les fabricants.",
+      attrs: [["material", "Recyclé / Biosourcé"]] },
+    { name: "Le Figaro Madame", type: "presse", lang: "FR", date: "2026-09-08",
+      quote: "« Le titane, choix discret des silhouettes minimalistes. »",
+      summary: "le titane reste associé au luxe discret et au style minimaliste dans la presse française.",
+      attrs: [["material", "Titane"], ["style", "Minimaliste"]] },
+    { name: "Numéro", type: "presse", lang: "FR", date: "2026-09-03",
+      quote: "« L’aviateur doré, éternel retour. »",
+      summary: "l’aviateur doré maintient une présence éditoriale élevée mais stable.",
+      attrs: [["shape", "Aviateur"], ["color", "Doré"]] },
+    { name: "Who What Wear", type: "presse", lang: "EN", date: "2026-08-30",
+      quote: "« Cognac and warm browns are replacing black as the neutral of choice. »",
+      summary: "les tons cognac et marron chaud progressent comme alternatives au noir.",
+      attrs: [["color", "Marron / Cognac"], ["color", "Noir"]] },
+    { name: "Optician Magazine", type: "actualites", lang: "EN", date: "2026-08-28",
+      quote: "« Titanium remains the most recommended premium material in-store. »",
+      summary: "le titane conserve la confiance des opticiens pour le segment premium en boutique.",
+      attrs: [["material", "Titane"]] },
+    { name: "Pinterest Tendances", type: "reseaux", lang: "FR", date: "2026-08-20",
+      quote: "« Les recherches « lunettes écaille oversize » progressent de 38\u202F% en un mois. »",
+      summary: "la combinaison écaille + oversize progresse nettement dans les recherches Pinterest en France.",
+      attrs: [["color", "Écaille"], ["shape", "Oversize"]] },
+    { name: "20 Minutes", type: "actualites", lang: "FR", date: "2026-08-12",
+      quote: "« Des lunettes en plastique recyclé : la filière française s’organise. »",
+      summary: "la filière française du plastique recyclé gagne en visibilité dans les actualités grand public.",
+      attrs: [["material", "Recyclé / Biosourcé"]] },
+    { name: "Wallpaper*", type: "presse", lang: "EN", date: "2026-07-30",
+      quote: "« Rimless frames retreat as maximalism keeps its hold on accessories. »",
+      summary: "la presse design anglophone confirme le recul du sans monture face au maximalisme.",
+      attrs: [["shape", "Sans monture"], ["style", "Statement"]] }
+  ];
+  SOURCES.forEach(function (s) {
+    var p = s.date.split("-");
+    s.d = new Date(+p[0], +p[1] - 1, +p[2]);
+  });
+  SOURCES.sort(function (a, b) { return b.d - a.d || (a.name < b.name ? -1 : 1); });
+
+  /* ---------- Icônes ---------- */
+  var ICON_EXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>';
+  var ICON_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>';
+  var ICON_PREV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>';
+  var ICON_NEXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>';
+  var EMPTY_HTML =
+    '<div class="empty-state">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>' +
+      '<p><strong>Aucun extrait ne correspond à ces filtres.</strong></p>' +
+      '<p>Essayez d’élargir la période ou de retirer un filtre.</p>' +
+      '<button class="btn btn-secondary" id="emptyReset" type="button">Réinitialiser les filtres</button>' +
+    '</div>';
+
+  /* ---------- État + éléments ---------- */
+  var state = { dim: "all", attr: "all", lang: "all", type: "all", period: 30, page: 1 };
+  var dimSel = document.getElementById("fDimension");
+  var attrSel = document.getElementById("fAttr");
+  var langSel = document.getElementById("fLang");
+  var typeSel = document.getElementById("fType");
+  var periodSel = document.getElementById("fPeriod");
+  var countEl = document.getElementById("resultCount");
+  var resetBtn = document.getElementById("resetFilters");
+  var cardsEl = document.getElementById("sourceCards");
+  var paginationEl = document.getElementById("pagination");
+
+  /* ---------- Filtrage ---------- */
+  function matches(s) {
+    if (state.lang !== "all" && s.lang !== state.lang) return false;
+    if (state.type !== "all" && s.type !== state.type) return false;
+    if (state.dim !== "all" && !s.attrs.some(function (a) { return a[0] === state.dim; })) return false;
+    if (state.attr !== "all" && !s.attrs.some(function (a) { return a[1] === state.attr; })) return false;
+    var cutoff = new Date(NOW.getTime());
+    cutoff.setDate(cutoff.getDate() - state.period + 1);
+    return s.d >= cutoff && s.d <= NOW;
+  }
+  function isFiltered() {
+    return state.dim !== "all" || state.attr !== "all" || state.lang !== "all" ||
+           state.type !== "all" || state.period !== 30;
+  }
+
+  /* ---------- Rendu ---------- */
+  function cardHTML(s) {
+    var chips = s.attrs.map(function (a) {
+      var sw = a[0] === "color"
+        ? '<span class="chip-sw" style="--sw:' + COLOR_HEX[a[1]] + '" aria-hidden="true"></span>'
+        : "";
+      return '<span class="attr-chip" title="' + DIM_PLURAL[a[0]] + '">' + sw +
+             '<span class="chip-dim">' + DIM_LABELS[a[0]] + ' ·</span> ' + a[1] + "</span>";
+    }).join("");
+    return '<article class="card src-card">' +
+      '<header class="src-head">' +
+        '<span class="src-name">' + s.name + '</span>' +
+        '<span class="src-sep" aria-hidden="true">·</span>' +
+        '<time class="src-date" datetime="' + s.date + '">' + dtf.format(s.d) + '</time>' +
+        '<span class="lang-pill">' + s.lang + '</span>' +
+        '<span class="pill">' + TYPE_LABELS[s.type] + '</span>' +
+        '<a class="src-ext" href="#" aria-label="Ouvrir la source ' + s.name + ' (nouvel onglet)">' + ICON_EXT + '</a>' +
+      '</header>' +
+      '<blockquote class="src-quote">' + s.quote + '</blockquote>' +
+      '<p class="src-ai">' + ICON_SPARK + '<span><strong>Résumé IA :</strong> ' + s.summary + '</span></p>' +
+      '<div class="src-chips">' + chips + '</div>' +
+    '</article>';
+  }
+
+  function renderPagination(pages) {
+    var html = '<p class="page-info">Page ' + state.page + ' sur ' + pages + ' · échantillon de démonstration</p>';
+    html += '<div class="page-btns">';
+    html += '<button class="page-btn" type="button" data-nav="prev" aria-label="Page précédente"' + (state.page === 1 ? ' disabled' : '') + '>' + ICON_PREV + '</button>';
+    for (var i = 1; i <= pages; i++) {
+      html += '<button class="page-btn" type="button" data-nav="' + i + '" aria-label="Page ' + i + '"' +
+              (i === state.page ? ' aria-current="page"' : '') + '>' + i + '</button>';
+    }
+    html += '<button class="page-btn" type="button" data-nav="next" aria-label="Page suivante"' + (state.page === pages ? ' disabled' : '') + '>' + ICON_NEXT + '</button>';
+    html += '</div>';
+    paginationEl.innerHTML = html;
+  }
+
+  function render() {
+    var items = SOURCES.filter(matches);
+    var active = isFiltered();
+    countEl.innerHTML = active
+      ? '<strong>' + items.length + ' extrait' + (items.length > 1 ? 's' : '') + '</strong> dans l’échantillon démo'
+      : '<strong>128 extraits</strong>';
+    resetBtn.hidden = !active;
+
+    var pages = Math.max(1, Math.ceil(items.length / PER_PAGE));
+    if (state.page > pages) state.page = pages;
+    var start = (state.page - 1) * PER_PAGE;
+    var pageItems = items.slice(start, start + PER_PAGE);
+
+    if (!items.length) {
+      cardsEl.innerHTML = EMPTY_HTML;
+      document.getElementById("emptyReset").addEventListener("click", resetFilters);
+      paginationEl.style.display = 'none';
+    } else {
+      cardsEl.innerHTML = pageItems.map(cardHTML).join('');
+      paginationEl.style.display = '';
+      renderPagination(pages);
+    }
+  }
+
+  /* ---------- Filtre Attribut dépendant de Dimension ---------- */
+  function rebuildAttrOptions() {
+    if (state.dim === 'all') {
+      attrSel.innerHTML = '<option value="all">Tous</option>';
+      attrSel.disabled = true;
+    } else {
+      attrSel.disabled = false;
+      attrSel.innerHTML = '<option value="all">Tous</option>' +
+        ATTRIBUTES[state.dim].map(function (l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+    }
+    attrSel.value = 'all';
+  }
+
+  /* ---------- Réinitialisation ---------- */
+  function resetFilters() {
+    state.dim = 'all'; state.attr = 'all'; state.lang = 'all';
+    state.type = 'all'; state.period = 30; state.page = 1;
+    dimSel.value = 'all'; langSel.value = 'all'; typeSel.value = 'all'; periodSel.value = '30';
+    rebuildAttrOptions();
+    render();
+  }
+
+  /* ---------- Événements ---------- */
+  dimSel.addEventListener('change', function () {
+    state.dim = this.value; state.attr = 'all'; state.page = 1;
+    rebuildAttrOptions();
+    render();
+  });
+  attrSel.addEventListener('change', function () { state.attr = this.value; state.page = 1; render(); });
+  langSel.addEventListener('change', function () { state.lang = this.value; state.page = 1; render(); });
+  typeSel.addEventListener('change', function () { state.type = this.value; state.page = 1; render(); });
+  periodSel.addEventListener('change', function () { state.period = +this.value; state.page = 1; render(); });
+  resetBtn.addEventListener('click', resetFilters);
+
+  paginationEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-nav]');
+    if (!btn || btn.disabled) return;
+    var nav = btn.dataset.nav;
+    if (nav === 'prev') state.page--;
+    else if (nav === 'next') state.page++;
+    else state.page = +nav;
+    render();
+    document.querySelector('.results-head').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  /* ---------- Init ---------- */
+  rebuildAttrOptions();
+  render();
+})();
+</script>
+</body>
+</html>

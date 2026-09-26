@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Œil de chat · Tendances · Noé &amp; Noah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS — Noé & Noah
+   ============================================================ */
+:root {
+  --brand-blue: #2157A1;
+  --brand-coral: #DC8B71;
+  --surface-page: #F7F6F3;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F1EFEA;
+  --surface-sidebar: #2157A1;
+  --surface-sidebar-active: #1A4885;
+  --text-primary: #14171C;
+  --text-secondary: #4E5561;
+  --text-muted: #7B8290;
+  --text-on-brand: #FFFFFF;
+  --text-on-brand-muted: #C9D6EC;
+  --text-link: #2157A1;
+  --border: #E4E2DD;
+  --border-strong: #CFCCC5;
+  --status-up: #0CA30C;
+  --status-up-bg: #E7F6E7;
+  --status-peak: #FAB219;
+  --status-peak-bg: #FEF4DC;
+  --status-stable: #8A919C;
+  --status-stable-bg: #EEF0F2;
+  --status-down: #D03B3B;
+  --status-down-bg: #FBE9E9;
+  --banner-demo-bg: #FBEDE7;
+  --chart-grid: #ECEAE5;
+  --series-1: #2157A1;
+  --series-2: #EB6834;
+  --series-3: #1BAF7A;
+  --series-4: #EDA100;
+  --series-5: #E87BA4;
+  --series-6: #008300;
+
+  --shadow-card: 0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05);
+  --radius-control: 6px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+  --font-heading: "Montserrat", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --sidebar-w: 240px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-blue: #4A7FCC;
+    --brand-coral: #E59C84;
+    --surface-page: #121417;
+    --surface-card: #1A1D21;
+    --surface-subtle: #22262B;
+    --surface-sidebar: #15325C;
+    --surface-sidebar-active: #1E4273;
+    --text-primary: #F3F4F6;
+    --text-secondary: #C2C7D0;
+    --text-muted: #8A919C;
+    --text-on-brand: #FFFFFF;
+    --text-on-brand-muted: #A9BCDB;
+    --text-link: #7FA6E0;
+    --border: #2A2E34;
+    --border-strong: #3A3F47;
+    --status-up: #0CA30C;
+    --status-up-bg: #16301A;
+    --status-peak: #FAB219;
+    --status-peak-bg: #3A2E10;
+    --status-stable: #8A919C;
+    --status-stable-bg: #262A30;
+    --status-down: #D03B3B;
+    --status-down-bg: #3A1B1B;
+    --banner-demo-bg: #3A2620;
+    --chart-grid: #2A2E34;
+    --series-1: #4A7FCC;
+    --series-2: #D95926;
+    --series-3: #199E70;
+    --series-4: #C98500;
+    --series-5: #D55181;
+    --series-6: #008300;
+    --shadow-card: none;
+  }
+}
+:root[data-theme="dark"] {
+  --brand-blue: #4A7FCC;
+  --brand-coral: #E59C84;
+  --surface-page: #121417;
+  --surface-card: #1A1D21;
+  --surface-subtle: #22262B;
+  --surface-sidebar: #15325C;
+  --surface-sidebar-active: #1E4273;
+  --text-primary: #F3F4F6;
+  --text-secondary: #C2C7D0;
+  --text-muted: #8A919C;
+  --text-on-brand: #FFFFFF;
+  --text-on-brand-muted: #A9BCDB;
+  --text-link: #7FA6E0;
+  --border: #2A2E34;
+  --border-strong: #3A3F47;
+  --status-up: #0CA30C;
+  --status-up-bg: #16301A;
+  --status-peak: #FAB219;
+  --status-peak-bg: #3A2E10;
+  --status-stable: #8A919C;
+  --status-stable-bg: #262A30;
+  --status-down: #D03B3B;
+  --status-down-bg: #3A1B1B;
+  --banner-demo-bg: #3A2620;
+  --chart-grid: #2A2E34;
+  --series-1: #4A7FCC;
+  --series-2: #D95926;
+  --series-3: #199E70;
+  --series-4: #C98500;
+  --series-5: #D55181;
+  --series-6: #008300;
+  --shadow-card: none;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--font-heading); margin: 0; }
+p { margin: 0; }
+a { color: var(--text-link); }
+button { font-family: inherit; }
+.num, .kpi-value, .badge { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 2px; border-radius: var(--radius-control); }
+.sidebar :focus-visible, .mobile-topbar :focus-visible { outline-color: #FFFFFF; }
+
+/* ============================================================
+   APP SHELL — SIDEBAR
+   ============================================================ */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  background: var(--surface-sidebar);
+  color: var(--text-on-brand);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: transform .25s ease;
+}
+.sidebar-brand { padding: 24px 24px 20px; }
+.sidebar-brand img { width: 120px; height: auto; display: block; }
+.sidebar-nav { padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  color: var(--text-on-brand-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+.nav-link svg { width: 20px; height: 20px; flex: none; }
+.nav-link:hover { color: var(--text-on-brand); background: rgba(255,255,255,.07); }
+.nav-link[aria-current="page"] {
+  color: var(--text-on-brand);
+  background: var(--surface-sidebar-active);
+  font-weight: 600;
+}
+.nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--brand-coral);
+}
+.sidebar-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(255,255,255,.14);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.updated { font-size: 12.5px; color: var(--text-on-brand); font-weight: 500; }
+.updated-sub { font-size: 12px; color: var(--text-on-brand-muted); font-variant-numeric: tabular-nums; }
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: var(--radius-control);
+  color: var(--text-on-brand);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.14); }
+.theme-toggle svg { width: 16px; height: 16px; flex: none; }
+.switch {
+  margin-left: auto;
+  width: 32px; height: 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.28);
+  position: relative;
+  flex: none;
+  transition: background .2s;
+}
+.knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+}
+.theme-toggle[aria-pressed="true"] .switch { background: var(--brand-coral); }
+.theme-toggle[aria-pressed="true"] .knob { transform: translateX(14px); }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,14,20,.45);
+  z-index: 45;
+}
+.mobile-topbar { display: none; }
+
+/* ============================================================
+   MAIN AREA
+   ============================================================ */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  padding: 32px;
+}
+.main > * {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+.page-subtitle { color: var(--text-secondary); margin-top: 4px; font-size: 14px; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* ============================================================
+   BUTTONS / CONTROLS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn-primary { background: var(--brand-blue); color: #FFFFFF; }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--brand-blue) 86%, #000); }
+.btn-primary:disabled { opacity: .75; cursor: default; }
+.btn-secondary { background: var(--surface-card); color: var(--text-primary); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-subtle); }
+.btn-spinner {
+  display: none;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  flex: none;
+}
+.btn.is-loading .btn-spinner { display: inline-block; }
+.btn.is-loading .btn-icon { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card);
+  padding: 4px;
+  display: none;
+  z-index: 30;
+}
+.menu.open { display: block; }
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.menu button:hover { background: var(--surface-subtle); }
+.menu svg { width: 14px; height: 14px; color: var(--text-muted); }
+
+/* ============================================================
+   DEMO BANNER
+   ============================================================ */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--banner-demo-bg);
+  border: 1px solid var(--brand-coral);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 13.5px;
+}
+.demo-banner svg { width: 18px; height: 18px; color: var(--brand-coral); flex: none; }
+.demo-banner p { color: var(--text-primary); flex: 1; min-width: 0; }
+.demo-banner a { font-weight: 600; white-space: nowrap; }
+
+/* ============================================================
+   CARDS / KPI
+   ============================================================ */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.kpi-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.kpi-detail svg { width: 12px; height: 12px; flex: none; }
+.kpi-detail .up { color: var(--status-up); }
+
+/* ============================================================
+   AI SUMMARY
+   ============================================================ */
+.summary-card { margin-bottom: 24px; }
+.summary-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.summary-head svg.ai-icon { width: 20px; height: 20px; color: var(--brand-coral); flex: none; }
+.summary-title { font-size: 18px; font-weight: 700; margin-right: 4px; }
+.summary-meta {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill svg { width: 12px; height: 12px; color: var(--brand-coral); }
+.summary-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.summary-list li {
+  position: relative;
+  padding-left: 22px;
+  color: var(--text-secondary);
+}
+.summary-list li strong { color: var(--text-primary); font-weight: 600; }
+.summary-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .62em;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--brand-coral);
+}
+.action-box {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--surface-subtle);
+  border-left: 3px solid var(--brand-coral);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.action-box strong { color: var(--text-primary); }
+
+/* ============================================================
+   TREND GRID
+   ============================================================ */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; gap: 16px; }
+.section-title { font-size: 18px; font-weight: 700; }
+.section-note { font-size: 12.5px; color: var(--text-muted); }
+.trend-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.trend-card { padding: 20px; display: flex; flex-direction: column; }
+.trend-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.trend-card-title { font-size: 15px; font-weight: 700; }
+.trend-rows { display: flex; flex-direction: column; }
+.trend-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 72px auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s;
+}
+.trend-row:hover { background: var(--surface-subtle); }
+.trend-visual { width: 36px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); flex: none; }
+.trend-visual svg { width: 36px; height: 24px; }
+.swatch {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--sw, transparent);
+  border: 1px solid var(--border-strong);
+  flex: none;
+}
+.neutral-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 28%, transparent);
+  border: 1px solid var(--border-strong);
+  flex: none;
+}
+.trend-label {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.spark { width: 72px; height: 24px; flex: none; }
+.trend-card-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.link-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-link);
+}
+.link-more svg { width: 14px; height: 14px; transition: transform .15s; }
+.link-more:hover svg { transform: translateX(2px); }
+
+/* ============================================================
+   BADGES / PILLS
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.badge svg { width: 12px; height: 12px; flex: none; }
+/* Value text stays in --text-primary (WCAG AA on every tint); the status color is carried by the icon. */
+.badge { color: var(--text-primary); }
+.badge-up     { background: var(--status-up-bg); }
+.badge-peak   { background: var(--status-peak-bg); }
+.badge-stable { background: var(--status-stable-bg); }
+.badge-down   { background: var(--status-down-bg); }
+.badge-up svg     { color: var(--status-up); }
+.badge-peak svg   { color: var(--status-peak); }
+.badge-stable svg { color: var(--status-stable); }
+.badge-down svg   { color: var(--status-down); }
+.lang-pill {
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex: none;
+}
+
+/* ============================================================
+   BOTTOM ROW
+   ============================================================ */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 24px;
+}
+.decline-card .trend-row,
+.sources-card .source-line { cursor: default; }
+.decline-card .trend-row:hover,
+.sources-card .source-line:hover { background: none; }
+.source-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.source-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.source-line:last-child { border-bottom: none; }
+.source-name { font-weight: 600; flex: none; }
+.source-quote {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+  font-size: 13.5px;
+}
+
+/* ============================================================
+   COMPONENT LIBRARY (réutilisé sur les autres écrans)
+   ============================================================ */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
+.tab {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.tab:hover { color: var(--text-primary); }
+.tab[aria-selected="true"] { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--brand-blue); }
+.select {
+  appearance: none;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background-color: var(--surface-card);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237B8290' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.select:hover { background-color: var(--surface-subtle); }
+.empty-state {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+}
+.empty-state svg { width: 28px; height: 28px; color: var(--text-muted); margin-bottom: 8px; }
+.skeleton {
+  border-radius: var(--radius-control);
+  background: linear-gradient(90deg, var(--surface-subtle) 25%, var(--border) 50%, var(--surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.error-card {
+  background: var(--status-down-bg);
+  border: 1px solid color-mix(in srgb, var(--status-down) 40%, transparent);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.error-card h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+.error-card p { font-size: 13.5px; color: var(--text-secondary); }
+.error-card .btn { margin-left: auto; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: 56px;
+    padding: 0 16px;
+    background: var(--surface-sidebar);
+  }
+  .mobile-topbar img { width: 88px; height: auto; display: block; }
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-control);
+    color: #fff;
+    cursor: pointer;
+  }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .sidebar { transform: translateX(-105%); box-shadow: none; }
+  .sidebar.open { transform: none; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+  .sidebar-overlay.open { display: block; }
+  .main { margin-left: 0; padding: 20px 16px 32px; }
+  .kpi-grid, .trend-grid, .bottom-grid { grid-template-columns: 1fr; }
+  .page-header { margin-bottom: 16px; }
+  .page-title { font-size: 24px; }
+  .card { padding: 20px 16px; }
+  .summary-meta { margin-left: 0; width: 100%; }
+  .trend-row { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .trend-row .spark { display: none; }
+  .demo-banner { align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-actions .btn { flex: 1; justify-content: center; }
+  .menu-wrap { flex: 1; }
+  .menu-wrap > .btn { width: 100%; }
+}
+
+/* ============================================================
+   ÉCRAN C — DÉTAIL D'UNE TENDANCE
+   ============================================================ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Back link + detail header */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-link);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.back-link svg { width: 14px; height: 14px; transition: transform .15s; }
+.back-link:hover svg { transform: translateX(-2px); }
+.detail-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.detail-glyph {
+  width: 64px;
+  height: 48px;
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex: none;
+}
+.detail-glyph svg { width: 46px; height: 31px; }
+.detail-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.detail-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.detail-sub { color: var(--text-secondary); margin-top: 4px; font-size: 13.5px; }
+.kpi-unit { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.chart-card { display: flex; flex-direction: column; }
+.chart-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.chart-title { font-size: 15px; font-weight: 700; }
+.chart-note { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.btn-ghost:hover { background: var(--surface-subtle); color: var(--text-primary); }
+.btn-ghost svg { width: 14px; height: 14px; flex: none; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 4px; }
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.legend-line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  flex: none;
+}
+.chart-wrap { position: relative; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font-body); }
+.chart .grid { stroke: var(--chart-grid); stroke-width: 1; }
+.chart .axis-label { fill: var(--text-muted); font-size: 11px; }
+.chart .line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.chart .end-label { font-size: 11.5px; font-weight: 600; fill: var(--text-primary); }
+.chart .end-label .end-name { fill: var(--text-muted); font-weight: 500; }
+.chart .crosshair { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .hover-dot { stroke: var(--surface-card); stroke-width: 2; }
+.chart-tooltip {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card);
+  padding: 8px 12px;
+  font-size: 12px;
+  min-width: 150px;
+  display: none;
+}
+.chart-tooltip.open { display: block; }
+.tt-title { font-weight: 600; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.tt-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: var(--text-secondary); }
+.tt-row .legend-line { width: 12px; }
+.tt-val {
+  margin-left: auto;
+  padding-left: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Data table (Vue tableau) */
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.data-table tbody th { font-weight: 500; color: var(--text-secondary); text-transform: none; letter-spacing: 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.data-table tbody tr:last-child th,
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--surface-subtle); }
+.data-table .num-col, .data-table td.num { text-align: right; }
+.th-legend { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Tonalité + marques */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.stack-bar {
+  display: flex;
+  height: 20px;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  margin: 16px 0 14px;
+}
+.stack-bar span { display: block; height: 100%; }
+.stack-bar span + span { border-left: 2px solid var(--surface-card); }
+.stack-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.stack-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+.stack-legend .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.stack-legend strong {
+  margin-left: auto;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.chip-count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-subtle);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Source cards (preuves) */
+.source-cards { display: flex; flex-direction: column; gap: 16px; }
+.source-card { padding: 20px 24px; }
+.source-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.source-date { font-size: 12.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.source-ext {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-control);
+  color: var(--text-muted);
+  transition: background .12s, color .12s;
+}
+.source-ext:hover { background: var(--surface-subtle); color: var(--text-primary); }
+.source-ext svg { width: 15px; height: 15px; }
+.source-quote-full {
+  margin: 0 0 14px;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--brand-coral);
+  color: var(--text-primary);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.55;
+}
+.source-ai { display: flex; gap: 10px; font-size: 13px; color: var(--text-secondary); }
+.source-ai-label {
+  flex: none;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+.source-card .chip-row { margin-top: 14px; }
+.source-card .chip { font-size: 12.5px; padding: 4px 11px; }
+
+@media (max-width: 1100px) {
+  .charts-grid, .detail-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .detail-head { gap: 16px; }
+  .source-card { padding: 20px 16px; }
+  .source-ext { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Mobile top bar ===== -->
+<header class="mobile-topbar">
+  <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah">
+  <button class="icon-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===== Sidebar ===== -->
+<aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+  <div class="sidebar-brand">
+    <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah" width="120" height="63">
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Vue d'ensemble
+    </a>
+    <a class="nav-link" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Tendances
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 13 3-3 4 4 5-5"/></svg>
+      Demande
+    </a>
+    <a class="nav-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V9"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+      Sources
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div>
+      <p class="updated">Mis à jour il y a 3 h</p>
+      <p class="updated-sub">26 sept. 2026 · 06:02</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      <span>Mode sombre</span>
+      <span class="switch" aria-hidden="true"><span class="knob"></span></span>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== Main ===== -->
+<main class="main">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Tendances</h1>
+      <p class="page-subtitle">Détail d'une tendance · semaine du 21 sept. 2026</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        Semaine du 21 sept.
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="menu-wrap">
+        <button class="btn btn-secondary" id="exportBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter
+        </button>
+        <div class="menu" id="exportMenu" role="menu" aria-label="Options d'export">
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Tableau (CSV)
+          </button>
+          <button type="button" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+            Rapport PDF
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="refreshBtn" type="button">
+        <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg></span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span class="btn-label">Actualiser les données</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Demo banner ===== -->
+  <div class="demo-banner" id="demoBanner" role="status">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+    <p>Données de démonstration : les tendances affichées sont fictives en attendant la première collecte. <a href="#" id="removeDemo">Retirer la démo</a></p>
+  </div>
+
+  <!-- ===== Back link ===== -->
+  <a class="back-link" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    Toutes les tendances
+  </a>
+
+  <!-- ===== Detail header ===== -->
+  <section class="card detail-head" aria-labelledby="detailTitle">
+    <span class="detail-glyph" data-glyph="cat-eye"></span>
+    <div>
+      <div class="detail-title-row">
+        <h2 class="detail-title" id="detailTitle">Œil de chat</h2>
+        <span class="badge badge-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>+68&#8239;%</span>
+      </div>
+      <p class="detail-sub">Forme de monture · en hausse depuis 5 semaines</p>
+    </div>
+  </section>
+
+  <!-- ===== Stat tiles ===== -->
+  <section class="kpi-grid" aria-label="Statistiques de la tendance">
+    <div class="card kpi-tile">
+      <p class="kpi-label">Mentions cette semaine</p>
+      <p class="kpi-value num">14</p>
+      <p class="kpi-detail">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        <span class="num">+5</span> vs sem. précédente
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">Moyenne 4 sem.</p>
+      <p class="kpi-value num">8,3</p>
+      <p class="kpi-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        4 semaines précédentes
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">Part des formes</p>
+      <p class="kpi-value num">21&#8239;%</p>
+      <p class="kpi-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0Z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2.2 1.8 4 4 4"/><path d="M17 6h3a1 1 0 0 1 1 1c0 2.2-1.8 4-4 4"/></svg>
+        n°&#8239;1 des formes citées
+      </p>
+    </div>
+    <div class="card kpi-tile">
+      <p class="kpi-label">Intérêt de recherche FR</p>
+      <p class="kpi-value num">62<span class="kpi-unit">/100</span></p>
+      <p class="kpi-detail">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+        <span class="num">+24</span> pts en 12 sem.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Charts ===== -->
+  <section class="charts-grid" aria-label="Graphiques de la tendance">
+    <article class="card chart-card" aria-labelledby="chartMentionsTitle">
+      <div class="chart-card-head">
+        <div>
+          <h3 class="chart-title" id="chartMentionsTitle">Mentions par semaine</h3>
+          <p class="chart-note">Mentions pondérées · 12 semaines</p>
+        </div>
+        <button class="btn-ghost" type="button" data-toggle-view data-chart="chartMentionsBox" data-table="tableMentionsBox" aria-pressed="false">
+          <span class="tv-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg></span>
+          <span class="tv-label">Vue tableau</span>
+        </button>
+      </div>
+      <div class="chart-wrap" id="chartMentionsBox">
+        <svg id="svgMentions" class="chart" viewBox="0 0 600 260" role="img" aria-label="Mentions hebdomadaires de l'œil de chat sur 12 semaines : hausse régulière de 3 à 14 mentions"></svg>
+        <div class="chart-tooltip" id="ttMentions" aria-hidden="true"></div>
+      </div>
+      <div class="table-scroll" id="tableMentionsBox" hidden>
+        <table class="data-table">
+          <caption class="sr-only">Mentions hebdomadaires de la forme œil de chat, 12 semaines</caption>
+          <thead>
+            <tr><th scope="col">Semaine</th><th scope="col" class="num-col">Mentions</th></tr>
+          </thead>
+          <tbody id="tbMentions"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card chart-card" aria-labelledby="chartDemandeTitle">
+      <div class="chart-card-head">
+        <div>
+          <h3 class="chart-title" id="chartDemandeTitle">Intérêt de recherche Google</h3>
+          <p class="chart-note">Échelle relative de 0 à 100 · 12 semaines</p>
+        </div>
+        <button class="btn-ghost" type="button" data-toggle-view data-chart="chartDemandeBox" data-table="tableDemandeBox" aria-pressed="false">
+          <span class="tv-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg></span>
+          <span class="tv-label">Vue tableau</span>
+        </button>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span class="legend-item"><span class="legend-line" style="background:var(--series-1)"></span>France</span>
+        <span class="legend-item"><span class="legend-line" style="background:var(--series-2)"></span>Monde</span>
+      </div>
+      <div class="chart-wrap" id="chartDemandeBox">
+        <svg id="svgDemande" class="chart" viewBox="0 0 600 260" role="img" aria-label="Intérêt de recherche Google pour œil de chat sur 12 semaines : France à 62 sur 100, Monde à 54 sur 100, les deux en hausse"></svg>
+        <div class="chart-tooltip" id="ttDemande" aria-hidden="true"></div>
+      </div>
+      <div class="table-scroll" id="tableDemandeBox" hidden>
+        <table class="data-table">
+          <caption class="sr-only">Intérêt de recherche Google (0 à 100) pour œil de chat, France et Monde, 12 semaines</caption>
+          <thead>
+            <tr>
+              <th scope="col">Semaine</th>
+              <th scope="col" class="num-col"><span class="th-legend"><span class="legend-line" style="background:var(--series-1)"></span>France</span></th>
+              <th scope="col" class="num-col"><span class="th-legend"><span class="legend-line" style="background:var(--series-2)"></span>Monde</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbDemande"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== Tonalité + marques ===== -->
+  <section class="detail-grid">
+    <article class="card" aria-labelledby="toneTitle">
+      <div class="trend-card-head">
+        <h3 class="trend-card-title" id="toneTitle">Tonalité des mentions</h3>
+        <span class="section-note">Basée sur 96 extraits de la semaine</span>
+      </div>
+      <div class="stack-bar" role="img" aria-label="Tonalité des mentions : 71 % en hausse, 24 % neutre, 5 % en recul">
+        <span style="width:71%;background:var(--status-up)"></span>
+        <span style="width:24%;background:var(--status-stable)"></span>
+        <span style="width:5%;background:var(--status-down)"></span>
+      </div>
+      <ul class="stack-legend">
+        <li><span class="dot" style="background:var(--status-up)"></span>En hausse — l'extrait décrit une tendance qui progresse<strong class="num">71&#8239;%</strong></li>
+        <li><span class="dot" style="background:var(--status-stable)"></span>Neutre — mention descriptive, sans jugement de tendance<strong class="num">24&#8239;%</strong></li>
+        <li><span class="dot" style="background:var(--status-down)"></span>En recul — l'extrait annonce un essoufflement<strong class="num">5&#8239;%</strong></li>
+      </ul>
+    </article>
+
+    <article class="card" aria-labelledby="brandsTitle">
+      <div class="trend-card-head">
+        <h3 class="trend-card-title" id="brandsTitle">Marques citées</h3>
+        <span class="section-note">5 marques · 31 mentions</span>
+      </div>
+      <div class="chip-row">
+        <span class="chip">Gucci <span class="chip-count num">9</span></span>
+        <span class="chip">Jimmy Fairly <span class="chip-count num">7</span></span>
+        <span class="chip">Ray-Ban <span class="chip-count num">6</span></span>
+        <span class="chip">Celine <span class="chip-count num">5</span></span>
+        <span class="chip">Krys <span class="chip-count num">4</span></span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== Evidence list ===== -->
+  <section aria-labelledby="evidenceTitle">
+    <div class="section-head">
+      <h2 class="section-title" id="evidenceTitle">Sources à l'appui</h2>
+      <span class="section-note">4 extraits citant « œil de chat » · semaine du 21 sept.</span>
+    </div>
+    <div class="source-cards">
+
+      <article class="card source-card">
+        <div class="source-card-head">
+          <span class="source-name">Vogue France</span>
+          <span class="source-date">24 sept. 2026</span>
+          <span class="lang-pill">FR</span>
+          <span class="pill">Presse</span>
+          <a class="source-ext" href="#" aria-label="Ouvrir l'article Vogue France (nouvel onglet)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          </a>
+        </div>
+        <blockquote class="source-quote-full">« L'œil de chat revient en force cet automne : les maisons misent sur des lignes acérées, un acétate dense et un esprit rétro pleinement assumé. »</blockquote>
+        <p class="source-ai"><span class="source-ai-label">Résumé IA</span>Article de tendance très repris ; associe l'œil de chat au retour du style rétro dans les collections automne-hiver.</p>
+        <div class="chip-row">
+          <span class="chip">Forme · Œil de chat</span>
+          <span class="chip">Style · Rétro / Vintage</span>
+          <span class="chip">Tonalité · en hausse</span>
+        </div>
+      </article>
+
+      <article class="card source-card">
+        <div class="source-card-head">
+          <span class="source-name">ELLE UK</span>
+          <span class="source-date">23 sept. 2026</span>
+          <span class="lang-pill">EN</span>
+          <span class="pill">Presse</span>
+          <a class="source-ext" href="#" aria-label="Ouvrir l'article ELLE UK (nouvel onglet)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          </a>
+        </div>
+        <blockquote class="source-quote-full">« Cat-eye frames are the comeback shape of the season — sharper, glossier, and spotted on every front row from Paris to Milan. »</blockquote>
+        <p class="source-ai"><span class="source-ai-label">Résumé IA</span>Couverture des défilés ; cite l'œil de chat comme silhouette dominante des accessoires printemps-été 2027.</p>
+        <div class="chip-row">
+          <span class="chip">Forme · Œil de chat</span>
+          <span class="chip">Tonalité · en hausse</span>
+        </div>
+      </article>
+
+      <article class="card source-card">
+        <div class="source-card-head">
+          <span class="source-name">@opticien.marais</span>
+          <span class="source-date">22 sept. 2026</span>
+          <span class="lang-pill">FR</span>
+          <span class="pill">Réseaux sociaux</span>
+          <a class="source-ext" href="#" aria-label="Ouvrir la publication Instagram (nouvel onglet)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          </a>
+        </div>
+        <blockquote class="source-quote-full">« Vous êtes de plus en plus nombreuses à demander des montures œil de chat : nos trois modèles phares sont partis en dix jours. »</blockquote>
+        <p class="source-ai"><span class="source-ai-label">Résumé IA</span>Publication de boutique à fort engagement ; signale une demande cliente directe et récente sur la forme.</p>
+        <div class="chip-row">
+          <span class="chip">Forme · Œil de chat</span>
+          <span class="chip">Signal · demande boutique</span>
+        </div>
+      </article>
+
+      <article class="card source-card">
+        <div class="source-card-head">
+          <span class="source-name">Jimmy Fairly</span>
+          <span class="source-date">21 sept. 2026</span>
+          <span class="lang-pill">FR</span>
+          <span class="pill">Boutique</span>
+          <a class="source-ext" href="#" aria-label="Ouvrir le journal Jimmy Fairly (nouvel onglet)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+          </a>
+        </div>
+        <blockquote class="source-quote-full">« Notre monture œil de chat “Léa” est réassortie pour la troisième fois depuis août, en écaille comme en cristal. »</blockquote>
+        <p class="source-ai"><span class="source-ai-label">Résumé IA</span>Note de marque ; confirme une rotation rapide des modèles œil de chat, portée par l'écaille et le transparent.</p>
+        <div class="chip-row">
+          <span class="chip">Forme · Œil de chat</span>
+          <span class="chip">Couleur · Écaille</span>
+          <span class="chip">Couleur · Transparent / Cristal</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Theme toggle ---------- */
+  var root = document.documentElement;
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  var themeBtn = document.getElementById("themeToggle");
+  function effectiveTheme() {
+    return root.dataset.theme || (mq.matches ? "dark" : "light");
+  }
+  function syncToggle() {
+    themeBtn.setAttribute("aria-pressed", String(effectiveTheme() === "dark"));
+  }
+  themeBtn.addEventListener("click", function () {
+    root.dataset.theme = effectiveTheme() === "dark" ? "light" : "dark";
+    syncToggle();
+  });
+  if (mq.addEventListener) mq.addEventListener("change", syncToggle);
+  syncToggle();
+
+  /* ---------- Mobile drawer ---------- */
+  var sidebar = document.getElementById("sidebar");
+  var overlay = document.getElementById("sidebarOverlay");
+  var burger = document.getElementById("menuBtn");
+  function closeDrawer() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
+  }
+  burger.addEventListener("click", function () {
+    var open = sidebar.classList.toggle("open");
+    overlay.classList.toggle("open", open);
+    burger.setAttribute("aria-expanded", String(open));
+  });
+  overlay.addEventListener("click", closeDrawer);
+  sidebar.querySelectorAll(".nav-link").forEach(function (a) {
+    a.addEventListener("click", function () {
+      if (window.innerWidth <= 768) closeDrawer();
+    });
+  });
+
+  /* ---------- Demo banner ---------- */
+  var banner = document.getElementById("demoBanner");
+  document.getElementById("removeDemo").addEventListener("click", function (e) {
+    e.preventDefault();
+    banner.remove();
+  });
+
+  /* ---------- Export menu ---------- */
+  var exportBtn = document.getElementById("exportBtn");
+  var exportMenu = document.getElementById("exportMenu");
+  exportBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = exportMenu.classList.toggle("open");
+    exportBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", function (e) {
+    if (!exportMenu.contains(e.target)) {
+      exportMenu.classList.remove("open");
+      exportBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* ---------- Refresh (loading state) ---------- */
+  var refreshBtn = document.getElementById("refreshBtn");
+  refreshBtn.addEventListener("click", function () {
+    if (refreshBtn.disabled) return;
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add("is-loading");
+    refreshBtn.querySelector(".btn-label").textContent = "Collecte en cours…";
+    setTimeout(function () {
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove("is-loading");
+      refreshBtn.querySelector(".btn-label").textContent = "Actualiser les données";
+    }, 2200);
+  });
+
+  /* ---------- Frame-shape glyphs ---------- */
+  var GLYPHS = {
+    "cat-eye":
+      '<path d="M2 9Q5.5 5 10 6.5L14.5 8.5Q16 9.5 16 12Q16 14.5 14.5 15.5L10 17.5Q5.5 19 2 15Q4 12 2 9Z"/>' +
+      '<path d="M34 9Q30.5 5 26 6.5L21.5 8.5Q20 9.5 20 12Q20 14.5 21.5 15.5L26 17.5Q30.5 19 34 15Q32 12 34 9Z"/>' +
+      '<path d="M16 11Q18 10 20 11"/>',
+    "oversize":
+      '<rect x="1.5" y="4" width="14" height="16" rx="6"/>' +
+      '<rect x="20.5" y="4" width="14" height="16" rx="6"/>' +
+      '<path d="M15.5 10.5Q18 9 20.5 10.5"/>',
+    "geometric":
+      '<path d="M10 4L15.5 7V13L10 16L4.5 13V7Z"/>' +
+      '<path d="M26 4L31.5 7V13L26 16L20.5 13V7Z"/>' +
+      '<path d="M15.5 11Q18 10 20.5 11"/>',
+    "aviator":
+      '<path d="M15.5 8Q14 5.5 10 5.5Q3.5 5.5 3 11Q2.7 15 6 17.5Q10 20 13 17Q15.5 14.5 15.5 8Z"/>' +
+      '<path d="M20.5 8Q22 5.5 26 5.5Q32.5 5.5 33 11Q33.3 15 30 17.5Q26 20 23 17Q20.5 14.5 20.5 8Z"/>' +
+      '<path d="M15.5 9Q18 8 20.5 9"/>',
+    "round":
+      '<circle cx="10" cy="12" r="7"/>' +
+      '<circle cx="26" cy="12" r="7"/>' +
+      '<path d="M17 10.8Q18 9.8 19 10.8"/>',
+    "rectangle":
+      '<rect x="2" y="7" width="14" height="10" rx="2.5"/>' +
+      '<rect x="20" y="7" width="14" height="10" rx="2.5"/>' +
+      '<path d="M16 10.5H20"/>',
+    "rimless":
+      '<ellipse cx="10" cy="12" rx="6.5" ry="5" stroke-width="1.2" stroke-dasharray="1.8 2.2"/>' +
+      '<ellipse cx="26" cy="12" rx="6.5" ry="5" stroke-width="1.2" stroke-dasharray="1.8 2.2"/>' +
+      '<path d="M16.5 10.5Q18 9.5 19.5 10.5"/>' +
+      '<path d="M3.5 10.5H1.5M32.5 10.5H34.5"/>'
+  };
+  document.querySelectorAll("[data-glyph]").forEach(function (el) {
+    el.innerHTML =
+      '<svg viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      (GLYPHS[el.dataset.glyph] || "") +
+      "</svg>";
+  });
+
+  /* ---------- Sparklines (hand-written SVG, generated) ---------- */
+  document.querySelectorAll(".spark[data-points]").forEach(function (svg) {
+    var pts = svg.dataset.points.split(",").map(Number);
+    var w = 72, h = 24, p = 3, n = pts.length;
+    var lo = Math.min.apply(null, pts);
+    var hi = Math.max.apply(null, pts);
+    // Stretching every series to full height makes 8,8,9,8 look as dramatic as 3→14.
+    // Use a range of at least 60 % of the peak value, centered on the data, never below 0.
+    var span = Math.max(hi - lo, 0.6 * hi, 1);
+    var min = Math.max(0, (hi + lo) / 2 - span / 2);
+    var step = (w - 2 * p) / (n - 1);
+    var coords = pts.map(function (v, i) {
+      return [
+        +(p + i * step).toFixed(2),
+        +(h - p - ((v - min) / span) * (h - 2 * p)).toFixed(2)
+      ];
+    });
+    var line = coords.map(function (c) { return c.join(","); }).join(" ");
+    var last = coords[n - 1];
+    svg.innerHTML =
+      '<polyline points="' + line + '" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="2.5" fill="var(--series-1)"/>';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     ÉCRAN C — données de démonstration (12 semaines)
+     ============================================================ */
+  var WEEK_LABELS = ["6 juil.", "13 juil.", "20 juil.", "27 juil.", "3 août", "10 août", "17 août", "24 août", "31 août", "7 sept.", "14 sept.", "21 sept."];
+  var MENTIONS = [3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 9, 14];
+  var GT_FR = [38, 41, 39, 44, 47, 45, 52, 55, 53, 58, 60, 62];
+  var GT_WW = [30, 32, 34, 33, 37, 40, 42, 41, 45, 47, 50, 54];
+
+  var NS = "http://www.w3.org/2000/svg";
+  var CHART_W = 600, CHART_H = 260;
+
+  function mk(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* Hand-written inline SVG line chart: recessive grid, 2-px lines,
+     direct end labels, hover crosshair + tooltip (all series). */
+  function buildLineChart(cfg) {
+    var svg = document.getElementById(cfg.svgId);
+    var tooltip = document.getElementById(cfg.tooltipId);
+    var labels = cfg.labels, n = labels.length;
+    var padL = 34, padR = cfg.padR, padT = 14, padB = 30;
+    var plotW = CHART_W - padL - padR;
+    var plotH = CHART_H - padT - padB;
+    var xStep = plotW / (n - 1);
+    function X(i) { return padL + i * xStep; }
+    function Y(v) { return padT + plotH - ((v - cfg.yMin) / (cfg.yMax - cfg.yMin)) * plotH; }
+
+    // Grid + y-axis labels
+    cfg.ticks.forEach(function (t) {
+      mk("line", { x1: padL, x2: CHART_W - padR, y1: Y(t).toFixed(1), y2: Y(t).toFixed(1), "class": "grid" }, svg);
+      var ty = mk("text", { x: padL - 8, y: Y(t).toFixed(1), "text-anchor": "end", "dominant-baseline": "central", "class": "axis-label" }, svg);
+      ty.textContent = t;
+    });
+    // X labels: every other week + the current week
+    labels.forEach(function (lb, i) {
+      var show = (i % 2 === 0 && i < n - 2) || i === n - 1;
+      if (!show) return;
+      var t = mk("text", { x: X(i).toFixed(1), y: CHART_H - 8, "text-anchor": "middle", "class": "axis-label" }, svg);
+      t.textContent = lb;
+    });
+    // Series lines, end dots, hover dots
+    var hoverDots = cfg.series.map(function (s) {
+      var pts = s.data.map(function (v, i) { return X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join(" ");
+      mk("polyline", { points: pts, "class": "line", style: "stroke:" + s.color }, svg);
+      mk("circle", { cx: X(n - 1).toFixed(1), cy: Y(s.data[n - 1]).toFixed(1), r: 3, style: "fill:" + s.color }, svg);
+      return mk("circle", { r: 3.5, "class": "hover-dot", style: "fill:" + s.color + ";visibility:hidden" }, svg);
+    });
+    // Direct end labels (≤ 4 series), nudged apart if they collide
+    var ends = cfg.series.map(function (s, i) { return { i: i, y: Y(s.data[n - 1]) }; })
+      .sort(function (a, b) { return a.y - b.y; });
+    for (var k = 1; k < ends.length; k++) {
+      if (ends[k].y - ends[k - 1].y < 14) ends[k].y = ends[k - 1].y + 14;
+    }
+    ends.forEach(function (e) {
+      var s = cfg.series[e.i];
+      var t = mk("text", { x: CHART_W - padR + 8, y: e.y.toFixed(1), "dominant-baseline": "central", "class": "end-label" }, svg);
+      if (cfg.endLabelName) {
+        var tn = mk("tspan", { "class": "end-name" }, t);
+        tn.textContent = s.name + " · ";
+      }
+      var tv = mk("tspan", {}, t);
+      tv.textContent = s.data[n - 1];
+    });
+    // Crosshair + hit area
+    var cross = mk("line", { y1: padT, y2: padT + plotH, "class": "crosshair", visibility: "hidden" }, svg);
+    mk("rect", { x: padL, y: padT, width: plotW, height: plotH, fill: "rgba(0,0,0,0)" }, svg);
+
+    function hide() {
+      cross.setAttribute("visibility", "hidden");
+      hoverDots.forEach(function (d) { d.style.visibility = "hidden"; });
+      tooltip.classList.remove("open");
+    }
+    svg.addEventListener("pointermove", function (ev) {
+      var rect = svg.getBoundingClientRect();
+      if (!rect.width) return;
+      var mx = (ev.clientX - rect.left) * (CHART_W / rect.width);
+      var i = Math.max(0, Math.min(n - 1, Math.round((mx - padL) / xStep)));
+      cross.setAttribute("x1", X(i).toFixed(1));
+      cross.setAttribute("x2", X(i).toFixed(1));
+      cross.setAttribute("visibility", "visible");
+      hoverDots.forEach(function (d, si) {
+        d.setAttribute("cx", X(i).toFixed(1));
+        d.setAttribute("cy", Y(cfg.series[si].data[i]).toFixed(1));
+        d.style.visibility = "visible";
+      });
+      var html = '<p class="tt-title">Sem. du ' + labels[i] + ' 2026</p>';
+      cfg.series.forEach(function (s) {
+        html += '<p class="tt-row"><span class="legend-line" style="background:' + s.color + '"></span>' +
+          s.name + '<span class="tt-val">' + s.data[i] + '</span></p>';
+      });
+      tooltip.innerHTML = html;
+      tooltip.classList.add("open");
+      var px = (X(i) / CHART_W) * rect.width;
+      var tipW = tooltip.offsetWidth;
+      tooltip.style.left = (px + 14 + tipW > rect.width ? px - 14 - tipW : px + 14) + "px";
+      tooltip.style.top = "8px";
+    });
+    svg.addEventListener("pointerleave", hide);
+  }
+
+  /* Mentions : 1 série, pas de légende (le titre suffit) */
+  buildLineChart({
+    svgId: "svgMentions",
+    tooltipId: "ttMentions",
+    labels: WEEK_LABELS,
+    yMin: 0, yMax: 16, ticks: [0, 4, 8, 12, 16],
+    padR: 34,
+    endLabelName: false,
+    series: [{ name: "Mentions", data: MENTIONS, color: "var(--series-1)" }]
+  });
+
+  /* Intérêt de recherche : 2 séries, France / Monde, échelle fixe 0–100 */
+  buildLineChart({
+    svgId: "svgDemande",
+    tooltipId: "ttDemande",
+    labels: WEEK_LABELS,
+    yMin: 0, yMax: 100, ticks: [0, 25, 50, 75, 100],
+    padR: 84,
+    endLabelName: true,
+    series: [
+      { name: "France", data: GT_FR, color: "var(--series-1)" },
+      { name: "Monde", data: GT_WW, color: "var(--series-2)" }
+    ]
+  });
+
+  /* ---------- Accessible table views (same data) ---------- */
+  function fillTable(tbodyId, seriesList) {
+    var tb = document.getElementById(tbodyId);
+    var html = "";
+    WEEK_LABELS.forEach(function (lb, i) {
+      html += '<tr><th scope="row">Sem. du ' + lb + ' 2026</th>';
+      seriesList.forEach(function (s) {
+        html += '<td class="num">' + s.data[i] + "</td>";
+      });
+      html += "</tr>";
+    });
+    tb.innerHTML = html;
+  }
+  fillTable("tbMentions", [{ data: MENTIONS }]);
+  fillTable("tbDemande", [{ data: GT_FR }, { data: GT_WW }]);
+
+  var ICON_TABLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>';
+  var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 13 3-3 4 4 5-5"/></svg>';
+
+  document.querySelectorAll("[data-toggle-view]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var chartBox = document.getElementById(btn.getAttribute("data-chart"));
+      var tableBox = document.getElementById(btn.getAttribute("data-table"));
+      var showTable = tableBox.hidden;
+      tableBox.hidden = !showTable;
+      chartBox.hidden = !showTable;
+      btn.setAttribute("aria-pressed", String(showTable));
+      btn.querySelector(".tv-label").textContent = showTable ? "Vue graphique" : "Vue tableau";
+      btn.querySelector(".tv-icon").innerHTML = showTable ? ICON_CHART : ICON_TABLE;
+    });
+  });
+})();
+</script>
+</body>
+</html>

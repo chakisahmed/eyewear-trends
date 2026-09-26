@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rapport tendances lunettes · semaine du 21 sept. 2026 · Noé &amp; Noah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ============================================================
+   ÉCRAN F — RAPPORT PDF (A4, toujours en thème clair)
+   Only report-specific rules: tokens and components come from shared.css.
+   ============================================================ */
+body { background: var(--surface-page); }
+
+/* Screen toolbar (hidden when printing) */
+.report-toolbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  max-width: 210mm; margin: 0 auto; padding: 16px 0;
+  background: var(--surface-page);
+}
+.report-toolbar a { font-weight: 600; font-size: 13px; text-decoration: none; }
+.report-toolbar a:hover { text-decoration: underline; }
+.report-toolbar .hint { font-size: 12px; color: var(--text-muted); }
+
+/* The A4 sheet */
+.sheet {
+  width: 210mm; min-height: 297mm; margin: 0 auto 32px; padding: 12mm 13mm;
+  background: var(--surface-card); color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(20,23,28,.08), 0 12px 32px rgba(20,23,28,.08);
+  font-size: 11px; line-height: 1.4;
+  display: flex; flex-direction: column; gap: 3.5mm;
+}
+
+/* Header */
+.r-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 3mm; border-bottom: 2px solid var(--brand-blue); }
+.r-brand { display: flex; align-items: center; gap: 14px; }
+.r-brand img { width: 70px; height: auto; }
+.r-title { font-family: var(--font-heading); font-size: 20px; font-weight: 700; line-height: 1.2; margin: 0; }
+.r-sub { margin: 2px 0 0; font-size: 12px; color: var(--text-secondary); }
+.r-meta { text-align: right; font-size: 10.5px; color: var(--text-muted); line-height: 1.6; }
+.r-meta .pill { font-size: 10px; padding: 2px 8px; }
+
+/* KPI strip */
+.r-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+.r-kpi { padding: 2.5mm 3mm; border: 1px solid var(--border); border-radius: 8px; }
+.r-kpi-label { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+.r-kpi-value { font-family: var(--font-heading); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.r-kpi-detail { font-size: 9.5px; color: var(--text-muted); }
+
+/* Section titles */
+.r-section-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 13px; font-weight: 700; margin: 0 0 2mm; }
+.r-section-title svg { width: 14px; height: 14px; color: var(--brand-coral); flex: none; }
+.r-section-title .note { margin-left: auto; font-family: var(--font-body); font-size: 10px; font-weight: 400; color: var(--text-muted); }
+
+/* Summary */
+.r-summary ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 1mm; }
+.r-summary li { position: relative; padding-left: 12px; }
+.r-summary li::before { content: ""; position: absolute; left: 1px; top: .6em; width: 5px; height: 5px; border-radius: 50%; background: var(--brand-blue); }
+.r-action { margin: 2.5mm 0 0; padding: 2mm 3.5mm; background: var(--surface-subtle); border-left: 3px solid var(--brand-coral); border-radius: 4px; font-weight: 500; }
+
+/* Top trends: 2 × 2 compact tables */
+.r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 6mm; }
+.r-dim h3 { margin: 0 0 1mm; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+.r-table { width: 100%; border-collapse: collapse; }
+.r-table td { padding: 1mm 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.r-table tr:last-child td { border-bottom: none; }
+.r-table .vis { width: 30px; }
+.r-table .vis .trend-visual { width: 28px; height: 18px; }
+.r-table .vis .trend-visual svg { width: 28px; height: 18px; }
+.r-table .vis .swatch { width: 13px; height: 13px; }
+.r-table .name { font-weight: 500; }
+.r-table .spark-cell { width: 64px; }
+.r-table .spark { width: 56px; height: 18px; display: block; }
+.r-table .mom { width: 1%; text-align: right; white-space: nowrap; }
+.r-table .badge { font-size: 10.5px; padding: 1px 7px; }
+.r-table .reason { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); }
+
+/* Bottom: declines + quotes */
+.r-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 6mm; }
+.r-quotes { display: grid; gap: 2mm; }
+.r-quote { padding-left: 3mm; border-left: 3px solid var(--brand-coral); }
+.r-quote p { margin: 0; font-style: italic; font-size: 10.5px; }
+.r-quote .src { margin-top: .8mm; font-size: 9.5px; font-style: normal; color: var(--text-muted); }
+.r-quote .src strong { color: var(--text-secondary); font-weight: 600; }
+.r-lang { display: inline-block; padding: 0 5px; border: 1px solid var(--border-strong); border-radius: 999px; font-size: 8.5px; font-weight: 600; letter-spacing: .04em; }
+
+/* Footer */
+.r-foot { margin-top: auto; padding-top: 3mm; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; font-size: 9.5px; color: var(--text-muted); }
+.r-foot .method { max-width: 70%; }
+
+/* Small screens: keep the report readable (print always uses the A4 layout) */
+@media screen and (max-width: 820px) {
+  .report-toolbar { padding: 12px 16px; }
+  .report-toolbar .hint { display: none; }
+  .sheet { width: auto; min-height: 0; margin: 0 12px 24px; padding: 20px 16px; }
+  .r-head { flex-direction: column; }
+  .r-meta { text-align: left; }
+  .r-kpis { grid-template-columns: repeat(2, 1fr); }
+  .r-grid, .r-bottom { grid-template-columns: 1fr; }
+}
+
+/* Print: exact colors, no shadows, one A4 page */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  html, body { background: #fff; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .report-toolbar { display: none; }
+  .sheet { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; }
+  .r-dim, .r-quote, .r-bottom > section { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<nav class="report-toolbar" aria-label="Actions du rapport">
+  <a href="A.html">← Retour au tableau de bord</a>
+  <span class="hint">Format A4 · choisissez « Enregistrer au format PDF » dans la fenêtre d'impression</span>
+  <button class="btn btn-primary" type="button" onclick="window.print()">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    <span>Imprimer / PDF</span>
+  </button>
+</nav>
+
+<main class="sheet">
+
+  <!-- ===== Header ===== -->
+  <header class="r-head">
+    <div class="r-brand">
+      <img src="brand/noe-noah-logo-coral.png" alt="Noé &amp; Noah" width="70" height="37">
+      <div>
+        <h1 class="r-title">Rapport tendances lunettes</h1>
+        <p class="r-sub">Semaine du 21 septembre 2026 · presse, actualités, boutiques et réseaux sociaux (FR + EN)</p>
+      </div>
+    </div>
+    <div class="r-meta">
+      Édité le 26 sept. 2026 à 06:02<br>
+      Équipe achats &amp; merchandising<br>
+      <span class="pill">Données de démonstration</span>
+    </div>
+  </header>
+
+  <!-- ===== Key figures ===== -->
+  <section class="r-kpis" aria-label="Chiffres clés">
+    <div class="r-kpi"><div class="r-kpi-label">Articles analysés</div><div class="r-kpi-value">1&#8239;284</div><div class="r-kpi-detail">+86 cette semaine</div></div>
+    <div class="r-kpi"><div class="r-kpi-label">Mentions d'attributs</div><div class="r-kpi-value">4&#8239;912</div><div class="r-kpi-detail">+312 cette semaine</div></div>
+    <div class="r-kpi"><div class="r-kpi-label">Sources suivies</div><div class="r-kpi-value">47</div><div class="r-kpi-detail">FR 21 · EN 26</div></div>
+    <div class="r-kpi"><div class="r-kpi-label">Signaux forts</div><div class="r-kpi-value">9</div><div class="r-kpi-detail">en hausse · 4 en baisse</div></div>
+  </section>
+
+  <!-- ===== AI summary ===== -->
+  <section class="r-summary" aria-labelledby="sumTitle">
+    <h2 class="r-section-title" id="sumTitle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.94 14.06 12 21l2.06-6.94L21 12l-6.94-2.06L12 3 9.94 9.94 3 12Z"/></svg>
+      Résumé de la semaine
+      <span class="note">Généré par IA · Claude · basé sur 312 mentions</span>
+    </h2>
+    <ul>
+      <li><strong>Œil de chat : +68&#8239;% de mentions</strong>, portée par la presse FR et EN. C'est la forme la plus citée de la semaine.</li>
+      <li><strong>Transparent / cristal : +52&#8239;%</strong>, souvent associé aux montures oversize en acétate.</li>
+      <li><strong>Matières recyclées et biosourcées : +47&#8239;%</strong>, un signal en hausse continue depuis 6 semaines.</li>
+      <li><strong>L'écaille atteint un pic (+9&#8239;%)</strong> : toujours très présente, mais sa croissance ralentit.</li>
+      <li><strong>Rectangulaire fine (−38&#8239;%) et style Y2K (−41&#8239;%)</strong> reculent nettement, en volume comme dans le ton des articles.</li>
+    </ul>
+    <p class="r-action"><strong>À faire côté achats :</strong> renforcer l'œil de chat et l'oversize en acétate transparent ou écaille ; limiter les réassorts de rectangulaires fines.</p>
+  </section>
+
+  <!-- ===== Top trends per dimension ===== -->
+  <section aria-labelledby="topTitle">
+    <h2 class="r-section-title" id="topTitle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Tendances de la semaine
+      <span class="note">Classées par momentum sur 4 semaines · courbes : 8 dernières semaines</span>
+    </h2>
+    <div class="r-grid" id="topGrid"></div>
+  </section>
+
+  <!-- ===== Declines + key quotes ===== -->
+  <div class="r-bottom">
+    <section aria-labelledby="downTitle">
+      <h2 class="r-section-title" id="downTitle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 7 10 10"/><path d="M17 8v9H8"/></svg>
+        En baisse
+      </h2>
+      <table class="r-table" id="downTable" aria-labelledby="downTitle"></table>
+    </section>
+
+    <section aria-labelledby="quoteTitle">
+      <h2 class="r-section-title" id="quoteTitle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Z"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+        Citations clés
+      </h2>
+      <div class="r-quotes">
+        <blockquote class="r-quote">
+          <p>« L'œil de chat revient en force cet automne, en acétate dense et esprit rétro. »</p>
+          <div class="src"><strong>Vogue France</strong> · 24 sept. · <span class="r-lang">FR</span> · Œil de chat, Rétro</div>
+        </blockquote>
+        <blockquote class="r-quote">
+          <p>« Recycled acetate is no longer niche: every major label now has a line. »</p>
+          <div class="src"><strong>Harper's Bazaar</strong> · 21 sept. · <span class="r-lang">EN</span> · Recyclé / Biosourcé, Acétate</div>
+        </blockquote>
+        <blockquote class="r-quote">
+          <p>« Adieu les petites rectangulaires façon années 2000, place au cristal. »</p>
+          <div class="src"><strong>Madmoizelle</strong> · 20 sept. · <span class="r-lang">FR</span> · Rectangulaire (en recul), Transparent</div>
+        </blockquote>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="r-foot">
+    <span class="method">Momentum : mentions pondérées vs moyenne des 4 semaines précédentes, avec l'intérêt Google Trends. « En baisse » : volume −25&#8239;% ou majorité d'avis « en recul ».</span>
+    <span>Généré automatiquement · Noé &amp; Noah · page 1/1</span>
+  </footer>
+</main>
+
+<script>
+/* Report data (same demo figures as screens A–D), rendered with the shared glyph / sparkline / badge markup. */
+(function () {
+  "use strict";
+  var NARROW = " ";
+  var ICONS = {
+    up: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>',
+    peak: '<path d="M12 5.5 19 18H5Z"/>',
+    stable: '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+    down: '<path d="m7 7 10 10"/><path d="M17 8v9H8"/>'
+  };
+  var LABELS = { up: "En hausse", peak: "Au pic", stable: "Stable", down: "En baisse" };
+  var TOP = [
+    { dim: "Formes", rows: [
+      ["Œil de chat", { g: "cat-eye" }, "up", 68, "4,5,5,6,7,8,9,14"],
+      ["Oversize", { g: "oversize" }, "up", 41, "5,6,7,8,9,10,10,12"],
+      ["Géométrique", { g: "geometric" }, "up", 37, "4,4,5,5,6,7,8,9"],
+      ["Aviateur", { g: "aviator" }, "peak", 9, "9,9,10,10,10,11,11,12"] ]},
+    { dim: "Couleurs", rows: [
+      ["Transparent / Cristal", { hex: "#E8EEF2" }, "up", 52, "4,5,6,6,7,8,10,14"],
+      ["Marron / Cognac", { hex: "#6B4226" }, "up", 34, "4,5,5,6,6,7,8,9"],
+      ["Écaille", { hex: "#8B5A2B" }, "peak", 9, "10,11,12,12,13,12,13,13"],
+      ["Doré", { hex: "#C9A227" }, "stable", 6, "7,8,7,8,7,8,8,8"] ]},
+    { dim: "Matières", rows: [
+      ["Recyclé / Biosourcé", {}, "up", 47, "3,4,4,4,5,5,6,7"],
+      ["Acétate", {}, "up", 29, "8,9,9,9,10,10,11,12"],
+      ["Titane", {}, "peak", 15, "4,5,5,6,6,6,6,6"],
+      ["Bois / Corne", {}, "stable", 2, "4,3,3,3,3,3,3,3"] ]},
+    { dim: "Styles", rows: [
+      ["Rétro / Vintage", {}, "up", 38, "6,5,6,6,6,7,8,10"],
+      ["Statement / Audacieux", {}, "up", 33, "3,4,4,4,4,5,5,6"],
+      ["Luxe", {}, "peak", 11, "5,6,6,7,7,7,6,7"],
+      ["Minimaliste", {}, "stable", -6, "7,6,6,6,6,6,5,6"] ]}
+  ];
+  var DOWN = [
+    ["Pastel", { hex: "#F4C2D7" }, -44, "7,6,6,5,5,4,4,3", "Volume en baisse"],
+    ["Y2K", {}, -41, "6,6,5,5,5,5,4,3", "Volume en baisse · 64" + NARROW + "% d'avis « en recul »"],
+    ["Rectangulaire fine", { g: "rectangle" }, -38, "9,9,9,8,7,6,5,4", "71" + NARROW + "% d'avis « en recul »"],
+    ["Sans monture", { g: "rimless" }, -27, "8,8,7,7,6,6,5,5", "Volume en baisse"]
+  ];
+
+  function pct(v) { var n = Math.round(v); return (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n) + NARROW + "%"; }
+  function badge(status, mom) {
+    return '<span class="badge badge-' + status + '" title="' + LABELS[status] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+           ICONS[status] + "</svg>" + pct(mom) + '<span class="sr-only"> · ' + LABELS[status] + "</span></span>";
+  }
+  function visual(v) {
+    if (v.g) return '<span class="trend-visual" data-glyph="' + v.g + '"></span>';
+    if (v.hex) return '<span class="swatch" style="background:' + v.hex + '"></span>';
+    return '<span class="neutral-dot"></span>';
+  }
+  function spark(points, status, name) {
+    return '<svg class="spark" data-points="' + points + '" viewBox="0 0 72 24" role="img" aria-label="' + name + " : tendance sur 8 semaines, " + LABELS[status].toLowerCase() + '"></svg>';
+  }
+
+  document.getElementById("topGrid").innerHTML = TOP.map(function (d) {
+    return '<div class="r-dim"><h3>' + d.dim + '</h3><table class="r-table"><tbody>' + d.rows.map(function (r) {
+      return '<tr><td class="vis">' + visual(r[1]) + '</td><td class="name">' + r[0] + '</td><td class="spark-cell">' + spark(r[4], r[2], r[0]) +
+             '</td><td class="mom">' + badge(r[2], r[3]) + "</td></tr>";
+    }).join("") + "</tbody></table></div>";
+  }).join("");
+
+  document.getElementById("downTable").innerHTML = "<tbody>" + DOWN.map(function (r) {
+    return '<tr><td class="vis">' + visual(r[1]) + '</td><td class="name">' + r[0] + '<span class="reason">' + r[4] + '</span></td><td class="spark-cell">' +
+           spark(r[3], "down", r[0]) + '</td><td class="mom">' + badge("down", r[2]) + "</td></tr>";
+  }).join("") + "</tbody>";
+})();
+</script>
+<!-- Shared glyphs + sparklines render the [data-glyph] / .spark elements created above. -->
+<script src="shell.js"></script>
+</body>
+</html>

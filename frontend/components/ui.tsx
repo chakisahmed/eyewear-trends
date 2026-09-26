@@ -1,0 +1,99 @@
+// Small display components shared by every screen (all server-safe).
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { pct, NARROW_NBSP } from "@/lib/format";
+import { STATUS } from "@/lib/taxonomy";
+import type { Attribute, Dimension, Status, Tone } from "@/lib/types";
+
+import { Glyph } from "./Glyph";
+import { Icon } from "./icons";
+
+/** Glyph for shapes, real swatch for colors (ringed so white/clear stay visible), neutral dot otherwise. */
+export function Visual({ dimension, attr }: { dimension: Dimension; attr: Attribute }) {
+  if (dimension === "shape") return <Glyph code={attr.code} />;
+  if (dimension === "color" && attr.hex) {
+    return <span className="trend-visual"><span className="swatch" style={{ background: attr.hex }} /></span>;
+  }
+  return <span className="trend-visual"><span className="neutral-dot" /></span>;
+}
+
+/** Status badge: icon (status color) + value (text color, AA contrast). Tone-driven declines say why. */
+export function StatusBadge({ status, momentum, tone }: { status: Status; momentum: number; tone?: Partial<Tone> }) {
+  const st = STATUS[status];
+  const fading = status === "en_baisse" && tone?.decline_reason === "tonalite" && tone.decline_share != null;
+  const value = fading ? `${pct(tone!.decline_share!)} d'avis en recul` : pct(momentum, true);
+  return (
+    <span className={`badge badge-${st.variant}`} title={st.label}>
+      <Icon name={st.variant} strokeWidth={2.4} />
+      {value}
+      <span className="sr-only"> · {st.label}</span>
+    </span>
+  );
+}
+
+/** 8-week sparkline. Scale rule from the brief: range ≥ 60 % of the peak, centered, never below 0,
+ *  so a stable 8, 8, 9, 8 looks flat while 3 → 14 fills the height. */
+export function Sparkline({ values, label, width = 72, height = 24, className = "spark" }: {
+  values: number[]; label: string; width?: number; height?: number; className?: string;
+}) {
+  const pts = values.length > 1 ? values : [values[0] ?? 0, values[0] ?? 0];
+  const p = 3, lo = Math.min(...pts), hi = Math.max(...pts);
+  const span = Math.max(hi - lo, 0.6 * hi, 1);
+  const min = Math.max(0, (hi + lo) / 2 - span / 2);
+  const step = (width - 2 * p) / (pts.length - 1);
+  const coords = pts.map((v, i) => [p + i * step, height - p - ((v - min) / span) * (height - 2 * p)]);
+  const last = coords[coords.length - 1];
+  return (
+    <svg className={className} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
+      <polyline points={coords.map(c => c.map(n => n.toFixed(2)).join(",")).join(" ")} fill="none"
+                stroke="var(--series-1)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r={2.5} fill="var(--series-1)" />
+    </svg>
+  );
+}
+
+export function TrendRowLink({ href, dimension, row, spark, status, momentum, tone }: {
+  href: string; dimension: Dimension; row: Attribute; spark: number[]; status: Status; momentum: number; tone?: Partial<Tone>;
+}) {
+  return (
+    <Link className="trend-row" href={href}>
+      <Visual dimension={dimension} attr={row} />
+      <span className="trend-label">{row.label}</span>
+      <Sparkline values={spark} label={`${row.label} : tendance sur ${spark.length} semaines, ${STATUS[status].label.toLowerCase()}`} />
+      <StatusBadge status={status} momentum={momentum} tone={tone} />
+    </Link>
+  );
+}
+
+export function KpiTile({ label, value, detail, icon }: { label: string; value: string; detail?: string; icon?: "up" | "globe" | "clock" }) {
+  return (
+    <div className="card kpi-tile">
+      <p className="kpi-label">{label}</p>
+      <p className="kpi-value num">{value}</p>
+      {detail && (
+        <p className="kpi-detail">
+          {icon && <Icon name={icon} className={icon === "up" ? "up" : undefined} strokeWidth={icon === "up" ? 2.4 : 2} />}
+          {detail}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function EmptyState({ title, children, actions }: { title: string; children?: ReactNode; actions?: ReactNode }) {
+  return (
+    <div className="card empty-state">
+      <Icon name="sparkle" />
+      <h2>{title}</h2>
+      {children && <p>{children}</p>}
+      {actions && <div className="empty-actions">{actions}</div>}
+    </div>
+  );
+}
+
+export function LangPill({ lang }: { lang: string }) {
+  return <span className="lang-pill">{lang.toUpperCase()}</span>;
+}
+
+export const nbsp = NARROW_NBSP;

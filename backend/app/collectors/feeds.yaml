@@ -1,0 +1,19 @@
+# Press / blog RSS feeds. Checked reachable on 2026-09-26.
+# Many general fashion feeds: entries are pre-filtered on eyewear keywords before
+# the full article is downloaded.
+feeds:
+  - {name: Vogue France, url: "https://www.vogue.fr/feed/rss", lang: fr, country: FR}
+  - {name: GQ France, url: "https://www.gqmagazine.fr/feed/rss", lang: fr, country: FR}
+  - {name: Madmoizelle, url: "https://www.madmoizelle.com/feed", lang: fr, country: FR}
+  - {name: Vogue, url: "https://www.vogue.com/feed/rss", lang: en, country: US}
+  - {name: GQ, url: "https://www.gq.com/feed/rss", lang: en, country: US}
+  - {name: Harper's Bazaar, url: "https://www.harpersbazaar.com/rss/all.xml/", lang: en, country: US}
+  - {name: Esquire, url: "https://www.esquire.com/rss/all.xml/", lang: en, country: US}
+  - {name: Who What Wear, url: "https://www.whowhatwear.com/rss", lang: en, country: US}
+  - {name: Fashionista, url: "https://fashionista.com/.rss/full/", lang: en, country: US}
+
+# News discovery through the GDELT DOC API (free, open data): finds eyewear
+# articles across thousands of publishers in both languages. Max 1 request / 5 s.
+news_queries:
+  - {lang: fr, query: '(lunettes OR monture OR "lunettes de soleil") (tendance OR tendances OR mode) sourcelang:french'}
+  - {lang: en, query: '(eyewear OR eyeglasses OR sunglasses) (trend OR trends OR trending) sourcelang:english'}

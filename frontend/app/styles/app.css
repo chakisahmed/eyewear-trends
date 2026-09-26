@@ -1,0 +1,67 @@
+/* App-level additions on top of shared.css: states the mockups did not cover
+   (empty, loading, error), menu links, and small Next.js-specific glue. Same tokens only. */
+
+/* Export menu items are links (CSV download, report page), styled like the mockup's buttons. */
+.menu a {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: var(--text-primary); text-decoration: none;
+}
+.menu a:hover { background: var(--surface-subtle); }
+.menu-sep { height: 1px; margin: 4px 6px; background: var(--border); }
+.menu-label { padding: 6px 10px 2px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+
+/* Week selector (a real <select>, styled with shared .select) */
+.week-select { min-width: 190px; }
+
+/* Refresh feedback under the header */
+.run-note { margin: -12px 0 20px; font-size: 13px; color: var(--text-secondary); }
+.run-note.failed { color: var(--status-down); }
+
+/* Empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+  padding: 48px 24px;
+}
+.empty-state > svg { width: 28px; height: 28px; color: var(--brand-coral); }
+.empty-state h2 { font-size: 18px; }
+.empty-state p { max-width: 520px; color: var(--text-secondary); }
+.empty-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+
+/* Error card */
+.error-card { display: flex; gap: 14px; align-items: flex-start; padding: 20px 24px; border-color: var(--status-down); }
+.error-card > svg { width: 22px; height: 22px; color: var(--status-down); flex: none; margin-top: 2px; }
+.error-card h2 { font-size: 16px; margin-bottom: 4px; }
+.error-card p { color: var(--text-secondary); margin-bottom: 12px; }
+
+/* Loading skeletons */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-subtle) 25%, var(--surface-card) 50%, var(--surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: nn-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-line { height: 14px; margin: 8px 0; }
+.skeleton-block { height: 180px; }
+.skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; margin-top: 24px; }
+@keyframes nn-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* Trend rows are links in the app (the mockup used buttons) */
+a.trend-row { color: inherit; text-decoration: none; }
+
+/* Pagination links (Sources) */
+.pagination a { text-decoration: none; }
+
+/* Sources: pagination and chips are links in the app (the mockup used buttons) */
+.screen-sources a.page-btn, .screen-sources span.page-btn { text-decoration: none; color: var(--text-primary); }
+.screen-sources span.page-btn[aria-disabled="true"] { opacity: .45; cursor: default; }
+.screen-sources .page-gap { align-self: center; padding: 0 4px; color: var(--text-muted); }
+.screen-sources a.attr-chip { text-decoration: none; color: inherit; }
+.screen-sources a.attr-chip:hover { border-color: var(--border-strong); }
+
+/* Wide tables scroll inside their card on phones instead of widening the page:
+   flex/grid children default to min-width:auto and would otherwise grow to the table's width. */
+.card, .chart-layout > *, .charts-grid > *, .detail-grid > *, .table-scroll { min-width: 0; }
+/* position: relative keeps absolutely-positioned children (e.g. .sr-only labels) inside the scroll box */
+.table-scroll, .mini-table-wrap { max-width: 100%; position: relative; }

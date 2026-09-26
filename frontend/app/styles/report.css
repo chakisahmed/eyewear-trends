@@ -1,0 +1,150 @@
+/* Report page (/rapport): A4, always light. From design/kimi/F.html. */
+.screen-report {
+  /* ============================================================
+     ÉCRAN F — RAPPORT PDF (A4, toujours en thème clair)
+     Only report-specific rules: tokens and components come from shared.css.
+     ============================================================ */
+
+  /* Screen toolbar (hidden when printing) */
+  .report-toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    max-width: 210mm; margin: 0 auto; padding: 16px 0;
+    background: var(--surface-page);
+  }
+  .report-toolbar a { font-weight: 600; font-size: 13px; text-decoration: none; }
+  .report-toolbar a:hover { text-decoration: underline; }
+  .report-toolbar .hint { font-size: 12px; color: var(--text-muted); }
+
+  /* The A4 sheet */
+  .sheet {
+    width: 210mm; min-height: 297mm; margin: 0 auto 32px; padding: 12mm 13mm;
+    background: var(--surface-card); color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(20,23,28,.08), 0 12px 32px rgba(20,23,28,.08);
+    font-size: 11px; line-height: 1.4;
+    display: flex; flex-direction: column; gap: 3.5mm;
+  }
+
+  /* Header */
+  .r-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 3mm; border-bottom: 2px solid var(--brand-blue); }
+  .r-brand { display: flex; align-items: center; gap: 14px; }
+  .r-brand img { width: 70px; height: auto; }
+  .r-title { font-family: var(--font-heading); font-size: 20px; font-weight: 700; line-height: 1.2; margin: 0; }
+  .r-sub { margin: 2px 0 0; font-size: 12px; color: var(--text-secondary); }
+  .r-meta { text-align: right; font-size: 10.5px; color: var(--text-muted); line-height: 1.6; }
+  .r-meta .pill { font-size: 10px; padding: 2px 8px; }
+
+  /* KPI strip */
+  .r-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .r-kpi { padding: 2.5mm 3mm; border: 1px solid var(--border); border-radius: 8px; }
+  .r-kpi-label { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+  .r-kpi-value { font-family: var(--font-heading); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .r-kpi-detail { font-size: 9.5px; color: var(--text-muted); }
+
+  /* Section titles */
+  .r-section-title { display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 13px; font-weight: 700; margin: 0 0 2mm; }
+  .r-section-title svg { width: 14px; height: 14px; color: var(--brand-coral); flex: none; }
+  .r-section-title .note { margin-left: auto; font-family: var(--font-body); font-size: 10px; font-weight: 400; color: var(--text-muted); }
+
+  /* Summary */
+  .r-summary ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 1mm; }
+  .r-summary li { position: relative; padding-left: 12px; }
+  .r-summary li::before { content: ""; position: absolute; left: 1px; top: .6em; width: 5px; height: 5px; border-radius: 50%; background: var(--brand-blue); }
+  .r-action { margin: 2.5mm 0 0; padding: 2mm 3.5mm; background: var(--surface-subtle); border-left: 3px solid var(--brand-coral); border-radius: 4px; font-weight: 500; }
+
+  /* Top trends: 2 × 2 compact tables */
+  .r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 6mm; }
+  .r-dim h3 { margin: 0 0 1mm; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+  .r-table { width: 100%; border-collapse: collapse; }
+  .r-table td { padding: 1mm 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .r-table tr:last-child td { border-bottom: none; }
+  .r-table .vis { width: 30px; }
+  .r-table .vis .trend-visual { width: 28px; height: 18px; }
+  .r-table .vis .trend-visual svg { width: 28px; height: 18px; }
+  .r-table .vis .swatch { width: 13px; height: 13px; }
+  .r-table .name { font-weight: 500; }
+  .r-table .spark-cell { width: 64px; }
+  .r-table .spark { width: 56px; height: 18px; display: block; }
+  .r-table .mom { width: 1%; text-align: right; white-space: nowrap; }
+  .r-table .badge { font-size: 10.5px; padding: 1px 7px; }
+  .r-table .reason { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); }
+
+  /* Bottom: declines + quotes */
+  .r-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 6mm; }
+  .r-quotes { display: grid; gap: 2mm; }
+  .r-quote { padding-left: 3mm; border-left: 3px solid var(--brand-coral); }
+  .r-quote p { margin: 0; font-style: italic; font-size: 10.5px; }
+  .r-quote .src { margin-top: .8mm; font-size: 9.5px; font-style: normal; color: var(--text-muted); }
+  .r-quote .src strong { color: var(--text-secondary); font-weight: 600; }
+  .r-lang { display: inline-block; padding: 0 5px; border: 1px solid var(--border-strong); border-radius: 999px; font-size: 8.5px; font-weight: 600; letter-spacing: .04em; }
+
+  /* Footer */
+  .r-foot { margin-top: auto; padding-top: 3mm; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; font-size: 9.5px; color: var(--text-muted); }
+  .r-foot .method { max-width: 70%; }
+
+  /* Small screens: keep the report readable (print always uses the A4 layout) */
+  @media screen and (max-width: 820px) {
+    .report-toolbar { padding: 12px 16px; }
+    .report-toolbar .hint { display: none; }
+    .sheet { width: auto; min-height: 0; margin: 0 12px 24px; padding: 20px 16px; }
+    .r-head { flex-direction: column; }
+    .r-meta { text-align: left; }
+    .r-kpis { grid-template-columns: repeat(2, 1fr); }
+    .r-grid, .r-bottom { grid-template-columns: 1fr; }
+  }
+
+  /* Print: exact colors, no shadows, one A4 page */
+}
+
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  html, body { background: #fff; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .report-toolbar { display: none; }
+  .sheet { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; }
+  .r-dim, .r-quote, .r-bottom > section { break-inside: avoid; }
+}
+
+/* The report is always light: pin the light tokens on the wrapper so a dark-mode viewer still
+   sees (and prints) the light report. */
+.screen-report {
+  color-scheme: light;
+  --brand-blue: #2157A1;
+  --brand-coral: #DC8B71;
+  --surface-page: #F7F6F3;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F1EFEA;
+  --surface-sidebar: #2157A1;
+  --surface-sidebar-active: #1A4885;
+  --text-primary: #14171C;
+  --text-secondary: #4E5561;
+  --text-muted: #7B8290;
+  --text-on-brand: #FFFFFF;
+  --text-on-brand-muted: #C9D6EC;
+  --text-link: #2157A1;
+  --border: #E4E2DD;
+  --border-strong: #CFCCC5;
+  --status-up: #0CA30C;
+  --status-up-bg: #E7F6E7;
+  --status-peak: #FAB219;
+  --status-peak-bg: #FEF4DC;
+  --status-stable: #8A919C;
+  --status-stable-bg: #EEF0F2;
+  --status-down: #D03B3B;
+  --status-down-bg: #FBE9E9;
+  --banner-demo-bg: #FBEDE7;
+  --chart-grid: #ECEAE5;
+  --series-1: #2157A1;
+  --series-2: #EB6834;
+  --series-3: #1BAF7A;
+  --series-4: #EDA100;
+  --series-5: #E87BA4;
+  --series-6: #008300;
+  --shadow-card: 0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05);
+  --radius-control: 6px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+  background: var(--surface-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
