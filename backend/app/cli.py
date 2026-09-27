@@ -49,6 +49,7 @@ def pending_cost_estimate() -> tuple[int, float]:
 def cli(ctx: click.Context) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("alembic").setLevel(logging.WARNING)  # startup migration chatter
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
         return

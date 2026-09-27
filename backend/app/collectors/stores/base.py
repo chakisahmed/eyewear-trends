@@ -113,6 +113,7 @@ class BaseStoreCrawler:
                             seen.add(item.url)
                             item.rank = len(items) + 1
                             items.append(item)
+                log.info("%s: listing %s page %d (max %d), %d products so far", cfg.name, start, page, max_pages, len(items))
                 if not pagination or page == max_pages:
                     break
                 if pagination.param:
@@ -132,10 +133,15 @@ class BaseStoreCrawler:
         items = await self.listing_items()
         pages = {}
         if cfg.product_pages.enabled:
-            for item in items[: cfg.product_pages.max_products]:
+            todo = items[: cfg.product_pages.max_products]
+            log.info("%s: %d products listed, opening %d product pages (~%d min)",
+                     cfg.name, len(items), len(todo), round(len(todo) * self.delay_s / 60) or 1)
+            for n, item in enumerate(todo, start=1):
                 html = await self.fetch(item.url)
                 if html is not None:
                     pages[item.url] = parse_product_page(html, item.url, cfg)
+                if n % 10 == 0 or n == len(todo):
+                    log.info("%s: product pages %d/%d", cfg.name, n, len(todo))
         products = []
         for item in items:
             page = pages.get(item.url)
@@ -148,4 +154,5 @@ class BaseStoreCrawler:
             except ValidationError as e:
                 log.info("%s: dropped %s (%d errors: %s)", cfg.domain, item.url, e.error_count(),
                          "; ".join(f"{'.'.join(map(str, err['loc']))}: {err['msg']}" for err in e.errors()))
+        log.info("%s: %d valid products, %d dropped", cfg.name, len(products), len(items) - len(products))
         return products

@@ -402,3 +402,17 @@ async def test_outika_rules_on_recorded_markup():
     assert products[variant].price is None and products[variant].currency == "TND"  # listed, page never fetched
     assert not any("?" in p for p in requested)                                  # robots.txt Disallow: /*? respected
     assert "/product-category/eyeglasses/page/2/" in requested                   # followed the "next" link
+
+
+@pytest.mark.anyio
+async def test_crawl_logs_progress(cfg, caplog):
+    caplog.set_level("INFO", logger="app.collectors.stores.base")
+    async with httpx.AsyncClient(transport=fake_shop([])) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        await crawler.crawl()
+    lines = [r.getMessage() for r in caplog.records]
+    assert "Shop Test: listing /lunettes page 1 (max 3), 2 products so far" in lines
+    assert "Shop Test: 5 products listed, opening 2 product pages (~1 min)" in lines
+    assert "Shop Test: product pages 2/2" in lines
+    assert "Shop Test: 4 valid products, 1 dropped" in lines
