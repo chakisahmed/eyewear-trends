@@ -21,10 +21,15 @@ export default async function DemandPage({ searchParams }: PageProps<"/demande">
   const geoLabel = meta.market_geo === "FR" ? "France" : meta.market_geo;
   const from = Math.max(0, demand.weeks.length - weeks);
 
-  // Sorted by growth (the attribute's momentum), attributes with search data only.
-  const cards = demand.series
-    .filter(s => s.fr.some(v => v != null) || s.world.some(v => v != null))
-    .sort((a, b) => (trendOf[b.code]?.momentum ?? -9) - (trendOf[a.code]?.momentum ?? -9));
+  // Attributes with search data, plus press trends with enough data but no search volume (shown with a
+  // "too low" note rather than hidden), sorted by the attribute's momentum. Dimensions not tracked on
+  // Google Trends at all (no rows, e.g. styles) keep the empty state instead of "too low" cards.
+  const withSearch = new Set(demand.series.map(s => s.code));
+  const noSearch = demand.weeks.map(() => null);
+  const pressOnly = demand.series.length
+    ? trends.series.filter(t => !withSearch.has(t.code) && t.status !== "faible").map(t => ({ ...t, fr: noSearch, world: noSearch }))
+    : [];
+  const cards = [...demand.series, ...pressOnly].sort((a, b) => (trendOf[b.code]?.momentum ?? -9) - (trendOf[a.code]?.momentum ?? -9));
 
   return (
     <PageHeader meta={meta} week={trends.week} exportDimension={dim} showWeek={false} title="Demande"
@@ -48,7 +53,12 @@ export default async function DemandPage({ searchParams }: PageProps<"/demande">
                                 head={<>
                                   <Visual dimension={dim} attr={s} />
                                   <h2 className="demand-label">{s.label}</h2>
-                                  {t && <StatusBadge status={t.status} momentum={t.momentum} tone={t} />}
+                                  {t && (
+                                    <span className="trend-tag" title="Statut global : mentions presse + recherche">
+                                      <span className="trend-tag-label">Tendance</span>
+                                      <StatusBadge status={t.status} momentum={t.momentum} tone={t} />
+                                    </span>
+                                  )}
                                 </>} />
               );
             })}
@@ -63,7 +73,8 @@ export default async function DemandPage({ searchParams }: PageProps<"/demande">
           <Icon name="alert" />
           <p>
             <strong>Comment lire ces courbes :</strong> l&apos;intérêt Google Trends est relatif (0–100) : 100 = pic de
-            popularité du mot-clé sur la période. Les mots-clés sont suivis en français et en anglais.
+            popularité du mot-clé sur la période. Les mots-clés sont suivis en français et en anglais. Le badge
+            « Tendance » est le statut global (mentions presse + recherche) ; la courbe ne montre que la recherche.
           </p>
         </aside>
       </div>

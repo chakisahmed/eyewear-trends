@@ -8,13 +8,33 @@ import { dayShort, num } from "@/lib/format";
 const W = 260, H = 116, PL = 22, PR = 34, PT = 10, PB = 18;
 const PW = W - PL - PR, PH = H - PT - PB;
 
-/** Demand card: France vs Monde Google Trends interest on a FIXED 0–100 scale (same scale on every
- *  card, never stretched), direct end labels, and a table view with the same numbers. */
-export function MiniDemandCard({ head, label, weeks, fr, world, geoLabel }: {
+const hasVolume = (vals: (number | null)[]) => vals.some(v => v != null && v > 0);
+
+/** Change of the mean of the last 4 weeks vs the 4 before, as text: "+12 %", "nouveau" (up from 0) or "—". */
+function change4w(vals: (number | null)[]): string {
+  const avg = (xs: (number | null)[]) => {
+    const ok = xs.filter((v): v is number => v != null);
+    return ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null;
+  };
+  const recent = avg(vals.slice(-4)), base = avg(vals.slice(-8, -4));
+  if (recent == null || base == null) return "—";
+  if (!base) return recent > 0 ? "nouveau" : "—";
+  const c = Math.round(((recent - base) / base) * 100);
+  return `${c > 0 ? "+" : c < 0 ? "−" : ""}${Math.abs(c)} %`;
+}
+
+/** Demand card: France vs Monde Google Trends interest on a FIXED 0–100 scale (100 = the keyword's own
+ *  peak; same scale on every card, never stretched), direct end labels, and a table view with the same
+ *  numbers. A series with no volume at all (below Google's threshold) is not drawn as a fake flat 0. */
+export function MiniDemandCard({ head, label, weeks, fr: frIn, world: worldIn, geoLabel }: {
   head: ReactNode; label: string; weeks: string[]; fr: (number | null)[]; world: (number | null)[]; geoLabel: string;
 }) {
   const [asTable, setAsTable] = useState(false);
   const n = weeks.length;
+  const none = weeks.map(() => null);
+  const fr = hasVolume(frIn) ? frIn : none, world = hasVolume(worldIn) ? worldIn : none;
+  const empty = !hasVolume(fr) && !hasVolume(world);
+  const [changeGeo, change] = hasVolume(fr) ? [geoLabel, change4w(fr)] : [ "Monde", change4w(world)];
   const X = (i: number) => PL + (n <= 1 ? 0 : (i * PW) / (n - 1));
   const Y = (v: number) => PT + ((100 - v) / 100) * PH;
   const poly = (vals: (number | null)[]) =>
@@ -31,7 +51,9 @@ export function MiniDemandCard({ head, label, weeks, fr, world, geoLabel }: {
     <article className="card demand-card">
       <div className="demand-card-head">{head}</div>
       <div className="mini-chart">
-        {asTable ? (
+        {empty ? (
+          <p className="mini-empty">Volume de recherche trop faible pour Google Trends</p>
+        ) : asTable ? (
           <div className="mini-table-wrap">
             <table className="mini-table">
               <caption>Intérêt de recherche hebdomadaire (0–100) — {label}</caption>
@@ -63,16 +85,23 @@ export function MiniDemandCard({ head, label, weeks, fr, world, geoLabel }: {
             </svg>
           </div>
         )}
-        <div className="mini-foot">
-          <div className="mini-legend">
-            <span className="legend-item"><span className="legend-line" style={{ ["--c" as string]: "var(--series-1)" }} />{geoLabel}</span>
-            <span className="legend-item"><span className="legend-line" style={{ ["--c" as string]: "var(--series-2)" }} />Monde</span>
+        {!empty && (
+          <p className="search-change">
+            Recherche (4 sem.) : <strong>{change}</strong> · {changeGeo}
+          </p>
+        )}
+        {!empty && (
+          <div className="mini-foot">
+            <div className="mini-legend">
+              <span className="legend-item"><span className="legend-line" style={{ ["--c" as string]: "var(--series-1)" }} />{geoLabel}</span>
+              <span className="legend-item"><span className="legend-line" style={{ ["--c" as string]: "var(--series-2)" }} />Monde</span>
+            </div>
+            <button type="button" className="btn btn-secondary btn-sm view-toggle" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
+              <Icon name={asTable ? "demand" : "fileTable"} />
+              <span>{asTable ? "Vue graphique" : "Vue tableau"}</span>
+            </button>
           </div>
-          <button type="button" className="btn btn-secondary btn-sm view-toggle" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
-            <Icon name={asTable ? "demand" : "fileTable"} />
-            <span>{asTable ? "Vue graphique" : "Vue tableau"}</span>
-          </button>
-        </div>
+        )}
       </div>
     </article>
   );

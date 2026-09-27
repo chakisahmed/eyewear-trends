@@ -1,8 +1,12 @@
 """Google Trends search interest for bilingual taxonomy keywords.
 
-Uses pytrends (unofficial). Google normalizes every request to its own 0-100 scale,
-so each batch includes an anchor keyword and values are rescaled against it to stay
-comparable across batches. Swap for SerpAPI in production for reliability.
+Uses pytrends (unofficial). Google scores every request 0-100 in whole numbers against the most
+searched term IN THAT REQUEST, so each keyword is requested on its own: its series then runs 0-100
+against its own peak over the period. Mixing it with a popular term (e.g. "lunettes") would round
+specific terms like "lunettes masque" down to 0. Momentum only uses growth against the keyword's
+own history, so the per-keyword scale does not matter there. A keyword that is 0 every week is below
+Google's reporting threshold and is not stored at all (no data, rather than a fake flat 0).
+Swap for SerpAPI in production for reliability.
 """
 
 from __future__ import annotations
@@ -10,7 +14,7 @@ from __future__ import annotations
 import logging
 import time
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -19,8 +23,27 @@ from app.models import SearchInterest
 from app.taxonomy import load_taxonomy
 
 log = logging.getLogger(__name__)
-ANCHORS = {"fr": "lunettes", "en": "glasses"}
-BATCH = 4  # pytrends allows 5 keywords per request: 4 + anchor
+PAUSE_S = 2  # between requests: Google rate-limits aggressively
+BACKOFF_S = 30  # after a failed request, before retrying it once
+
+
+def reset_search_interest(session: Session) -> int:
+    """Delete collected (non-demo) search interest, e.g. before re-collecting on a new scale."""
+    n = session.execute(delete(SearchInterest).where(SearchInterest.is_demo.is_(False))).rowcount
+    session.commit()
+    return n
+
+
+def _fetch(pytrends, keyword: str, geo: str):
+    for attempt in (1, 2):
+        try:
+            pytrends.build_payload([keyword], timeframe="today 3-m", geo=geo)
+            return pytrends.interest_over_time()
+        except Exception as e:  # pytrends raises bare exceptions on 429 / format changes
+            log.warning("Google Trends failed for %r (attempt %d): %s", keyword, attempt, e)
+            if attempt == 1:
+                time.sleep(BACKOFF_S)
+    return None
 
 
 def collect_google_trends(
@@ -33,48 +56,35 @@ def collect_google_trends(
         return 0
 
     tax = load_taxonomy()
-    pytrends = TrendReq(hl="fr-FR", tz=60)
+    pytrends = TrendReq(hl="fr-FR", tz=60, timeout=(10, 25))
+    items = [it for d in dimensions for it in tax.items[d].values()]
+    jobs = [(it, lang, geo) for lang, geo in (("fr", settings.market_geo), ("en", "")) for it in items]
     stored = 0
-    langs = (("fr", settings.market_geo), ("en", ""))
-    n_items = sum(len(tax.items[d]) for d in dimensions)
-    total_batches, batch_no = len(langs) * -(-n_items // BATCH), 0
-    for lang, geo in langs:
-        items = [it for d in dimensions for it in tax.items[d].values()]
-        for i in range(0, len(items), BATCH):
-            report(progress, batch_no, total_batches)
-            batch_no += 1
-            chunk = items[i : i + BATCH]
-            keywords = [it.query_fr if lang == "fr" else it.query_en for it in chunk]
-            anchor = ANCHORS[lang]
-            try:
-                pytrends.build_payload(keywords + [anchor], timeframe="today 3-m", geo=geo)
-                df = pytrends.interest_over_time()
-            except Exception as e:  # pytrends raises bare exceptions on 429 / format changes
-                log.warning("Google Trends batch failed (%s): %s", keywords, e)
-                time.sleep(10)
-                continue
-            if df.empty:
-                continue
-            weekly = df.drop(columns=["isPartial"], errors="ignore").resample("W-MON", label="left", closed="left").mean()
-            anchor_mean = weekly[anchor].mean() or 1.0
-            for it, kw in zip(chunk, keywords):
-                for ts, value in weekly[kw].items():
-                    week = ts.date()
-                    scaled = float(value) / anchor_mean * 50  # anchor ≈ 50 on every batch
-                    row = session.scalar(
-                        select(SearchInterest).where(
-                            SearchInterest.code == it.code, SearchInterest.lang == lang,
-                            SearchInterest.geo == geo, SearchInterest.week == week,
-                        )
-                    )
-                    if row is None:
-                        row = SearchInterest(dimension=it.dimension, code=it.code, keyword=kw, lang=lang, geo=geo, week=week, value=scaled)
-                        session.add(row)
-                    else:
-                        row.value = scaled
-                    stored += 1
-            session.commit()
-            time.sleep(2)  # be gentle: Google rate-limits aggressively
-    report(progress, total_batches, total_batches)
+    for n, (it, lang, geo) in enumerate(jobs):
+        report(progress, n, len(jobs))
+        kw = it.query_fr if lang == "fr" else it.query_en
+        df = _fetch(pytrends, kw, geo)
+        time.sleep(PAUSE_S)
+        if df is None or df.empty or kw not in df:
+            continue
+        weekly = df[kw].resample("W-MON", label="left", closed="left").mean()
+        if not (weekly > 0).any():
+            continue  # below Google's threshold: no data, not zeros
+        for ts, value in weekly.items():
+            week = ts.date()
+            row = session.scalar(
+                select(SearchInterest).where(
+                    SearchInterest.code == it.code, SearchInterest.lang == lang,
+                    SearchInterest.geo == geo, SearchInterest.week == week,
+                )
+            )
+            if row is None:
+                session.add(SearchInterest(dimension=it.dimension, code=it.code, keyword=kw, lang=lang, geo=geo,
+                                           week=week, value=float(value)))
+            else:
+                row.value, row.keyword = float(value), kw
+            stored += 1
+        session.commit()
+    report(progress, len(jobs), len(jobs))
     log.info("Google Trends: %d weekly values stored", stored)
     return stored

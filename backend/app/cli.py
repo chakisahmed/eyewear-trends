@@ -4,6 +4,7 @@
   backfill [weeks]  one-off: collect the trade press archive of the last N weeks (default 12).
                     Collection only (free); prints how many articles await Claude analysis and
                     the estimated cost. Then run: python -m app.cli run extract score summary
+  refresh-search    replace collected Google Trends data (one keyword per request) and re-score; free
   seed-demo         load synthetic demo data and score it
   clear-demo        remove demo data
 """
@@ -15,6 +16,7 @@ import sys
 from sqlalchemy import func, select
 
 from app.collectors.backfill import run_backfill
+from app.collectors.google_trends import collect_google_trends, reset_search_interest
 from app.db import SessionLocal, init_db
 from app.demo import clear_demo, seed_demo
 from app.jobs.pipeline import ALL_STEPS, run_pipeline
@@ -49,6 +51,11 @@ def main(argv: list[str]) -> None:
         print(json.dumps({"new_documents": added, "weeks": weeks}, indent=2))
         print(f"{n} articles await Claude analysis, estimated cost ~${cost:.2f}. "
               "Run: python -m app.cli run extract score summary")
+    elif cmd == "refresh-search":
+        with SessionLocal() as s:
+            removed = reset_search_interest(s)
+            stored = collect_google_trends(s)
+            print(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
     elif cmd == "seed-demo":
         with SessionLocal() as s:
             n = seed_demo(s)
