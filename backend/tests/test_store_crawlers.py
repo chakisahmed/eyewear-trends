@@ -102,10 +102,10 @@ def test_config_loads_and_resolves_domains(cfg):
         config_for("other.test", configs)
 
 
-def test_shipped_config_is_valid_and_has_only_outika():
+def test_shipped_config_has_outika_and_mykenza():
     from app.collectors.stores.config import load_store_configs
     configs = load_store_configs()
-    assert list(configs) == ["outika-eyewear.tn"]
+    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn"]
     outika = configs["outika-eyewear.tn"]
     assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
 
@@ -482,3 +482,160 @@ def test_sync_tags_products_and_retag_is_idempotent(cfg):
         s.delete(product)
         s.commit()
         assert s.query(ProductTag).filter_by(product_id=product.id).count() == 0  # cascade
+
+
+# --- step 4: generic parser additions ------------------------------------------------------------
+
+def test_json_ld_price_from_price_specification_ignores_list_price():
+    from app.collectors.stores.parser import json_ld_fields
+    node = {"@type": "Product", "name": "X", "offers": [{"@type": "Offer", "priceSpecification": [
+        {"@type": "UnitPriceSpecification", "price": "900", "priceCurrency": "TND", "priceType": "https://schema.org/ListPrice"},
+        {"@type": "UnitPriceSpecification", "price": "630", "priceCurrency": "TND", "validThrough": "2026-09-28"}]}]}
+    fields = json_ld_fields(node, BASE)
+    assert (fields["price"], fields["currency"]) == (630.0, "TND")
+    single = {"offers": {"priceSpecification": {"price": "45.000", "priceCurrency": "TND"}}}
+    assert json_ld_fields(single, BASE)["price"] == 45.0
+    plain = {"offers": {"price": "10", "priceCurrency": "EUR", "priceSpecification": {"price": "99"}}}
+    assert json_ld_fields(plain, BASE)["price"] == 10.0  # offers.price still wins
+
+
+def test_json_ld_id_references_are_resolved_across_scripts():
+    from app.collectors.stores.parser import _tree, extract_json_ld_products, json_ld_fields
+    page = (json_ld({"@graph": [{"@type": "ImageObject", "@id": "#img", "contentUrl": "/big.jpg"},
+                                {"@type": "Product", "name": "P", "image": {"@id": "#img"}, "brand": {"@id": "#brand"}}]})
+            + json_ld({"@type": "Brand", "@id": "#brand", "name": "Loewe"}))
+    (node,) = extract_json_ld_products(_tree(page))
+    fields = json_ld_fields(node, f"{BASE}/p/a")
+    assert (fields["image_url"], fields["brand"]) == (f"{BASE}/big.jpg", "Loewe")  # contentUrl, made absolute
+    dangling = extract_json_ld_products(_tree(json_ld({"@type": "Product", "name": "P", "image": {"@id": "#missing"}})))
+    assert "image_url" not in json_ld_fields(dangling[0], BASE)  # unresolved reference: no image, no crash
+
+
+def test_description_specs_become_raw_specs():
+    from app.collectors.stores.parser import description_specs
+    text = ("Lunette de soleil pour Femme de la Marque : Loewe – Référence : LW40128I 01A – Forme : Oeil de Chat – "
+            "Style : Tendance – Matière du cadre : Plastique – Indice de protection : 100% UV – Livré avec étui")
+    assert description_specs(text) == {  # the 41-char "…de la Marque" lead-in is over the 40-char label limit: skipped
+        "Référence": "LW40128I 01A", "Forme": "Oeil de Chat",
+        "Style": "Tendance", "Matière du cadre": "Plastique", "Indice de protection": "100% UV"}
+    assert description_specs("Forme: Ronde | Couleur : Noir\nMatériau : Métal • sans deux-points") == {
+        "Forme": "Ronde", "Couleur": "Noir", "Matériau": "Métal"}
+    assert description_specs(None) == {} and description_specs("") == {}
+
+
+def test_table_specs_win_over_description_specs():
+    from app.collectors.stores.config import parse_store_configs
+    from app.collectors.stores.parser import parse_product_page
+    yaml_text = CONFIG_YAML.replace("    default_currency: TND\n", "    default_currency: TND\n    description_specs: true\n", 1)
+    shop = parse_store_configs(yaml_text)["shop.test"]
+    html = (json_ld({"@type": "Product", "name": "P", "url": f"{BASE}/p/a",
+                     "description": "Forme : Ronde – Couleur : Noir"})
+            + '<table class="specs"><tr><th>Forme</th><td>Pilote</td></tr></table>')
+    assert parse_product_page(html, f"{BASE}/p/a", shop).flags["raw_specs"] == {"Forme": "Pilote", "Couleur": "Noir"}
+    assert "raw_specs" not in parse_product_page(json_ld({"@type": "Product", "name": "P", "description": "Forme : Ronde"}),
+                                                 f"{BASE}/p/a", parse_store_configs(CONFIG_YAML)["shop.test"]).flags  # opt-in
+
+
+def test_data_uri_image_is_ignored_and_product_survives(cfg):
+    html = ('<ul><li class="card"><a class="card-link" href="/p/lazy">'
+            '<img data-src="data:image/svg+xml,%3Csvg%3E" src="data:image/svg+xml,%3Csvg%3E">'
+            '<h3 class="card-title">Lazy</h3></a></li></ul>')
+    (item,) = parse_listing(html, f"{BASE}/lunettes", cfg)
+    assert "image_url" not in item.css
+    assert ScrapedProduct(url=item.url, name=item.css["name"]).image_url is None
+
+
+# --- mykenza.tn: the shipped YAML rules against markup trimmed from the real site (WooCommerce) --------
+
+KENZA = "https://www.mykenza.tn"
+KENZA_CAT = "/categorie-produit/lunettes-cadres/lunettes"
+LAZY_PLACEHOLDER = "data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%3E%3C/svg%3E"
+
+
+def kenza_card(slug: str, title: str, sale: str, regular: str, *, stock: str = "instock") -> str:
+    url = f"{KENZA}/produit/{slug}/"
+    return (
+        f'<li class="product type-product post-1 status-publish {stock} product_cat-lunettes has-post-thumbnail sale">'
+        f'<a href="{url}" class="woocommerce-LoopProduct-link woocommerce-loop-product__link">'
+        '<span class="onsale">Spray Offert - 50%</span>'
+        f'<img class="attachment-full perfmatters-lazy" src="{LAZY_PLACEHOLDER}" '
+        f'data-src="https://media.mykenza.tn/uploads/2026/05/{slug}-300x300.jpg">'
+        f'<h2 class="woocommerce-loop-product__title">{title}</h2>'
+        f'<span class="price"><ins>{sale} DT</ins> <del>{regular} DT</del></span></a></li>'  # real order: sale first
+    )
+
+
+def kenza_listing(cards: list[str], next_page: str | None, tiles: bool = False) -> str:
+    tile = ('<li class="product-category product first"><a title="Lunettes de soleil Homme" '
+            f'href="{KENZA}{KENZA_CAT}/lunettes-homme/"><h2 class="woocommerce-loop-category__title">'
+            'Lunettes de soleil Homme <mark class="count">(535)</mark></h2></a></li>') if tiles else ""
+    nav = (f'<nav class="woocommerce-pagination"><a class="page-numbers" href="{next_page}">2</a>'
+           f'<a class="next page-numbers" href="{next_page}">→</a></nav>') if next_page else ""
+    return f'<ul class="products">{tile}{"".join(cards)}</ul>{nav}'
+
+
+def kenza_product(slug: str, name: str, brand: str, sale: str, regular: str, forme: str) -> str:
+    url = f"{KENZA}/produit/{slug}/"
+    return json_ld({"@context": "https://schema.org", "@graph": [  # Yoast: the image is an @id reference
+        {"@type": "WebPage", "@id": url, "primaryImageOfPage": {"@id": f"{url}#primaryimage"}},
+        {"@type": "ImageObject", "@id": f"{url}#primaryimage", "url": f"https://media.mykenza.tn/uploads/2026/05/{slug}.jpg",
+         "contentUrl": f"https://media.mykenza.tn/uploads/2026/05/{slug}.jpg", "width": 1000, "height": 1000},
+        {"@type": "Product", "@id": f"{url}#product", "name": name, "url": url, "sku": "X1",
+         "brand": {"@type": "Brand", "name": brand},
+         "image": {"@id": f"{url}#primaryimage"},
+         "description": (f"Lunette de soleil pour Femme de la Marque : {brand} – Référence : X1 – Forme : {forme} – "
+                         "Style : Tendance – Matière du cadre : Plastique – Indice de protection : 100% UV – Livré avec étui"),
+         "offers": [{"@type": "Offer", "priceSpecification": [
+             {"@type": "UnitPriceSpecification", "price": sale, "priceCurrency": "TND", "validThrough": "2026-09-28"},
+             {"@type": "UnitPriceSpecification", "price": regular, "priceCurrency": "TND", "priceType": "https://schema.org/ListPrice"}],
+             "availability": "https://schema.org/InStock", "url": url}]}]})
+
+
+@pytest.mark.anyio
+async def test_mykenza_rules_on_recorded_markup():
+    from app.collectors.stores.config import load_store_configs
+    from app.collectors.stores.tagger import tag_product
+    cfg = load_store_configs()["mykenza.tn"]
+    men, women = f"{KENZA_CAT}/lunettes-homme/", f"{KENZA_CAT}/lunettes-femme/"
+    loewe_title, square_title = "Lunette de Soleil Femme Loewe LW40128I 01A", "Lunette de Soleil Femme Ray-Ban SQUARE RB1971 9149/3F"
+    pages = {
+        "/robots.txt": "User-agent: *\nDisallow: /wp-admin/\nDisallow: /*?\nDisallow: /*.php$\n",
+        men: kenza_listing([kenza_card("loewe-lw40128i-01a", loewe_title, "630", "900"),
+                            kenza_card("ray-ban-square-rb1971", square_title, "249", "499")],
+                           f"{KENZA}{men}page/2/", tiles=True),
+        f"{men}page/2/": kenza_listing([kenza_card("ray-ban-elon-rb3958", "Lunette de Soleil Ray-Ban Elon RB3958 9196/57",
+                                                   "249", "499", stock="outofstock")], None),
+        women: kenza_listing([kenza_card("loewe-lw40128i-01a", loewe_title, "630", "900")], None),  # unisex duplicate
+        "/produit/loewe-lw40128i-01a/": kenza_product("loewe-lw40128i-01a", loewe_title, "Loewe", "630", "900", "Oeil de Chat"),
+        "/produit/ray-ban-square-rb1971/": kenza_product("ray-ban-square-rb1971", square_title, "Ray ban", "249", "499", "Carrée"),
+        # ray-ban-elon's product page 404s: its listing card alone must still give a valid product
+    }
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        requested.append(path)
+        return httpx.Response(200, text=pages[path]) if path in pages else httpx.Response(404)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        products = {p.db_url().rstrip("/").rsplit("/", 1)[-1]: p for p in await crawler.crawl()}
+
+    assert set(products) == {"loewe-lw40128i-01a", "ray-ban-square-rb1971", "ray-ban-elon-rb3958"}  # tile ignored, dup merged
+    loewe = products["loewe-lw40128i-01a"]
+    assert (loewe.name, loewe.brand, loewe.price, loewe.currency, loewe.rank) == (loewe_title, "Loewe", 630.0, "TND", 1)
+    assert str(loewe.image_url) == "https://media.mykenza.tn/uploads/2026/05/loewe-lw40128i-01a.jpg"  # JSON-LD ImageObject
+    assert loewe.flags["raw_specs"]["Forme"] == "Oeil de Chat" and loewe.flags["out_of_stock"] is False
+    assert loewe.flags["categories"] == "Lunette de Soleil Femme"
+    assert {(t.dimension, t.code) for t in tag_product(loewe.name, loewe.flags)} >= {
+        ("shape", "cat_eye"), ("audience", "women"), ("product_type", "sun")}
+
+    elon = products["ray-ban-elon-rb3958"]  # listing card only: no promo text, sale price, lazy image, stock class
+    assert (elon.name, elon.price, elon.currency) == ("Lunette de Soleil Ray-Ban Elon RB3958 9196/57", 249.0, "TND")
+    assert str(elon.image_url).endswith("ray-ban-elon-rb3958-300x300.jpg") and elon.flags["out_of_stock"] is True
+    assert elon.flags["categories"] == "Lunette de Soleil"
+
+    square = products["ray-ban-square-rb1971"]
+    assert square.price == 249.0 and ("shape", "square") in {(t.dimension, t.code) for t in tag_product(square.name, square.flags)}
+    assert not any("?" in p for p in requested) and f"{men}page/2/" in requested

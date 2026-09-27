@@ -15,15 +15,25 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, fold, load_taxonomy
 
-RULES_VERSION = 1  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 2  # stored with each tag; bump when the rules below change, then run retag-products
+# v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport"})
 SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
     "materials": "material", "material": "material", "matiere": "material", "matieres": "material",
-    "materiau": "material", "materiaux": "material",
+    "materiau": "material", "materiaux": "material", "matiere du cadre": "material",
+    "materiau du cadre": "material", "matiere de la monture": "material", "materiau de la monture": "material",
+    "gender": "audience", "genre": "audience", "sexe": "audience", "le sexe": "audience",
     "color": "color", "colour": "color", "couleur": "color", "coloris": "color",
     "forme": "shape", "shape": "shape",
     "style": "style",
+}
+# Store vocabulary the taxonomy does not list (taxonomy.yaml also feeds the LLM prompt and Google
+# Trends, so it stays untouched). Only applied to scoped spec values, never to names or categories.
+# "Plastique" is deliberately absent: it could be acetate or injected TR90.
+SPEC_ALIASES = {  # dimension -> (folded phrase, code)
+    "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal")),
+    "color": (("carey", "tortoiseshell"),),  # Hawkers' word for tortoiseshell
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),
@@ -57,8 +67,12 @@ def _indexes(taxonomy: Taxonomy) -> dict[str, Index]:
         pairs = {(fold(term), it.code) for it in items.values()
                  for term in (*it.synonyms_fr, *it.synonyms_en, it.label_fr, it.code)}
         out[dim] = tuple(sorted(((p, c) for p, c in pairs if p), key=lambda pc: (-len(pc[0].split()), -len(pc[0]), pc[0])))
-    out["_categories"] = tuple(sorted(((fold(w), f"{d}/{c}") for (d, c), words in CATEGORY_TAGS.items() for w in words),
-                                      key=lambda pc: (-len(pc[0].split()), -len(pc[0]), pc[0])))
+    longest_first = lambda pairs: tuple(sorted(pairs, key=lambda pc: (-len(pc[0].split()), -len(pc[0]), pc[0])))
+    out["_categories"] = longest_first((fold(w), f"{d}/{c}") for (d, c), words in CATEGORY_TAGS.items() for w in words)
+    # spec values: taxonomy synonyms + store aliases; "audience" specs use the category words
+    for dim in taxonomy.items:
+        out[f"_spec_{dim}"] = longest_first({*out[dim], *SPEC_ALIASES.get(dim, ())})
+    out["_spec_audience"] = longest_first((fold(w), c) for (d, c), words in CATEGORY_TAGS.items() if d == "audience" for w in words)
     _cache[id(taxonomy)] = (taxonomy, out)
     return out
 
@@ -90,8 +104,8 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
     specs = flags.get("raw_specs")
     for key, value in (specs.items() if isinstance(specs, dict) else ()):
         dim = SPEC_DIMENSIONS.get(fold(str(key)))
-        if dim in idx and isinstance(value, str):
-            for code, term in _match(value, idx[dim], skip_ambiguous=False):
+        if f"_spec_{dim}" in idx and isinstance(value, str):
+            for code, term in _match(value, idx[f"_spec_{dim}"], skip_ambiguous=False):
                 add(dim, code, f"spec:{key}", term)
 
     categories = flags.get("categories")

@@ -90,16 +90,27 @@ def _walk(node: Any):
                 yield from _walk(node[key])
 
 
+def _resolve(value: Any, by_id: dict[str, dict]) -> Any:
+    """A bare {"@id": …} reference (Yoast: "image": {"@id": "…#primaryimage"}) -> the node it points to."""
+    if isinstance(value, list):
+        return [_resolve(v, by_id) for v in value]
+    if isinstance(value, dict) and set(value) == {"@id"}:
+        return by_id.get(value["@id"], value)
+    return value
+
+
 def extract_json_ld_products(tree) -> list[dict]:
-    """All schema.org Product nodes in the page's JSON-LD (@graph and ItemList flattened)."""
-    products = []
+    """All schema.org Product nodes in the page's JSON-LD (@graph and ItemList flattened), with their
+    brand / image / offers references resolved against the other nodes of the page."""
+    nodes = []
     for script in tree.cssselect('script[type="application/ld+json"]'):
         try:
-            data = json.loads(script.text or "")
+            nodes += list(_walk(json.loads(script.text or "")))
         except json.JSONDecodeError:
             continue
-        products += [n for n in _walk(data) if "Product" in _types(n)]
-    return products
+    by_id = {n["@id"]: n for n in nodes if isinstance(n.get("@id"), str) and set(n) != {"@id"}}
+    return [{**n, **{k: _resolve(n[k], by_id) for k in ("brand", "image", "offers") if k in n}}
+            for n in nodes if "Product" in _types(n)]
 
 
 def _first(value: Any) -> Any:
@@ -113,6 +124,34 @@ def _json_price(value: Any) -> float | None:
         return None
 
 
+NOT_CURRENT_PRICE = ("listprice", "strikethroughprice", "msrp", "srp")  # schema.org priceType values
+
+
+def _current_price_spec(specs: Any) -> dict | None:
+    """The priceSpecification entry that is the actual selling price (not the struck-through list price)."""
+    for spec in specs if isinstance(specs, list) else [specs]:
+        if isinstance(spec, dict) and spec.get("price") not in (None, ""):
+            kind = str(spec.get("priceType") or "").rsplit("/", 1)[-1].lower()
+            if kind not in NOT_CURRENT_PRICE:
+                return spec
+    return None
+
+
+DESCRIPTION_SPLIT = re.compile(r"[–—|•;\n]")  # – — | • ; newline
+DESCRIPTION_PAIR = re.compile(r"^(?P<key>[^:]{2,40}?)\s*:\s*(?P<value>.+)$")
+
+
+def description_specs(text: str | None) -> dict[str, str]:
+    """ "Forme : Oeil de Chat – Style : Tendance – …" -> {"Forme": "Oeil de Chat", "Style": "Tendance"}.
+    Parts without "Label : value" are skipped; the first occurrence of a label wins."""
+    specs: dict[str, str] = {}
+    for part in DESCRIPTION_SPLIT.split(text or ""):
+        m = DESCRIPTION_PAIR.match(" ".join(part.split()))  # split() also folds non-breaking spaces
+        if m:
+            specs.setdefault(m["key"].strip(), m["value"].strip())
+    return specs
+
+
 def json_ld_fields(node: dict, page_url: str) -> dict[str, Any]:
     out: dict[str, Any] = {}
     if isinstance(node.get("name"), str) and node["name"].strip():
@@ -123,13 +162,17 @@ def json_ld_fields(node: dict, page_url: str) -> dict[str, Any]:
         out["brand"] = brand.strip()
     offer = _first(node.get("offers"))
     if isinstance(offer, dict):
-        price = _json_price(offer.get("price", offer.get("lowPrice")))
+        price, currency = _json_price(offer.get("price", offer.get("lowPrice"))), offer.get("priceCurrency")
+        if price is None:  # e.g. Yoast/Woo sales: only priceSpecification[] (current price + ListPrice)
+            spec = _current_price_spec(offer.get("priceSpecification"))
+            if spec:
+                price, currency = _json_price(spec.get("price")), currency or spec.get("priceCurrency")
         if price is not None:
             out["price"] = price
-        if isinstance(offer.get("priceCurrency"), str):
-            out["currency"] = offer["priceCurrency"]
+        if isinstance(currency, str):
+            out["currency"] = currency
     image = _first(node.get("image"))
-    image = image.get("url") if isinstance(image, dict) else image
+    image = (image.get("url") or image.get("contentUrl")) if isinstance(image, dict) else image
     if isinstance(image, str) and image.strip():
         out["image_url"] = urljoin(page_url, image.strip())
     if isinstance(node.get("url"), str):
@@ -166,7 +209,9 @@ def css_fields(element, rules: dict[str, FieldRule], scope: str, base_url: str) 
             if price is not None:
                 out["price"] = price
         elif name == "image_url":
-            out["image_url"] = urljoin(base_url, value)
+            url = urljoin(base_url, value)
+            if url.startswith(("http://", "https://")):  # skip lazy-load placeholders (data:image/svg+xml,...)
+                out["image_url"] = url
         else:
             out[name] = value
     if "currency" not in out and price_currency:
@@ -224,18 +269,23 @@ def next_page_url(html: str, page_url: str, css: str) -> str | None:
 
 def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductPage:
     tree = _tree(html)
-    nodes = [json_ld_fields(n, page_url) for n in extract_json_ld_products(tree)]
-    json_ld = next((f for f in nodes if f.get("url") == page_url), nodes[0] if nodes else {})
+    raw_nodes = extract_json_ld_products(tree)
+    nodes = [json_ld_fields(n, page_url) for n in raw_nodes]
+    i = next((k for k, f in enumerate(nodes) if f.get("url") == page_url), 0)
+    json_ld = nodes[i] if nodes else {}
     flags = css_flags(tree, cfg, "page")
+    specs: dict[str, str] = {}
     if cfg.specs:
-        specs = {}
         for row in tree.cssselect(cfg.specs.rows):
             k, v = row.cssselect(cfg.specs.key), row.cssselect(cfg.specs.value)
             key = " ".join(k[0].text_content().split()) if k else ""
             if key and v:
                 specs[key] = " ".join(v[0].text_content().split())
-        if specs:
-            flags["raw_specs"] = specs
+    if cfg.description_specs and raw_nodes:
+        described = description_specs(raw_nodes[i].get("description"))
+        specs = described | specs  # a table value wins over the description on the same label
+    if specs:
+        flags["raw_specs"] = specs
     return ProductPage(json_ld=json_ld, css=css_fields(tree, cfg.fields, "page", page_url), flags=flags)
 
 

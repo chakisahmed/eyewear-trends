@@ -125,6 +125,7 @@ class ScraperConfig(_Strict):
     fields: dict[FIELD_NAMES, FieldRule] = {}
     flags: dict[str, FlagRule] = {}
     specs: SpecsRule | None = None  # product page table -> flags["raw_specs"]
+    description_specs: bool = False  # also read "Label : value" pairs from the JSON-LD description
     delay_s: float = Field(1.5, ge=0.5)  # politeness floor between requests
 
     @field_validator("default_currency")

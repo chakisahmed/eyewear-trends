@@ -50,7 +50,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
 - **Feeds:** 17 RSS feeds. Trade press: Optique Mag, Vision Monday, Invision. FR and EN fashion media: Vogue, GQ, Grazia, M Le Monde, WWD, Hypebeast and others.
 - **News:** GDELT news queries, best effort (rate-limited on the current network).
 - **Search:** Google Trends for France.
-- **Stores:** Outika (outika-eyewear.tn, Tunisia) via `crawl-store`, run manually. Free: no LLM.
+- **Stores:** Outika (outika-eyewear.tn) and MyKenza (mykenza.tn), both Tunisia, via `crawl-store`, run manually. Free: no LLM.
 - **Archives:** a one-off backfill of the trade press from sitemaps and paged feeds. It only collects, and the CLI prints the Claude cost of analysing what it collected before anything is spent.
 
 **Trend score:**
@@ -79,7 +79,18 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
 - **Phase 2 (in progress: store catalogs, zero LLM):**
   - Step 1 (done): config-driven crawler foundation. `ScrapedProduct` contract, validated YAML rules per domain (CSS only, XPath refused), schema.org JSON-LD first with CSS fallback, async crawler with robots.txt, `StoreSyncService` upsert by url. Crawling modules have no DB or LLM imports; an AST test enforces this.
   - Step 2 (done): Outika config and the `crawl-store` CLI. First live crawl: 222 products. Data-quality fixes: a price ≤ 0 counts as missing (Outika publishes 0.00 for sold-out items), stock status comes from the page and not the JSON-LD (which says "InStock" for sold-out items), categories captured, empty flags stored as SQL NULL.
-  - Step 3 (in progress): rule-based tagging (`tagger.py` → `product_tags`) and "Présence en boutique" on the trend detail page: SKU count, price by currency, product sample.
+  - Step 3 (done): rule-based tagging (`tagger.py` → `product_tags`) and "Présence en boutique" on the trend detail page: SKU count, price by currency, product sample.
+  - Step 4 (in progress): second store, MyKenza (mykenza.tn), a multi-brand store (Ray-Ban, Loewe…). Shapes come from its JSON-LD description ("Forme : Oeil de Chat – Style : … – Matière du cadre : …"), which the new opt-in `description_specs` reads into `raw_specs`. Three general parser additions came with it:
+    - the price is read from `offers.priceSpecification` (the sale price, not the ListPrice),
+    - `@id` references in the JSON-LD graph are resolved (Yoast's `"image": {"@id": …}`),
+    - lazy-load `data:` placeholder images are ignored.
+
+    Tagger rules v2: frame-material and gender spec labels, plus store vocabulary aliases in specs only (acier/inox → metal, carey → tortoiseshell). `taxonomy.yaml` is untouched.
+  - Scouting (2026-09-27):
+    - lunettek.com has ideal structured specs (Forme, Couleur, Matériau), but its catalog is dormant: 48 of 48 sampled products are out of stock and all images date from 2021.
+    - lamode.tn titles are brand plus model, with no shape.
+    - luneti.tn is rendered in the browser (Next.js), with no product HTML for our crawler.
+    - easylunettes.fr refuses the crawler (HTTP 405).
   - Lesson: Outika product names are model names (EVAN, ADONIA) with no shape words, so shapes cannot be tagged for this store. **Store selection criterion from now on: descriptive product titles or specs.** Image-based shape detection stays in Phase 4, because it needs a vision model.
 - **Backlog: "Shelf vs. Signal" macro view.** On the overview or the Tendances list, flag the gaps between press and shelf. A trend that is rising in the press but has few or no store references is a buying opportunity. One that is well stocked but declining in the press is a stock risk. It waits for more store data: at least 2–3 stores whose titles or specs name shapes.
 - **Phase 3:** social media: **Facebook, Instagram and Pinterest**, through a licensed data provider or the platforms' official APIs. Scraping them directly breaks their ToS.

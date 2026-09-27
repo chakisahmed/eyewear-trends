@@ -41,6 +41,35 @@ stores:
       key: "th.label label"
       value: "td.value select option[selected]"
 
+  # MyKenza (Tunisia), WooCommerce + Yoast, multi-brand (Ray-Ban, Loewe…). Checked 2026-09-27:
+  # product JSON-LD has name, brand, image; the price sits in offers.priceSpecification (sale price +
+  # ListPrice) and the shape in the description ("Forme : Oeil de Chat – Style : … – Matière du cadre : …").
+  # robots.txt has "Disallow: /*?", so pagination follows /page/N/ links. Listing cards carry the stock class.
+  mykenza.tn:
+    name: "MyKenza"
+    base_url: "https://www.mykenza.tn"
+    lang: fr
+    country: TN
+    default_currency: TND
+    delay_s: 1.5
+    description_specs: true            # "Label : value" pairs in the JSON-LD description -> raw_specs
+    listing:
+      urls: ["/categorie-produit/lunettes-cadres/lunettes/lunettes-homme/",
+             "/categorie-produit/lunettes-cadres/lunettes/lunettes-femme/"]
+      pagination: { next: "a.next.page-numbers", max_pages: 10 }
+      product: "li.product.type-product"  # excludes the subcategory tiles (li.product-category)
+      link: "a.woocommerce-LoopProduct-link"
+    product_pages:
+      enabled: true                    # shape, brand and price live in the product-page JSON-LD
+      max_products: 300
+    fields:                            # CSS fallbacks; JSON-LD is primary
+      name:      { css: ".woocommerce-loop-product__title" }   # clean: the link text carries "Spray Offert - 50%"
+      price:     { css: ".price" }                              # "<ins>249 DT</ins> <del>499 DT</del>" -> 249
+      image_url: { css: "img", attr: ["data-src", "data-lazy-src", "src"] }  # src is a data: placeholder
+    flags:
+      out_of_stock: { css: ".outofstock", exists: true }       # class on the card itself (descendant-or-self)
+      categories:   { css: ".woocommerce-loop-product__title", regex: '(?i)(lunettes? de (?:soleil|vue)(?:\s+(?:femme|homme|mixte))?)' }
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:
