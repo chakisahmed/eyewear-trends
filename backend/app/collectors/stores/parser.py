@@ -239,9 +239,12 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
     return ProductPage(json_ld=json_ld, css=css_fields(tree, cfg.fields, "page", page_url), flags=flags)
 
 
-def merge(*layers: dict[str, Any], default_currency: str | None = None) -> dict[str, Any]:
-    """Per field, the first layer that has a value wins (layers in precedence order)."""
+def merge(*layers: dict[str, Any], default_currency: str | None = None, default_brand: str | None = None) -> dict[str, Any]:
+    """Per field, the first layer that has a value wins (layers in precedence order); the config
+    defaults only fill a field no layer provided."""
     out = {f: next((layer[f] for layer in layers if layer.get(f) is not None), None) for f in PRODUCT_FIELDS}
     if out["currency"] is None:
         out["currency"] = default_currency
+    if out["brand"] is None:
+        out["brand"] = default_brand
     return out

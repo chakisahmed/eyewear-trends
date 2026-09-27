@@ -1,22 +1,30 @@
-"""Command line: python -m app.cli <command>
+"""Command line: python -m app.cli <command>   (python -m app.cli --help lists them)
 
-  run [steps...]    full pipeline, or chosen steps (rss news google_trends extract score summary)
-  backfill [weeks]  one-off: collect the trade press archive of the last N weeks (default 12).
-                    Collection only (free); prints how many articles await Claude analysis and
-                    the estimated cost. Then run: python -m app.cli run extract score summary
-  refresh-search    replace collected Google Trends data (one keyword per request) and re-score; free
-  seed-demo         load synthetic demo data and score it
-  clear-demo        remove demo data
+  run [STEPS...]         full pipeline, or chosen steps (rss news google_trends extract score summary)
+  backfill [WEEKS]       one-off: collect the trade press archive of the last N weeks (default 12).
+                         Collection only (free); prints how many articles await Claude analysis and
+                         the estimated cost. Then run: python -m app.cli run extract score summary
+  refresh-search         replace collected Google Trends data (one keyword per request) and re-score; free
+  crawl-store DOMAIN     crawl one store from store_configs.yaml into products; free (no LLM)
+  seed-demo              load synthetic demo data and score it
+  clear-demo             remove demo data
 """
 
+import asyncio
 import json
 import logging
-import sys
 
+import click
+import httpx
 from sqlalchemy import func, select
 
 from app.collectors.backfill import run_backfill
 from app.collectors.google_trends import collect_google_trends, reset_search_interest
+from app.collectors.stores.base import BaseStoreCrawler
+from app.collectors.stores.config import ScraperConfig, config_for, load_store_configs
+from app.collectors.stores.schemas import ScrapedProduct
+from app.collectors.stores.service import StoreSyncService
+from app.config import settings
 from app.db import SessionLocal, init_db
 from app.demo import clear_demo, seed_demo
 from app.jobs.pipeline import ALL_STEPS, run_pipeline
@@ -36,38 +44,88 @@ def pending_cost_estimate() -> tuple[int, float]:
     return n, (chars / 4) * INPUT_PRICE + n * OUTPUT_TOKENS * OUTPUT_PRICE
 
 
-def main(argv: list[str]) -> None:
+@click.group(invoke_without_command=True, help=__doc__)
+@click.pass_context
+def cli(ctx: click.Context) -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
-    cmd, args = (argv[0], argv[1:]) if argv else ("help", [])
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
+        return
     init_db()
-    if cmd == "run":
-        print(json.dumps(run_pipeline(tuple(args) or ALL_STEPS), indent=2, default=str))
-    elif cmd == "backfill":
-        weeks = int(args[0]) if args else 12
-        with SessionLocal() as s:
-            added = run_backfill(s, weeks=weeks)
-        n, cost = pending_cost_estimate()
-        print(json.dumps({"new_documents": added, "weeks": weeks}, indent=2))
-        print(f"{n} articles await Claude analysis, estimated cost ~${cost:.2f}. "
-              "Run: python -m app.cli run extract score summary")
-    elif cmd == "refresh-search":
-        with SessionLocal() as s:
-            removed = reset_search_interest(s)
-            stored = collect_google_trends(s)
-            print(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
-    elif cmd == "seed-demo":
-        with SessionLocal() as s:
-            n = seed_demo(s)
-            print(f"{n} demo documents, {compute_snapshots(s)} snapshots")
-    elif cmd == "clear-demo":
-        with SessionLocal() as s:
-            clear_demo(s)
-            compute_snapshots(s)
-            print("demo data removed")
-    else:
-        print(__doc__)
+
+
+@cli.command()
+@click.argument("steps", nargs=-1)
+def run(steps: tuple[str, ...]) -> None:
+    """Full pipeline, or the chosen steps."""
+    click.echo(json.dumps(run_pipeline(steps or ALL_STEPS), indent=2, default=str))
+
+
+@cli.command()
+@click.argument("weeks", type=int, default=12)
+def backfill(weeks: int) -> None:
+    """Collect the trade press archive of the last WEEKS weeks (free)."""
+    with SessionLocal() as s:
+        added = run_backfill(s, weeks=weeks)
+    n, cost = pending_cost_estimate()
+    click.echo(json.dumps({"new_documents": added, "weeks": weeks}, indent=2))
+    click.echo(f"{n} articles await Claude analysis, estimated cost ~${cost:.2f}. "
+               "Run: python -m app.cli run extract score summary")
+
+
+@cli.command("refresh-search")
+def refresh_search() -> None:
+    """Replace collected Google Trends data and re-score (free)."""
+    with SessionLocal() as s:
+        removed = reset_search_interest(s)
+        stored = collect_google_trends(s)
+        click.echo(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
+
+
+async def _crawl(cfg: ScraperConfig) -> list[ScrapedProduct]:
+    async with httpx.AsyncClient(headers={"User-Agent": settings.user_agent},
+                                 timeout=httpx.Timeout(settings.request_timeout), follow_redirects=True) as client:
+        return await BaseStoreCrawler(cfg, client=client).crawl()
+
+
+@cli.command("crawl-store")
+@click.argument("domain")
+def crawl_store(domain: str) -> None:
+    """Crawl one store from store_configs.yaml and upsert its products (free, no LLM)."""
+    try:
+        cfg = config_for(domain)
+    except KeyError:
+        known = ", ".join(load_store_configs()) or "none"
+        click.echo(f"Error: no store config for {domain!r}. Known: {known}", err=True)
+        raise SystemExit(1)
+    except ValueError as e:  # invalid store_configs.yaml
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+    products = asyncio.run(_crawl(cfg))
+    with SessionLocal() as s:
+        service = StoreSyncService(s)
+        result = service.sync(service.source_for(cfg).id, products)
+    click.echo(f"{cfg.name}: {len(products)} products crawled — inserted {result.inserted}, "
+               f"updated {result.updated}, conflicts {result.conflicts}")
+
+
+@cli.command("seed-demo")
+def seed_demo_cmd() -> None:
+    """Load synthetic demo data and score it."""
+    with SessionLocal() as s:
+        n = seed_demo(s)
+        click.echo(f"{n} demo documents, {compute_snapshots(s)} snapshots")
+
+
+@cli.command("clear-demo")
+def clear_demo_cmd() -> None:
+    """Remove demo data."""
+    with SessionLocal() as s:
+        clear_demo(s)
+        compute_snapshots(s)
+        click.echo("demo data removed")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    cli()

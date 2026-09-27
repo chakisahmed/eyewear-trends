@@ -140,7 +140,7 @@ class BaseStoreCrawler:
         for item in items:
             page = pages.get(item.url)
             layers = [page.json_ld, item.json_ld, page.css, item.css] if page else [item.json_ld, item.css]
-            fields = merge(*layers, default_currency=cfg.default_currency)
+            fields = merge(*layers, default_currency=cfg.default_currency, default_brand=cfg.default_brand)
             flags = item.flags | (page.flags if page else {})
             fields = self.postprocess({**fields, "url": item.url, "rank": item.rank, "flags": flags or None})
             try:

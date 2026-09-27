@@ -102,9 +102,20 @@ def test_config_loads_and_resolves_domains(cfg):
         config_for("other.test", configs)
 
 
-def test_shipped_config_is_valid_and_empty():
+def test_shipped_config_is_valid_and_has_only_outika():
     from app.collectors.stores.config import load_store_configs
-    assert load_store_configs() == {}
+    configs = load_store_configs()
+    assert list(configs) == ["outika-eyewear.tn"]
+    outika = configs["outika-eyewear.tn"]
+    assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
+
+
+def test_default_brand_applies_only_when_no_source_has_one():
+    from app.collectors.stores.parser import merge
+    assert merge({"brand": "Persol"}, {}, default_brand="Outika")["brand"] == "Persol"
+    assert merge({}, {"brand": "Ray-Ban"}, default_brand="Outika")["brand"] == "Ray-Ban"
+    assert merge({}, {}, default_brand="Outika")["brand"] == "Outika"
+    assert merge({}, {})["brand"] is None
 
 
 @pytest.mark.parametrize("patch", [
@@ -299,3 +310,95 @@ def test_crawling_modules_have_no_db_or_llm_imports(filename):
     bad = [m for m in imported for f in FORBIDDEN if m == f or m.startswith(f + ".")]
     bad += [m for m in imported if m.startswith("app.collectors.stores.service")]  # the DB side of the package
     assert not bad, f"{filename} imports {bad}"
+
+
+# --- Outika: the shipped YAML rules against markup trimmed from the real site (WooCommerce) --------
+
+OUTIKA = "https://www.outika-eyewear.tn"
+
+
+def outika_card(slug: str, name: str, category: str = "eyeglasses/man-eyeglasses") -> str:
+    url = f"{OUTIKA}/shop/{category}/{slug}/"
+    return (
+        '<div class="grid-sizer product-hover-swap product type-product status-publish instock product-type-variable">'
+        '<div class="content-product"><div class="product-image-wrapper hover-effect-swap">'
+        f'<a class="product-content-image" href="{url}"><img width="408" height="408" '
+        f'src="{OUTIKA}/wp-content/uploads/2025/05/{name}BLK-408x408.jpg" class="attachment-woocommerce_thumbnail"></a>'
+        '</div><div class="text-center product-details"><div class="products-page-cats">'
+        f'<a href="{OUTIKA}/product-category/eyeglasses/" rel="tag">Eyeglasses</a></div>'
+        f'<h2 class="product-title"><a href="{url}">{name}</a></h2></div></div></div>'
+    )
+
+
+def outika_listing(cards: list[str], next_page: str | None) -> str:
+    nav = (f'<nav class="woocommerce-pagination"><a class="page-numbers" href="{next_page}">2</a>'
+           f'<a class="next page-numbers" href="{next_page}">→</a></nav>') if next_page else ""
+    return f'<div class="products row">{"".join(cards)}</div>{nav}'
+
+
+def outika_product(slug: str, name: str, price: str, material: str, category: str = "eyeglasses/man-eyeglasses") -> str:
+    url = f"{OUTIKA}/shop/{category}/{slug}/"
+    return (
+        json_ld({"@context": "https://schema.org/", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "item": {"name": "Home", "@id": OUTIKA}}]}]})
+        + json_ld({"@context": "https://schema.org/", "@type": "Product", "@id": f"{url}#product", "name": name,
+                   "url": url, "image": f"{OUTIKA}/wp-content/uploads/2025/05/{name}C1-1.jpg", "sku": 13446,
+                   "offers": [{"@type": "Offer", "price": price, "priceValidUntil": "2027-12-31",
+                               "priceSpecification": {"price": price, "priceCurrency": "TND"},
+                               "priceCurrency": "TND", "availability": "http://schema.org/InStock", "url": url,
+                               "seller": {"@type": "Organization", "name": "Outika"}}]})
+        + f'<div class="summary"><h1 class="product_title entry-title">{name}</h1><p class="price"></p>'
+        '<table class="variations" role="presentation"><tbody>'
+        '<tr><th class="label"><label for="pa_gender">Gender</label></th><td class="value">'
+        '<select id="pa_gender"><option value="">Choose an option</option><option value="men" selected>Men</option></select></td></tr>'
+        '<tr><th class="label"><label for="pa_materials">Materials</label></th><td class="value">'
+        f'<select id="pa_materials"><option value="">Choose an option</option><option value="x" selected>{material}</option></select></td></tr>'
+        '</tbody></table></div>'
+    )
+
+
+@pytest.mark.anyio
+async def test_outika_rules_on_recorded_markup():
+    from app.collectors.stores.config import load_store_configs
+    cfg = load_store_configs()["outika-eyewear.tn"]
+    variant = f"{OUTIKA}/shop/eyeglasses/man-eyeglasses/evan-2/?attribute_pa_color=evanc2"  # robots: Disallow /*?
+    pages = {
+        "/robots.txt": "User-agent: *\nDisallow: /wp-admin\nDisallow: /*?\nAllow: /wp-content/uploads/\n",
+        "/product-category/eyeglasses/": outika_listing(
+            [outika_card("adonia", "ADONIA"), outika_card("evan-2", "EVAN")],
+            f"{OUTIKA}/product-category/eyeglasses/page/2/"),
+        "/product-category/eyeglasses/page/2/": outika_listing([
+            outika_card("zoe", "ZOE", "eyeglasses/woman-eyeglasses"),
+            outika_card("evan-2", "EVAN"),  # listed again: de-duplicated, keeps rank 2
+            outika_card("evan-2", "EVAN").replace(f'{OUTIKA}/shop/eyeglasses/man-eyeglasses/evan-2/"', f'{variant}"'),
+        ], None),
+        "/product-category/sunglasses/": outika_listing([outika_card("dido", "DIDO", "sunglasses/man-sunglasses")], None),
+        "/shop/eyeglasses/man-eyeglasses/adonia/": outika_product("adonia", "ADONIA", "45.00", "Acetate"),
+        "/shop/eyeglasses/man-eyeglasses/evan-2/": outika_product("evan-2", "EVAN", "49.00", "Metal"),
+        "/shop/eyeglasses/woman-eyeglasses/zoe/": outika_product("zoe", "ZOE", "55.00", "TR90", "eyeglasses/woman-eyeglasses"),
+        "/shop/sunglasses/man-sunglasses/dido/": outika_product("dido", "DIDO", "65.00", "Acetate", "sunglasses/man-sunglasses"),
+    }
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        requested.append(path)
+        return httpx.Response(200, text=pages[path]) if path in pages else httpx.Response(404)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        products = {p.db_url(): p for p in await crawler.crawl()}
+
+    adonia = products[f"{OUTIKA}/shop/eyeglasses/man-eyeglasses/adonia/"]
+    assert (adonia.name, adonia.brand, adonia.price, adonia.currency, adonia.rank) == ("ADONIA", "Outika", 45.0, "TND", 1)
+    assert adonia.flags["raw_specs"] == {"Gender": "Men", "Materials": "Acetate"}
+    assert str(adonia.image_url).endswith("ADONIAC1-1.jpg")                     # JSON-LD image over the card thumbnail
+    shop = f"{OUTIKA}/shop"
+    assert {u: p.rank for u, p in products.items()} == {
+        f"{shop}/eyeglasses/man-eyeglasses/adonia/": 1, f"{shop}/eyeglasses/man-eyeglasses/evan-2/": 2,
+        f"{shop}/eyeglasses/woman-eyeglasses/zoe/": 3, variant: 4, f"{shop}/sunglasses/man-sunglasses/dido/": 5}
+    assert products[f"{shop}/eyeglasses/man-eyeglasses/evan-2/"].flags["raw_specs"]["Materials"] == "Metal"
+    assert products[variant].price is None and products[variant].currency == "TND"  # listed, page never fetched
+    assert not any("?" in p for p in requested)                                  # robots.txt Disallow: /*? respected
+    assert "/product-category/eyeglasses/page/2/" in requested                   # followed the "next" link

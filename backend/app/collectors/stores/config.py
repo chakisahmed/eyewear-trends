@@ -119,6 +119,7 @@ class ScraperConfig(_Strict):
     lang: Literal["fr", "en"]
     country: str | None = None
     default_currency: str | None = None  # when neither JSON-LD nor CSS gives one
+    default_brand: str | None = None  # e.g. a single-brand store whose pages never name the brand
     listing: ListingRule
     product_pages: ProductPages = ProductPages()
     fields: dict[FIELD_NAMES, FieldRule] = {}

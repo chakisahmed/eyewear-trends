@@ -4,7 +4,36 @@
 # then the CSS rules below. Selectors are CSS only: XPath is refused when the file is loaded.
 # Extraction is deterministic (no LLM). Validated by app/collectors/stores/config.py.
 
-stores: {}   # no store is active yet
+stores:
+  # Outika (Tunisia), WooCommerce. Checked 2026-09-27: product pages carry schema.org Product JSON-LD
+  # (name, image, offers.price, priceCurrency TND); listing cards show no price, hence product_pages.
+  # robots.txt has "Disallow: /*?", so pagination follows /page/N/ links, never ?page=.
+  outika-eyewear.tn:
+    name: "Outika"
+    base_url: "https://www.outika-eyewear.tn"
+    lang: fr
+    country: TN
+    default_currency: TND
+    default_brand: "Outika"            # house brand; the JSON-LD has no brand
+    delay_s: 1.5
+    listing:
+      urls: ["/product-category/eyeglasses/", "/product-category/sunglasses/"]
+      pagination: { next: "a.next.page-numbers", max_pages: 20 }
+      product: "div.product.type-product"
+      link: "h2.product-title a"
+    product_pages:
+      enabled: true                    # price only exists in the product-page JSON-LD
+      max_products: 300
+    fields:                            # CSS fallbacks; JSON-LD is primary
+      name:      { css: "h2.product-title a" }
+      image_url: { css: "a.product-content-image img", attr: ["data-src", "src"] }
+      price:     { css: ".summary p.price .woocommerce-Price-amount", scope: page }   # empty on variable products today
+      currency:  { css: ".woocommerce-Price-currencySymbol", scope: page }
+      brand:     { css: "meta[property='product:brand']", attr: content, scope: page }
+    specs:                             # frame attributes (Gender, Materials, Color) -> flags.raw_specs
+      rows: "table.variations tr"
+      key: "th.label label"
+      value: "td.value select option[selected]"
 
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
