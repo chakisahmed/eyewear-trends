@@ -5,6 +5,7 @@ import { ChartCard } from "@/components/charts/ChartCard";
 import { LineChart, SeriesTable, type Series } from "@/components/charts/LineChart";
 import { Glyph } from "@/components/Glyph";
 import { Icon } from "@/components/icons";
+import { RetailPresence } from "@/components/RetailPresence";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { KpiTile, LangPill, StatusBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -132,6 +133,8 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
             ) : <p className="section-note">Aucune marque citée avec cet attribut.</p>}
           </article>
         </section>
+
+        <RetailPresence d={d} />
 
         <section aria-labelledby="evidenceTitle">
           <div className="section-head">

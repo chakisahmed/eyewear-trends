@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -66,6 +66,28 @@ class Product(Base):
     flags: Mapped[dict | None] = mapped_column(JSON)  # {"is_bestseller": True, "raw_specs": {...}}
     image_url: Mapped[str | None] = mapped_column(String(1000))
     seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    tags: Mapped[list["ProductTag"]] = relationship(back_populates="product", cascade="all, delete-orphan")
+
+
+class ProductTag(Base):
+    """Taxonomy code (or audience / product_type) found on a store product by the rule-based tagger."""
+
+    __tablename__ = "product_tags"
+    __table_args__ = (
+        UniqueConstraint("product_id", "dimension", "code"),
+        Index("ix_product_tags_dimension_code", "dimension", "code"),  # the trend detail lookup
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))
+    dimension: Mapped[str] = mapped_column(String(20))  # taxonomy dimension, or audience | product_type
+    code: Mapped[str] = mapped_column(String(40))
+    field: Mapped[str] = mapped_column(String(40))  # provenance: name | categories | spec:<key>
+    term: Mapped[str] = mapped_column(String(100))  # the folded synonym that matched
+    rules_version: Mapped[int] = mapped_column(Integer)
+
+    product: Mapped[Product] = relationship(back_populates="tags")
 
 
 class Mention(Base):

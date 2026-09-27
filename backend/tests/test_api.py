@@ -207,3 +207,45 @@ def test_restart_interrupts_runs_left_running(client):
         status = restarted.get("/api/jobs/status").json()
     assert status["running"] is False
     assert status["last"]["status"] == "failed" and "redémarré" in status["last"]["error"]
+
+
+def test_trend_detail_retail_presence(client):
+    from app.models import Product, ProductTag, Source
+    now = datetime.now(timezone.utc)
+    with SessionLocal() as s:
+        a = Source(name="Store A", kind="store", url="https://a.retail.test", lang="fr", country="TN")
+        b = Source(name="Store B", kind="store", url="https://b.retail.test", lang="fr", country="FR")
+        s.add_all([a, b])
+        s.flush()
+
+        def product(src, slug, *, price, currency, rank, seen=now, out=False, kind="optical", code="wood"):
+            p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), brand=src.name, price=price,
+                        currency=currency, rank=rank, image_url=f"{src.url}/{slug}.jpg", seen_at=seen,
+                        flags={"out_of_stock": True} if out else None)
+            p.tags = [ProductTag(dimension="material", code=code, field="spec:Materials", term=code, rules_version=1),
+                      ProductTag(dimension="product_type", code=kind, field="categories", term=kind, rules_version=1)]
+            s.add(p)
+
+        product(a, "a1", price=40, currency="TND", rank=1)
+        product(a, "a2", price=None, currency="TND", rank=2, out=True)                     # sold out: counted, not priced
+        product(a, "a3", price=99, currency="TND", rank=0, seen=now - timedelta(days=30))  # stale: not counted
+        product(a, "a4", price=50, currency="TND", rank=3, kind="sun")
+        product(a, "a5", price=10, currency="TND", rank=4, code="metal")                  # other attribute
+        product(b, "b1", price=100, currency="EUR", rank=2, kind="sun")
+        product(b, "b2", price=120, currency="EUR", rank=1)
+        s.commit()
+
+    body = client.get("/api/trends/material/wood").json()
+    assert body["retail_sku_count"] == 5 and body["retail_store_count"] == 2
+    assert body["retail_avg_price"] == [
+        {"currency": "TND", "avg": 45.0, "min": 40.0, "max": 50.0, "priced": 2},
+        {"currency": "EUR", "avg": 110.0, "min": 100.0, "max": 120.0, "priced": 2}]
+    assert body["retail_by_type"] == {"optical": 3, "sun": 2}
+    # in stock first, then listing rank, alternating stores
+    assert [p["name"] for p in body["retail_sample"]] == ["A1", "B2", "A4", "B1", "A2"]
+    assert body["retail_sample"][-1]["out_of_stock"] is True and body["retail_sample"][0]["store"] == "Store A"
+    assert body["retail_updated_at"].startswith(now.date().isoformat())
+
+    empty = client.get("/api/trends/shape/browline").json()
+    assert (empty["retail_sku_count"], empty["retail_avg_price"], empty["retail_sample"], empty["retail_by_type"]) == (0, [], [], {})
+    assert empty["retail_updated_at"] is None

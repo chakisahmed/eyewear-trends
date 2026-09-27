@@ -24,8 +24,11 @@ backend/app/
   scoring/         trends.py (weekly momentum + status), summary.py (French weekly summary)
   api/main.py      FastAPI routes (overview, trends, demand, mentions, sources, demo, CSV export, jobs)
   jobs/            pipeline.py (recorded as JobRun, live step progress), scheduler.py (daily 06:00 Europe/Paris)
+  collectors/stores/  Phase 2 store catalogs: store_configs.yaml (one entry per domain, CSS-only rules),
+                   config.py, parser.py (JSON-LD first, CSS fallback), base.py (async crawler), tagger.py
+                   (rule-based taxonomy tags) - none of these touch the DB or an LLM; service.py persists
   migrations/      Alembic, applied automatically at startup
-  demo.py, cli.py  (run, backfill, seed-demo, clear-demo)
+  demo.py, cli.py  click CLI: run, backfill, refresh-search, crawl-store, retag-products, seed-demo, clear-demo
 frontend/          Next.js 16 App Router, React 19, plain CSS design tokens (light/dark),
                    hand-written SVG charts with table views. See docs/ui-plan.md and docs/design-brief.md
 design/kimi/       HTML mockups A–F the frontend was ported from
@@ -33,19 +36,21 @@ design/kimi/       HTML mockups A–F the frontend was ported from
 **Database:** SQLite by default, Postgres in docker-compose. Tables:
 - `sources`
 - `documents`
-- `products` (empty until Phase 2)
+- `products` (store catalog items, upserted by url)
+- `product_tags` (product → taxonomy code links from the rule-based tagger, with provenance)
 - `mentions` (the evidence behind every trend)
 - `search_interest`
 - `trend_snapshots`
 - `job_runs`
 - `weekly_summaries`
 
-Foreign keys: `documents` → `sources`, `products` → `sources`, `mentions` → `documents`. The trend tables are joined on `(dimension, code)` in code.
+Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags` → `products`, `mentions` → `documents`. The trend tables are joined on `(dimension, code)` in code.
 
 **Sources:**
 - **Feeds:** 17 RSS feeds. Trade press: Optique Mag, Vision Monday, Invision. FR and EN fashion media: Vogue, GQ, Grazia, M Le Monde, WWD, Hypebeast and others.
 - **News:** GDELT news queries, best effort (rate-limited on the current network).
 - **Search:** Google Trends for France.
+- **Stores:** Outika (outika-eyewear.tn, Tunisia) via `crawl-store`, run manually. Free: no LLM.
 - **Archives:** a one-off backfill of the trade press from sitemaps and paged feeds. It only collects, and the CLI prints the Claude cost of analysing what it collected before anything is spent.
 
 **Trend score:**
@@ -71,7 +76,11 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `mentions` �
 
   The UI also has dark mode, CSV export, demo data, and a manual refresh that shows live progress.
 - **Phase 1.5 (in progress: data depth):** backfill the trade press archives (about 12 weeks). Then run the Claude analysis on the backfilled articles, a one-off cost of a few dollars, so trends have enough history to leave "Peu de données".
-- **Phase 2:** store crawlers for about 5 retailers, extracting attributes from titles, specs and images into `products`.
+- **Phase 2 (in progress: store catalogs, zero LLM):**
+  - Step 1 (done): config-driven crawler foundation. `ScrapedProduct` contract, validated YAML rules per domain (CSS only, XPath refused), schema.org JSON-LD first with CSS fallback, async crawler with robots.txt, `StoreSyncService` upsert by url. Crawling modules have no DB or LLM imports; an AST test enforces this.
+  - Step 2 (done): Outika config and the `crawl-store` CLI. First live crawl: 222 products. Data-quality fixes: a price ≤ 0 counts as missing (Outika publishes 0.00 for sold-out items), stock status comes from the page and not the JSON-LD (which says "InStock" for sold-out items), categories captured, empty flags stored as SQL NULL.
+  - Step 3 (in progress): rule-based tagging (`tagger.py` → `product_tags`) and "Présence en boutique" on the trend detail page: SKU count, price by currency, product sample.
+  - Lesson: Outika product names are model names (EVAN, ADONIA) with no shape words, so shapes cannot be tagged for this store. **Store selection criterion from now on: descriptive product titles or specs.** Image-based shape detection stays in Phase 4, because it needs a vision model.
 - **Phase 3:** social media: **Facebook, Instagram and Pinterest**, through a licensed data provider or the platforms' official APIs. Scraping them directly breaks their ToS.
 - **Phase 4:**
   - Compare trends with Noé & Noah's own catalog and sales data.
@@ -79,7 +88,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `mentions` �
   - Email alerts.
 
 ## Verification
-- `pytest`: taxonomy, scoring math, API, migrations, sources/demo and backfill (offline, using an httpx mock transport).
+- `pytest`: taxonomy, scoring math, API, migrations, sources/demo, backfill, store crawling, tagging and CLI (all offline, using httpx mock transports).
 - Extraction eval: 30–50 hand-labeled FR/EN articles (not done yet).
 - End-to-end: `python -m app.cli run` (or "Actualiser les données" in the UI), then check the dashboard.
 

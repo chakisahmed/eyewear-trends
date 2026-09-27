@@ -6,6 +6,7 @@
                          the estimated cost. Then run: python -m app.cli run extract score summary
   refresh-search         replace collected Google Trends data (one keyword per request) and re-score; free
   crawl-store DOMAIN     crawl one store from store_configs.yaml into products; free (no LLM)
+  retag-products [DOMAIN] re-run the rule-based tagger on stored products; free, no network
   seed-demo              load synthetic demo data and score it
   clear-demo             remove demo data
 """
@@ -28,7 +29,7 @@ from app.config import settings
 from app.db import SessionLocal, init_db
 from app.demo import clear_demo, seed_demo
 from app.jobs.pipeline import ALL_STEPS, run_pipeline
-from app.models import Document
+from app.models import Document, Source
 from app.scoring.trends import compute_snapshots
 
 # Rough Claude cost per article on the default extraction model (Sonnet 5, $2 / $10 per M tokens):
@@ -94,8 +95,18 @@ async def _crawl(cfg: ScraperConfig) -> list[ScrapedProduct]:
 @click.argument("domain")
 def crawl_store(domain: str) -> None:
     """Crawl one store from store_configs.yaml and upsert its products (free, no LLM)."""
+    cfg = _store_config_or_exit(domain)
+    products = asyncio.run(_crawl(cfg))
+    with SessionLocal() as s:
+        service = StoreSyncService(s)
+        result = service.sync(service.source_for(cfg).id, products)
+    click.echo(f"{cfg.name}: {len(products)} products crawled — inserted {result.inserted}, "
+               f"updated {result.updated}, conflicts {result.conflicts}")
+
+
+def _store_config_or_exit(domain: str) -> ScraperConfig:
     try:
-        cfg = config_for(domain)
+        return config_for(domain)
     except KeyError:
         known = ", ".join(load_store_configs()) or "none"
         click.echo(f"Error: no store config for {domain!r}. Known: {known}", err=True)
@@ -103,12 +114,25 @@ def crawl_store(domain: str) -> None:
     except ValueError as e:  # invalid store_configs.yaml
         click.echo(f"Error: {e}", err=True)
         raise SystemExit(1)
-    products = asyncio.run(_crawl(cfg))
+
+
+@cli.command("retag-products")
+@click.argument("domain", required=False)
+def retag_products(domain: str | None) -> None:
+    """Re-run the rule-based tagger on stored products (all stores, or DOMAIN). Free, no network."""
+    source_id = None
     with SessionLocal() as s:
+        if domain:
+            cfg = _store_config_or_exit(domain)
+            source = s.scalar(select(Source).where(Source.url == str(cfg.base_url)))
+            if source is None:
+                click.echo(f"Error: {cfg.name} has not been crawled yet. Run: python -m app.cli crawl-store {cfg.domain}", err=True)
+                raise SystemExit(1)
+            source_id = source.id
         service = StoreSyncService(s)
-        result = service.sync(service.source_for(cfg).id, products)
-    click.echo(f"{cfg.name}: {len(products)} products crawled — inserted {result.inserted}, "
-               f"updated {result.updated}, conflicts {result.conflicts}")
+        n = service.retag_all(source_id)
+        counts = ", ".join(f"{dim} {k}" for dim, k in service.tag_counts(source_id).items()) or "none"
+        click.echo(f"{n} products re-tagged. Tagged products per dimension: {counts}")
 
 
 @cli.command("seed-demo")

@@ -78,6 +78,32 @@ export interface TrendDetail extends Attribute, Tone {
   stance: Record<Stance, number>;
   brands: { name: string; count: number }[];
   evidence: MentionRow[];
+  // "Présence en boutique": store products tagged with this attribute (rule-based, no LLM)
+  retail_sku_count?: number;
+  retail_store_count?: number;
+  retail_avg_price?: RetailPrice[];
+  retail_by_type?: Partial<Record<"optical" | "sun", number>>;
+  retail_sample?: RetailProduct[];
+  retail_updated_at?: string | null;
+}
+
+export interface RetailPrice {
+  currency: string;
+  avg: number;
+  min: number;
+  max: number;
+  priced: number;
+}
+
+export interface RetailProduct {
+  name: string;
+  brand: string | null;
+  price: number | null;
+  currency: string | null;
+  image_url: string | null;
+  url: string;
+  store: string;
+  out_of_stock: boolean;
 }
 
 export interface Demand {

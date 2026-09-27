@@ -30,6 +30,12 @@ stores:
       price:     { css: ".summary p.price .woocommerce-Price-amount", scope: page }   # empty on variable products today
       currency:  { css: ".woocommerce-Price-currencySymbol", scope: page }
       brand:     { css: "meta[property='product:brand']", attr: content, scope: page }
+    flags:
+      # The JSON-LD says "InStock" even for sold-out items; the page's stock message is the truth.
+      out_of_stock: { css: ".stock.out-of-stock", exists: true, scope: page }
+      # Single-colour products have no attribute table: categories carry gender and optical/sun.
+      # Pages list a French block ("Homme, Optique") then an English one; the first is kept.
+      categories:   { css: ".product_meta .posted_in", regex: 'Categor(?:y|ies)\s*:\s*(.+)', scope: page }
     specs:                             # frame attributes (Gender, Materials, Color) -> flags.raw_specs
       rows: "table.variations tr"
       key: "th.label label"

@@ -475,8 +475,54 @@
   .source-card .chip-row { margin-top: 14px; }
   .source-card .chip { font-size: 12.5px; padding: 4px 11px; }
 
+  /* Présence en boutique (Shelf vs. Signal) */
+  .retail { margin-bottom: 32px; }
+  .retail-empty { padding: 20px 24px; margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+  .retail-summary { padding: 18px 24px; margin-bottom: 16px; display: grid; gap: 4px; }
+  .retail-summary p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+  .retail-summary strong { color: var(--text-primary); font-size: 18px; }
+  .retail-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .retail-card { padding: 0; overflow: hidden; min-width: 0; }
+  .retail-card a {
+    display: grid;
+    gap: 4px;
+    padding: 0 0 14px;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+  }
+  .retail-card a:hover .retail-name { text-decoration: underline; }
+  .retail-card a:focus-visible { outline: 2px solid var(--brand-coral); outline-offset: -2px; }
+  .retail-img {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    background: #fff;  /* product shots are cut out on white */
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .retail-img img { width: 100%; height: 100%; object-fit: contain; }
+  .retail-img svg { width: 28px; height: 28px; color: var(--text-muted); }
+  .retail-name, .retail-meta, .retail-row { padding: 0 14px; min-width: 0; }
+  .retail-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .retail-meta { font-size: 12.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .retail-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .retail-amount { font-size: 14px; color: var(--text-primary); }
+  .retail-soldout { font-size: 11.5px; }
+
   @media (max-width: 1100px) {
     .charts-grid, .detail-grid { grid-template-columns: 1fr; }
+    .retail-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .retail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 768px) {
     .detail-head { gap: 16px; }

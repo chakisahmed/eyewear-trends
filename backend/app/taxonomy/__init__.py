@@ -91,6 +91,9 @@ def _fold(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
+fold = _fold  # public: the same folding for store product tagging (collectors/stores/tagger.py)
+
+
 @lru_cache
 def load_taxonomy(path: Path = TAXONOMY_PATH) -> Taxonomy:
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))

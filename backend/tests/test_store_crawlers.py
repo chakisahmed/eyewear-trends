@@ -118,6 +118,14 @@ def test_default_brand_applies_only_when_no_source_has_one():
     assert merge({}, {})["brand"] is None
 
 
+def test_non_positive_price_counts_as_missing():
+    from app.collectors.stores.parser import merge
+    assert merge({"price": 0.0}, {"price": 45.0})["price"] == 45.0   # JSON-LD 0 falls through to CSS
+    assert merge({"price": 0.0}, {})["price"] is None
+    assert merge({}, {"price": -5.0})["price"] is None
+    assert merge({"price": 49.0}, {"price": 45.0})["price"] == 49.0  # a real JSON-LD price still wins
+
+
 @pytest.mark.parametrize("patch", [
     ('"li.card"', '"li.card[["'),              # invalid CSS
     ('"li.card"', '"//li[@class=\'card\']"'),  # XPath is refused
@@ -290,7 +298,7 @@ def test_sync_inserts_updates_and_refuses_cross_source(cfg):
 # --- architectural boundary ------------------------------------------------------------------------
 
 FORBIDDEN = ("sqlalchemy", "app.db", "app.models", "app.extraction", "app.collectors.base", "anthropic")
-ISOLATED = ("schemas.py", "config.py", "parser.py", "base.py", "__init__.py")
+ISOLATED = ("schemas.py", "config.py", "parser.py", "base.py", "tagger.py", "__init__.py")
 
 
 @pytest.mark.parametrize("filename", ISOLATED)
@@ -336,8 +344,22 @@ def outika_listing(cards: list[str], next_page: str | None) -> str:
     return f'<div class="products row">{"".join(cards)}</div>{nav}'
 
 
-def outika_product(slug: str, name: str, price: str, material: str, category: str = "eyeglasses/man-eyeglasses") -> str:
+def outika_product(slug: str, name: str, price: str, material: str | None, category: str = "eyeglasses/man-eyeglasses",
+                   fr_cats: str = "Homme, Optique", out_of_stock: bool = False) -> str:
     url = f"{OUTIKA}/shop/{category}/{slug}/"
+    meta = "".join(
+        f'<div class="product_meta"><div class="products-page-cats"><span class="posted_in">Categories: '
+        + ", ".join(f'<a href="{OUTIKA}/product-category/x/" rel="tag">{c}</a>' for c in cats.split(", "))
+        + "</span></div></div>"
+        for cats in (fr_cats, "Eyeglasses, Man"))
+    stock = '<p class="stock out-of-stock">This product is currently out of stock and unavailable.</p>' if out_of_stock else ""
+    variations = (
+        '<table class="variations" role="presentation"><tbody>'
+        '<tr><th class="label"><label for="pa_gender">Gender</label></th><td class="value">'
+        '<select id="pa_gender"><option value="">Choose an option</option><option value="men" selected>Men</option></select></td></tr>'
+        '<tr><th class="label"><label for="pa_materials">Materials</label></th><td class="value">'
+        f'<select id="pa_materials"><option value="">Choose an option</option><option value="x" selected>{material}</option></select></td></tr>'
+        '</tbody></table>') if material else ""  # simple (single-colour) products have no variations table
     return (
         json_ld({"@context": "https://schema.org/", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "item": {"name": "Home", "@id": OUTIKA}}]}]})
@@ -348,12 +370,7 @@ def outika_product(slug: str, name: str, price: str, material: str, category: st
                                "priceCurrency": "TND", "availability": "http://schema.org/InStock", "url": url,
                                "seller": {"@type": "Organization", "name": "Outika"}}]})
         + f'<div class="summary"><h1 class="product_title entry-title">{name}</h1><p class="price"></p>'
-        '<table class="variations" role="presentation"><tbody>'
-        '<tr><th class="label"><label for="pa_gender">Gender</label></th><td class="value">'
-        '<select id="pa_gender"><option value="">Choose an option</option><option value="men" selected>Men</option></select></td></tr>'
-        '<tr><th class="label"><label for="pa_materials">Materials</label></th><td class="value">'
-        f'<select id="pa_materials"><option value="">Choose an option</option><option value="x" selected>{material}</option></select></td></tr>'
-        '</tbody></table></div>'
+        f'<form class="variations_form cart">{variations}<div>{stock}</div></form>{meta}</div>'
     )
 
 
@@ -375,7 +392,8 @@ async def test_outika_rules_on_recorded_markup():
         "/product-category/sunglasses/": outika_listing([outika_card("dido", "DIDO", "sunglasses/man-sunglasses")], None),
         "/shop/eyeglasses/man-eyeglasses/adonia/": outika_product("adonia", "ADONIA", "45.00", "Acetate"),
         "/shop/eyeglasses/man-eyeglasses/evan-2/": outika_product("evan-2", "EVAN", "49.00", "Metal"),
-        "/shop/eyeglasses/woman-eyeglasses/zoe/": outika_product("zoe", "ZOE", "55.00", "TR90", "eyeglasses/woman-eyeglasses"),
+        "/shop/eyeglasses/woman-eyeglasses/zoe/": outika_product("zoe", "ZOE", "0.00", None, "eyeglasses/woman-eyeglasses",
+                                                                 fr_cats="Femme, Optique", out_of_stock=True),
         "/shop/sunglasses/man-sunglasses/dido/": outika_product("dido", "DIDO", "65.00", "Acetate", "sunglasses/man-sunglasses"),
     }
     requested: list[str] = []
@@ -392,7 +410,8 @@ async def test_outika_rules_on_recorded_markup():
 
     adonia = products[f"{OUTIKA}/shop/eyeglasses/man-eyeglasses/adonia/"]
     assert (adonia.name, adonia.brand, adonia.price, adonia.currency, adonia.rank) == ("ADONIA", "Outika", 45.0, "TND", 1)
-    assert adonia.flags["raw_specs"] == {"Gender": "Men", "Materials": "Acetate"}
+    assert adonia.flags == {"raw_specs": {"Gender": "Men", "Materials": "Acetate"},
+                            "categories": "Homme, Optique", "out_of_stock": False}  # first (French) category block
     assert str(adonia.image_url).endswith("ADONIAC1-1.jpg")                     # JSON-LD image over the card thumbnail
     shop = f"{OUTIKA}/shop"
     assert {u: p.rank for u, p in products.items()} == {
@@ -400,6 +419,9 @@ async def test_outika_rules_on_recorded_markup():
         f"{shop}/eyeglasses/woman-eyeglasses/zoe/": 3, variant: 4, f"{shop}/sunglasses/man-sunglasses/dido/": 5}
     assert products[f"{shop}/eyeglasses/man-eyeglasses/evan-2/"].flags["raw_specs"]["Materials"] == "Metal"
     assert products[variant].price is None and products[variant].currency == "TND"  # listed, page never fetched
+    zoe = products[f"{shop}/eyeglasses/woman-eyeglasses/zoe/"]          # JSON-LD says 0.00 and "InStock"
+    assert zoe.price is None                                              # 0.00 is not a price
+    assert zoe.flags == {"categories": "Femme, Optique", "out_of_stock": True}  # the DOM wins on stock; no specs
     assert not any("?" in p for p in requested)                                  # robots.txt Disallow: /*? respected
     assert "/product-category/eyeglasses/page/2/" in requested                   # followed the "next" link
 
@@ -416,3 +438,47 @@ async def test_crawl_logs_progress(cfg, caplog):
     assert "Shop Test: 5 products listed, opening 2 product pages (~1 min)" in lines
     assert "Shop Test: product pages 2/2" in lines
     assert "Shop Test: 4 valid products, 1 dropped" in lines
+
+
+def test_sync_stores_empty_flags_as_sql_null(cfg):
+    from sqlalchemy import text
+    init_db()
+    with SessionLocal() as s:
+        service = StoreSyncService(s)
+        source = service.source_for(cfg)
+        service.sync(source.id, [
+            ScrapedProduct(url=f"{BASE}/p/null-none", name="No flags"),
+            ScrapedProduct(url=f"{BASE}/p/null-empty", name="Empty flags", flags={}),
+            ScrapedProduct(url=f"{BASE}/p/null-set", name="Flags", flags={"out_of_stock": True}),
+        ])
+        raw = dict(s.execute(text("SELECT url, flags IS NULL FROM products WHERE url LIKE :u"), {"u": f"{BASE}/p/null-%"}).all())
+        assert raw == {f"{BASE}/p/null-none": 1, f"{BASE}/p/null-empty": 1, f"{BASE}/p/null-set": 0}
+        assert s.scalar(select(Product.flags).where(Product.url == f"{BASE}/p/null-set")) == {"out_of_stock": True}
+
+
+def test_sync_tags_products_and_retag_is_idempotent(cfg):
+    from app.models import ProductTag
+    init_db()
+    tagged = lambda s, url: {(t.dimension, t.code, t.field) for t in s.scalar(select(Product).where(Product.url == url)).tags}
+    url = f"{BASE}/p/tagged"
+    with SessionLocal() as s:
+        service = StoreSyncService(s)
+        source = service.source_for(cfg)
+        service.sync(source.id, [ScrapedProduct(url=url, name="Monture ronde",
+                                                flags={"raw_specs": {"Materials": "Acetate"}, "categories": "Femme, Optique"})])
+        assert tagged(s, url) == {("shape", "round", "name"), ("material", "acetate", "spec:Materials"),
+                                  ("audience", "women", "categories"), ("product_type", "optical", "categories")}
+
+        # re-sync: material changed, shape kept -> no duplicate (unique constraint) and no stale tag
+        service.sync(source.id, [ScrapedProduct(url=url, name="Monture ronde", flags={"raw_specs": {"Materials": "Métal"}})])
+        assert tagged(s, url) == {("shape", "round", "name"), ("material", "metal", "spec:Materials")}
+
+        before = s.query(ProductTag).count()
+        assert service.retag_all(source.id) >= 1 and service.retag_all(source.id) >= 1
+        assert s.query(ProductTag).count() == before                    # idempotent
+        assert service.tag_counts(source.id)["shape"] >= 1
+
+        product = s.scalar(select(Product).where(Product.url == url))
+        s.delete(product)
+        s.commit()
+        assert s.query(ProductTag).filter_by(product_id=product.id).count() == 0  # cascade

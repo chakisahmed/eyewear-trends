@@ -83,3 +83,16 @@ def test_existing_commands_still_work_under_click():
     assert result.exit_code == 0 and "demo data removed" in result.stdout
     result = runner.invoke(cli, [])
     assert result.exit_code in (0, 2) and "crawl-store" in result.output  # bare invocation shows help
+
+
+def test_retag_products(monkeypatch):
+    runner = CliRunner()
+    monkeypatch.setattr(BaseStoreCrawler, "crawl", fake_crawl({"retag": 45.0}))
+    assert runner.invoke(cli, ["crawl-store", DOMAIN]).exit_code == 0  # fake products carry Materials: Acetate
+    result = runner.invoke(cli, ["retag-products", DOMAIN])
+    assert result.exit_code == 0, result.output
+    assert "products re-tagged" in result.stdout and "material" in result.stdout
+    result = runner.invoke(cli, ["retag-products"])                    # all stores
+    assert result.exit_code == 0 and "products re-tagged" in result.stdout
+    result = runner.invoke(cli, ["retag-products", "unknown.tn"])
+    assert result.exit_code == 1 and "no store config" in result.stderr

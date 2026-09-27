@@ -241,8 +241,11 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
 
 def merge(*layers: dict[str, Any], default_currency: str | None = None, default_brand: str | None = None) -> dict[str, Any]:
     """Per field, the first layer that has a value wins (layers in precedence order); the config
-    defaults only fill a field no layer provided."""
-    out = {f: next((layer[f] for layer in layers if layer.get(f) is not None), None) for f in PRODUCT_FIELDS}
+    defaults only fill a field no layer provided. A price <= 0 counts as missing: stores publish
+    0.00 for out-of-stock or price-on-request items (e.g. Outika's JSON-LD)."""
+    def usable(f: str, v: Any) -> bool:
+        return v is not None and not (f == "price" and v <= 0)
+    out = {f: next((layer[f] for layer in layers if usable(f, layer.get(f))), None) for f in PRODUCT_FIELDS}
     if out["currency"] is None:
         out["currency"] = default_currency
     if out["brand"] is None:

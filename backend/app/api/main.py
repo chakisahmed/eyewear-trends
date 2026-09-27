@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import SessionLocal, get_session, init_db
 from app.jobs.pipeline import ALL_STEPS, active_run, execute_run, interrupt_orphaned_runs, start_run
-from app.models import Document, JobRun, Mention, SearchInterest, Source, TrendSnapshot, WeeklySummary
+from app.models import Document, JobRun, Mention, Product, ProductTag, SearchInterest, Source, TrendSnapshot, WeeklySummary
 from app.scoring.summary import latest_week
 from app.demo import clear_demo, seed_demo
 from app.scoring.trends import FALLING, compute_snapshots, week_start
@@ -258,6 +258,61 @@ def trends(dimension: str, db: DB, week: date | None = None, weeks: int = Query(
     return {"week": end.isoformat(), "weeks": [w.isoformat() for w in week_list], "series": series}
 
 
+RETAIL_ACTIVE_DAYS = 14  # a product counts if seen within this many days of its store's latest crawl
+RETAIL_SAMPLE_SIZE = 5
+
+
+def _retail_presence(db: Session, dimension: str, code: str) -> dict:
+    """"Présence en boutique": store products tagged with this attribute (rule-based tags, no LLM)."""
+    latest = dict(db.execute(select(Product.source_id, func.max(Product.seen_at)).group_by(Product.source_id)).all())
+    rows = [
+        (p, store) for p, store in db.execute(
+            select(Product, Source.name).join(ProductTag, ProductTag.product_id == Product.id)
+            .join(Source, Source.id == Product.source_id)
+            .where(ProductTag.dimension == dimension, ProductTag.code == code)
+        ).all()
+        if p.seen_at >= latest[p.source_id] - timedelta(days=RETAIL_ACTIVE_DAYS)
+    ]
+    ids = [p.id for p, _ in rows]
+    types = Counter(db.scalars(select(ProductTag.code).where(ProductTag.product_id.in_(ids), ProductTag.dimension == "product_type")))
+
+    prices: dict[str, list[float]] = {}
+    for p, _ in rows:
+        if p.price and p.price > 0 and p.currency:
+            prices.setdefault(p.currency, []).append(p.price)
+
+    def out_of_stock(p: Product) -> bool:
+        return bool((p.flags or {}).get("out_of_stock"))
+
+    # In stock first, then the store's own listing order; round-robin so one store cannot fill the sample.
+    per_store: dict[str, list[Product]] = {}
+    for p, store in sorted(rows, key=lambda r: (r[1], out_of_stock(r[0]), r[0].rank or 10**9, r[0].name)):
+        per_store.setdefault(store, []).append(p)
+    queues = [[(p, store) for p in items] for store, items in per_store.items()]
+    sample = []
+    while len(sample) < RETAIL_SAMPLE_SIZE and any(queues):
+        for q in queues:
+            if q and len(sample) < RETAIL_SAMPLE_SIZE:
+                sample.append(q.pop(0))
+
+    updated = max((p.seen_at for p, _ in rows), default=None)
+    return {
+        "retail_sku_count": len(rows),
+        "retail_store_count": len(per_store),
+        "retail_avg_price": [
+            {"currency": cur, "avg": round(mean(v), 2), "min": min(v), "max": max(v), "priced": len(v)}
+            for cur, v in sorted(prices.items(), key=lambda kv: -len(kv[1]))
+        ],
+        "retail_by_type": {k: types[k] for k in ("optical", "sun") if types.get(k)},
+        "retail_sample": [
+            {"name": p.name, "brand": p.brand, "price": p.price, "currency": p.currency, "image_url": p.image_url,
+             "url": p.url, "store": store, "out_of_stock": out_of_stock(p)}
+            for p, store in sample
+        ],
+        "retail_updated_at": (updated if updated.tzinfo else updated.replace(tzinfo=timezone.utc)).isoformat() if updated else None,
+    }
+
+
 @app.get("/api/trends/{dimension}/{code}")
 def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, weeks: int = Query(12, ge=4, le=52)) -> dict:
     _check_dimension(dimension)
@@ -266,8 +321,9 @@ def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, we
         raise HTTPException(404, f"Attribut inconnu : '{code}'")
     end = _resolve_week(db, week)
     base = {**_item(dimension, code), "dimension": dimension, "dimension_label": tax.dimension_labels[dimension]}
+    retail = _retail_presence(db, dimension, code)
     if end is None:
-        return {**base, "week": None}
+        return {**base, "week": None, **retail}
 
     week_list = _week_list(end, weeks)
     grid = _snapshot_grid(db, end, weeks, dimension)
@@ -329,6 +385,7 @@ def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, we
         "stance": {"rising": stance.get("rising", 0), "neutral": stance.get("neutral", 0), "declining": stance.get("declining", 0)},
         "brands": [{"name": b, "count": n} for b, n in brand_counts.most_common(10)],
         "evidence": [_mention_row(m, d, s) for m, d, s in evidence],
+        **retail,
     }
 
 
