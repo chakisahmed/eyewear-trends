@@ -5,6 +5,7 @@
                          Collection only (free); prints how many articles await Claude analysis and
                          the estimated cost. Then run: python -m app.cli run extract score summary
   refresh-search         replace collected Google Trends data (one keyword per request) and re-score; free
+                         --missing: only fetch keywords with no data yet (after a rate-limited run)
   crawl-store DOMAIN     crawl one store from store_configs.yaml into products; free (no LLM)
   retag-products [DOMAIN] re-run the rule-based tagger on stored products; free, no network
   seed-demo              load synthetic demo data and score it
@@ -77,11 +78,12 @@ def backfill(weeks: int) -> None:
 
 
 @cli.command("refresh-search")
-def refresh_search() -> None:
-    """Replace collected Google Trends data and re-score (free)."""
+@click.option("--missing", is_flag=True, help="Only fetch keywords with no data yet (fills gaps left by rate limits).")
+def refresh_search(missing: bool) -> None:
+    """Replace collected Google Trends data and re-score (free). With --missing: keep the data, fill the gaps."""
     with SessionLocal() as s:
-        removed = reset_search_interest(s)
-        stored = collect_google_trends(s)
+        removed = 0 if missing else reset_search_interest(s)
+        stored = collect_google_trends(s, only_missing=missing)
         click.echo(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
 
 

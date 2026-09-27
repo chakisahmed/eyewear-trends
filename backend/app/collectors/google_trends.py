@@ -23,8 +23,9 @@ from app.models import SearchInterest
 from app.taxonomy import load_taxonomy
 
 log = logging.getLogger(__name__)
-PAUSE_S = 2  # between requests: Google rate-limits aggressively
-BACKOFF_S = 30  # after a failed request, before retrying it once
+PAUSE_S = 4  # between requests: Google rate-limits aggressively (HTTP 429 after a few dozen quick requests)
+BACKOFF_S = (30, 90)  # waits before the 2nd and 3rd attempt of a failed keyword
+STOP_AFTER_FAILURES = 3  # consecutive keywords failing all attempts: Google is blocking us, stop the run
 
 
 def reset_search_interest(session: Session) -> int:
@@ -35,20 +36,27 @@ def reset_search_interest(session: Session) -> int:
 
 
 def _fetch(pytrends, keyword: str, geo: str):
-    for attempt in (1, 2):
+    attempts = len(BACKOFF_S) + 1
+    for attempt in range(1, attempts + 1):
         try:
             pytrends.build_payload([keyword], timeframe="today 3-m", geo=geo)
-            return pytrends.interest_over_time()
+            df = pytrends.interest_over_time()
+            if df.empty:  # throttled Google may answer "no rows" instead of 429; real no-volume = rows of zeros
+                raise RuntimeError("empty answer (soft rate limit)")
+            return df
         except Exception as e:  # pytrends raises bare exceptions on 429 / format changes
-            log.warning("Google Trends failed for %r (attempt %d): %s", keyword, attempt, e)
-            if attempt == 1:
-                time.sleep(BACKOFF_S)
+            log.warning("Google Trends failed for %r (attempt %d/%d): %s", keyword, attempt, attempts, e)
+            if attempt < attempts:
+                time.sleep(BACKOFF_S[attempt - 1])
     return None
 
 
 def collect_google_trends(
-    session: Session, dimensions: tuple[str, ...] = ("shape", "color", "material"), progress: Progress = None
+    session: Session, dimensions: tuple[str, ...] = ("shape", "color", "material"), progress: Progress = None,
+    only_missing: bool = False,
 ) -> int:
+    """Store weekly interest per keyword. only_missing: request just the (attribute, language, geo) pairs
+    with no data yet, e.g. to fill the gaps left by a rate-limited run without re-downloading the rest."""
     try:
         from pytrends.request import TrendReq
     except ImportError:
@@ -59,17 +67,31 @@ def collect_google_trends(
     pytrends = TrendReq(hl="fr-FR", tz=60, timeout=(10, 25))
     items = [it for d in dimensions for it in tax.items[d].values()]
     jobs = [(it, lang, geo) for lang, geo in (("fr", settings.market_geo), ("en", "")) for it in items]
+    if only_missing:
+        have = set(session.execute(select(SearchInterest.code, SearchInterest.lang, SearchInterest.geo)
+                                   .where(SearchInterest.is_demo.is_(False)).distinct()).all())
+        jobs = [(it, lang, geo) for it, lang, geo in jobs if (it.code, lang, geo) not in have]
+        log.info("Google Trends: %d keyword/geo pairs without data", len(jobs))
     stored = 0
+    ok = silent = failed = in_a_row = 0
     for n, (it, lang, geo) in enumerate(jobs):
         report(progress, n, len(jobs))
         kw = it.query_fr if lang == "fr" else it.query_en
         df = _fetch(pytrends, kw, geo)
         time.sleep(PAUSE_S)
-        if df is None or df.empty or kw not in df:
+        if df is None:
+            failed, in_a_row = failed + 1, in_a_row + 1
+            if in_a_row >= STOP_AFTER_FAILURES:
+                log.warning("Google Trends: %d keywords in a row rate-limited; stopping (%d not attempted). "
+                            "Rerun later: python -m app.cli refresh-search --missing", in_a_row, len(jobs) - n - 1)
+                break
             continue
+        in_a_row = 0
+        if df.empty or kw not in df or not (df[kw] > 0).any():
+            silent += 1  # below Google's threshold: no data, not zeros
+            continue
+        ok += 1
         weekly = df[kw].resample("W-MON", label="left", closed="left").mean()
-        if not (weekly > 0).any():
-            continue  # below Google's threshold: no data, not zeros
         for ts, value in weekly.items():
             week = ts.date()
             row = session.scalar(
@@ -86,5 +108,6 @@ def collect_google_trends(
             stored += 1
         session.commit()
     report(progress, len(jobs), len(jobs))
-    log.info("Google Trends: %d weekly values stored", stored)
+    log.info("Google Trends: %d keywords stored (%d weekly values), %d without Google volume, %d rate-limited%s",
+             ok, stored, silent, failed, " -> rerun with --missing" if failed else "")
     return stored

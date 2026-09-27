@@ -19,6 +19,7 @@ DAYS = pd.date_range("2026-07-06", periods=28, freq="D")
 class FakeTrendReq:
     payloads: list[list[str]] = []
     silent: set[str] = set()  # keywords Google has no volume for
+    failures: dict[str, int] = {}  # keyword -> how many more requests fail (HTTP 429)
 
     def __init__(self, *a, **kw):
         pass
@@ -29,6 +30,9 @@ class FakeTrendReq:
 
     def interest_over_time(self):
         (k,) = self.kw
+        if FakeTrendReq.failures.get(k, 0) > 0:
+            FakeTrendReq.failures[k] -= 1
+            raise Exception("The request failed: Google returned a response with code 429")
         values = [0] * len(DAYS) if k in FakeTrendReq.silent else [50 + i for i in range(len(DAYS))]
         return pd.DataFrame({k: values, "isPartial": False}, index=DAYS)
 
@@ -36,13 +40,17 @@ class FakeTrendReq:
 @pytest.fixture(autouse=True)
 def fake_pytrends(monkeypatch):
     init_db()
-    FakeTrendReq.payloads, FakeTrendReq.silent = [], set()
+    FakeTrendReq.payloads, FakeTrendReq.silent, FakeTrendReq.failures = [], set(), {}
     module = types.ModuleType("pytrends.request")
     module.TrendReq = FakeTrendReq
     monkeypatch.setitem(sys.modules, "pytrends.request", module)
     monkeypatch.setattr(gt, "PAUSE_S", 0)
-    monkeypatch.setattr(gt, "BACKOFF_S", 0)
+    monkeypatch.setattr(gt, "BACKOFF_S", (0, 0))
     with SessionLocal() as s:
+        s.execute(delete(SearchInterest))
+        s.commit()
+    yield
+    with SessionLocal() as s:  # leave nothing behind: other tests seed demo search data on the same keys
         s.execute(delete(SearchInterest))
         s.commit()
 
@@ -69,3 +77,57 @@ def test_reset_keeps_demo_rows():
         s.commit()
         assert gt.reset_search_interest(s) == 1
         assert [r.is_demo for r in s.scalars(select(SearchInterest))] == [True]
+
+
+def test_rate_limited_keyword_is_retried_with_backoff():
+    shapes = list(load_taxonomy().items["shape"].values())
+    FakeTrendReq.failures = {shapes[0].query_en: 2, shapes[1].query_en: 5}  # recovers on the 3rd try / never
+    with SessionLocal() as s:
+        gt.collect_google_trends(s, dimensions=("shape",))
+        world = {r.code for r in s.scalars(select(SearchInterest).where(SearchInterest.geo == ""))}
+    assert shapes[0].code in world                    # 2 failures, then success: kept
+    assert shapes[1].code not in world                # still failing after 3 attempts: skipped, not fatal
+    assert sum(p == [shapes[0].query_en] for p in FakeTrendReq.payloads) == 3
+
+
+def test_only_missing_requests_just_the_gaps():
+    shapes = list(load_taxonomy().items["shape"].values())
+    with SessionLocal() as s:
+        gt.collect_google_trends(s, dimensions=("shape",))
+        s.execute(delete(SearchInterest).where(SearchInterest.code == shapes[0].code, SearchInterest.geo == ""))
+        s.commit()
+        FakeTrendReq.payloads = []
+        stored = gt.collect_google_trends(s, dimensions=("shape",), only_missing=True)
+    assert FakeTrendReq.payloads == [[shapes[0].query_en]]  # only the worldwide gap, nothing else re-downloaded
+    assert stored > 0
+
+
+def test_run_stops_when_google_keeps_rate_limiting():
+    shapes = list(load_taxonomy().items["shape"].values())
+    FakeTrendReq.failures = {it.query_fr: 99 for it in shapes}  # every French request blocked
+    with SessionLocal() as s:
+        gt.collect_google_trends(s, dimensions=("shape",))
+    attempted = {p[0] for p in FakeTrendReq.payloads}
+    assert len(attempted) == gt.STOP_AFTER_FAILURES          # stopped after 3 keywords, didn't hammer on
+
+
+def test_empty_answer_is_a_soft_block_not_missing_volume(monkeypatch):
+    """Throttled, Google sometimes answers with an empty frame instead of HTTP 429. Genuinely silent
+    keywords come back as rows of zeros. An empty frame must be retried, and reported if it persists."""
+    shapes = list(load_taxonomy().items["shape"].values())
+    empty_left = {shapes[0].query_fr: 1, shapes[1].query_fr: 9}
+    real = FakeTrendReq.interest_over_time
+
+    def maybe_empty(self):
+        (k,) = self.kw
+        if empty_left.get(k, 0) > 0:
+            empty_left[k] -= 1
+            return pd.DataFrame()
+        return real(self)
+
+    monkeypatch.setattr(FakeTrendReq, "interest_over_time", maybe_empty)
+    with SessionLocal() as s:
+        gt.collect_google_trends(s, dimensions=("shape",))
+        fr = {r.code for r in s.scalars(select(SearchInterest).where(SearchInterest.lang == "fr"))}
+    assert shapes[0].code in fr          # empty once, then data on the retry: kept
+    assert shapes[1].code not in fr      # empty on every attempt: counted as rate-limited (not "no volume")
