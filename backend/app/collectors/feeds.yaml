@@ -35,3 +35,27 @@ feeds:
 news_queries:
   - {lang: fr, query: '(lunettes OR monture OR "lunettes de soleil") (tendance OR tendances OR mode) sourcelang:french'}
   - {lang: en, query: '(eyewear OR eyeglasses OR sunglasses) (trend OR trends OR trending) sourcelang:english'}
+
+# One-off archive backfill (python -m app.cli backfill [weeks]): the trade press beyond what RSS shows.
+# `feed` ties the articles to the same source as the RSS feed above.
+backfill:
+  - name: Vision Monday
+    feed: "https://www.visionmonday.com/rss/latest-news/"
+    method: sitemap
+    sitemap: "https://www.visionmonday.com/sitemap.xml"
+    order: oldest_first          # 2021 -> today, so it is walked from the end
+    include: ["/launchpad/frame-collection", "/launchpad/sunwear-collection"]   # new frame & sunwear collections
+    lang: en
+    country: US
+  - name: Invision
+    feed: "https://www.invisionmag.com/feed/"
+    method: paged_feed           # WordPress ?paged=N, ~20 articles per page, newest first
+    max_pages: 30
+    lang: en
+    country: US
+  - name: Optique Mag
+    feed: "https://www.optiquemag.fr/feed"
+    method: sitemap
+    sitemap: "https://www.optiquemag.fr/wp-sitemap-posts-post-1.xml"   # has <lastmod> dates
+    lang: fr
+    country: FR

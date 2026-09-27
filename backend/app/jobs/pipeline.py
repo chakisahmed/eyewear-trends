@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.collectors.google_trends import collect_google_trends
 from app.collectors.news_gdelt import collect_news
 from app.collectors.rss_blogs import collect_rss
+from app.config import settings
 from app.db import SessionLocal, init_db
 from app.demo import clear_demo
 from app.extraction.llm import get_provider
@@ -97,7 +98,9 @@ def execute_run(run_id: int) -> dict:
             if "google_trends" in steps:
                 report["google_trends"] = collect_google_trends(session, progress=begin("google_trends"))
             if "extract" in steps:
-                report["extract"] = extract_pending(session, get_provider(), progress=begin("extract"))
+                report["extract"] = extract_pending(
+                    session, get_provider(), limit=settings.max_extract_per_run, progress=begin("extract")
+                )
             if "score" in steps:
                 begin("score")
                 report["score"] = compute_snapshots(session)

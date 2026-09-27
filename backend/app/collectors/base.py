@@ -45,8 +45,8 @@ def allowed_by_robots(url: str) -> bool:
     return rp is None or rp.can_fetch(settings.user_agent, url)
 
 
-def fetch_article_text(client: httpx.Client, url: str) -> str | None:
-    """Download a page and extract the main article text. Returns None if blocked or empty."""
+def fetch_html(client: httpx.Client, url: str) -> str | None:
+    """Download a page if robots.txt allows it. Returns None if blocked or unreachable."""
     if not allowed_by_robots(url):
         log.info("robots.txt disallows %s", url)
         return None
@@ -56,7 +56,13 @@ def fetch_article_text(client: httpx.Client, url: str) -> str | None:
     except httpx.HTTPError as e:
         log.info("Fetch failed %s: %s", url, e)
         return None
-    return trafilatura.extract(r.text, url=url, include_comments=False, favor_precision=True)
+    return r.text
+
+
+def fetch_article_text(client: httpx.Client, url: str) -> str | None:
+    """Download a page and extract the main article text. Returns None if blocked or empty."""
+    html = fetch_html(client, url)
+    return trafilatura.extract(html, url=url, include_comments=False, favor_precision=True) if html else None
 
 
 def get_or_create_source(session: Session, *, name: str, kind: str, url: str, lang: str, country: str | None = None) -> Source:

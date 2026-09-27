@@ -6,7 +6,7 @@ From the handwritten note: an **AI-powered app that tracks the latest eyewear tr
 - **One eyewear retailer uses the app (single tenant):** Noé & Noah. It is an internal tool for their buying and merchandising team.
 - **French is the primary language.** The UI, AI summaries and reports are in French. Sources and search queries are **both French and English**.
 - It is a real product. The stack is a Python API (FastAPI) with a Next.js frontend.
-- The LLM sits behind a provider interface (`app/extraction/llm.py`), with the Anthropic SDK as the default implementation.
+- The LLM sits behind a provider interface (`app/extraction/llm.py`). The default implementation uses the Anthropic SDK with `claude-sonnet-5`.
 
 ## Core idea: how the pipeline works
 ```
@@ -18,35 +18,76 @@ The key design choice is a **fixed, language-neutral taxonomy** (`backend/app/ta
 ```
 backend/app/
   taxonomy/        taxonomy.yaml + loader/normalizer
-  collectors/      rss_blogs.py, news_gdelt.py, google_trends.py, feeds.yaml, base.py (robots.txt, trafilatura)
+  collectors/      rss_blogs.py, news_gdelt.py, google_trends.py, backfill.py,
+                   feeds.yaml (feeds, news queries, archive backfill), base.py (robots.txt, trafilatura)
   extraction/      llm.py (provider interface), schema.py (generated from taxonomy), service.py, prompts/ (versioned)
   scoring/         trends.py (weekly momentum + status), summary.py (French weekly summary)
-  api/main.py      FastAPI routes
-  jobs/            pipeline.py, scheduler.py (daily 06:00 Europe/Paris)
-  demo.py, cli.py
-frontend/          Next.js 16 + Tailwind v4 (see docs/ui-plan.md)
+  api/main.py      FastAPI routes (overview, trends, demand, mentions, sources, demo, CSV export, jobs)
+  jobs/            pipeline.py (recorded as JobRun, live step progress), scheduler.py (daily 06:00 Europe/Paris)
+  migrations/      Alembic, applied automatically at startup
+  demo.py, cli.py  (run, backfill, seed-demo, clear-demo)
+frontend/          Next.js 16 App Router, React 19, plain CSS design tokens (light/dark),
+                   hand-written SVG charts with table views. See docs/ui-plan.md and docs/design-brief.md
+design/kimi/       HTML mockups A–F the frontend was ported from
 ```
-**Database:** SQLite by default, Postgres in docker-compose. Tables: `sources`, `documents`, `products`, `mentions` (evidence behind every trend), `search_interest`, `trend_snapshots`, `weekly_summaries`.
+**Database:** SQLite by default, Postgres in docker-compose. Tables:
+- `sources`
+- `documents`
+- `products` (empty until Phase 2)
+- `mentions` (the evidence behind every trend)
+- `search_interest`
+- `trend_snapshots`
+- `job_runs`
+- `weekly_summaries`
 
-**Trend score:** weighted mentions (source weight × stance weight), growth versus the previous 4-week average, blended 30 % with Google Trends growth. Statuses are en_hausse / au_pic / stable / en_baisse.
+Foreign keys: `documents` → `sources`, `products` → `sources`, `mentions` → `documents`. The trend tables are joined on `(dimension, code)` in code.
+
+**Sources:**
+- **Feeds:** 17 RSS feeds. Trade press: Optique Mag, Vision Monday, Invision. FR and EN fashion media: Vogue, GQ, Grazia, M Le Monde, WWD, Hypebeast and others.
+- **News:** GDELT news queries, best effort (rate-limited on the current network).
+- **Search:** Google Trends for France.
+- **Archives:** a one-off backfill of the trade press from sitemaps and paged feeds. It only collects, and the CLI prints the Claude cost of analysing what it collected before anything is spent.
+
+**Trend score:**
+- **Volume:** the sum of source weights over the week's mentions.
+- **Momentum:** growth versus the previous 4-week average, blended 30 % with Google Trends growth.
+- **Tone:** the balance of rising versus declining mentions, pooled over 4 weeks.
+- **Statuses:**
+  - `en_hausse`: rising.
+  - `au_pic`: the 4-week least-squares slope flattens after a sustained rise.
+  - `stable`
+  - `en_baisse`: momentum ≤ −25 %, or at least half of the mentions describe the look as fading.
+  - `faible` ("Peu de données"): fewer than 5 weighted mentions in 4 weeks. It overrides every other status.
+- **Summary:** it only calls out trends backed by enough data. Weak signals are listed as "à surveiller".
 
 ## Phased roadmap
-- **Phase 0–1 (done: backend):** taxonomy, RSS + GDELT news + Google Trends collectors, extraction, scoring, API, tests.
-- **Phase 1 (in progress):** dashboard UI, designed in Figma first. See `docs/ui-plan.md`.
-- **Phase 2:** store crawlers for about 5 retailers, extracting attributes from titles, specs and images.
-- **Phase 3:** social media. Reddit first, then Instagram/TikTok/Pinterest through a licensed data provider (scraping them directly breaks their ToS).
+- **Phase 0–1 (done: backend):** taxonomy, collectors, extraction, scoring, API, Alembic migrations, tests (61 passing).
+- **Phase 1 (done: dashboard):** the UI was designed first (Figma, then the Kimi mockups) and ported to Next.js. Screens:
+  - Overview
+  - Tendances with trend detail
+  - Demande
+  - Sources
+  - Printable weekly report (`/rapport`)
+
+  The UI also has dark mode, CSV export, demo data, and a manual refresh that shows live progress.
+- **Phase 1.5 (in progress: data depth):** backfill the trade press archives (about 12 weeks). Then run the Claude analysis on the backfilled articles, a one-off cost of a few dollars, so trends have enough history to leave "Peu de données".
+- **Phase 2:** store crawlers for about 5 retailers, extracting attributes from titles, specs and images into `products`.
+- **Phase 3:** social media: **Facebook, Instagram and Pinterest**, through a licensed data provider or the platforms' official APIs. Scraping them directly breaks their ToS.
 - **Phase 4:**
   - Compare trends with Noé & Noah's own catalog and sales data.
   - Image-based trend detection.
   - Email alerts.
 
 ## Verification
-- `pytest`: taxonomy normalization and scoring math.
-- Extraction eval: 30–50 hand-labeled FR/EN articles.
-- End-to-end: `python -m app.cli run`, then check the dashboard.
+- `pytest`: taxonomy, scoring math, API, migrations, sources/demo and backfill (offline, using an httpx mock transport).
+- Extraction eval: 30–50 hand-labeled FR/EN articles (not done yet).
+- End-to-end: `python -m app.cli run` (or "Actualiser les données" in the UI), then check the dashboard.
+
+## Decisions
+- **Retailer country: Tunisia.** French stays the UI language. The Google Trends geo is still `FR` (`market_geo`). Switching it to `TN` is pending a check that Tunisian search volume for eyewear keywords is not too low to read.
+- **LLM budget: $5 initial top-up.** That is about 500 article analyses at ~$0.01 each. The per-run cap (`max_extract_per_run`, 500) should be lowered so a single run cannot use the whole balance.
+- **Social media: Facebook, Instagram, Pinterest** (Phase 3).
 
 ## Open decisions
-- Retailer country, which sets the Google Trends geo (currently `FR`).
-- LLM budget.
 - Catalog and sales data access for Phase 4.
-- Social media data provider.
+- Social media data provider or API access for Facebook, Instagram and Pinterest.

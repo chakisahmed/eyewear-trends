@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     request_timeout: float = 20.0
     user_agent: str = "EyewearTrendsBot/0.1 (+internal retail trend monitoring)"
     max_articles_per_run: int = 60
+    max_extract_per_run: int = 500  # articles Claude analyses per run (cost guard; ~$0.01 each on Sonnet 5)
 
     # Frontend origin for CORS
     frontend_origin: str = "http://localhost:3000"
