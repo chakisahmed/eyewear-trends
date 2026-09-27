@@ -218,8 +218,9 @@ def test_trend_detail_retail_presence(client):
         s.add_all([a, b])
         s.flush()
 
-        def product(src, slug, *, price, currency, rank, seen=now, out=False, kind="optical", code="wood"):
+        def product(src, slug, *, price, currency, rank, seen=now, out=False, kind="optical", code="wood", list_price=None):
             p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), brand=src.name, price=price,
+                        list_price=list_price,
                         currency=currency, rank=rank, image_url=f"{src.url}/{slug}.jpg", seen_at=seen,
                         flags={"out_of_stock": True} if out else None)
             p.tags = [ProductTag(dimension="material", code=code, field="spec:Materials", term=code, rules_version=1),
@@ -231,7 +232,7 @@ def test_trend_detail_retail_presence(client):
         product(a, "a3", price=99, currency="TND", rank=0, seen=now - timedelta(days=30))  # stale: not counted
         product(a, "a4", price=50, currency="TND", rank=3, kind="sun")
         product(a, "a5", price=10, currency="TND", rank=4, code="metal")                  # other attribute
-        product(b, "b1", price=100, currency="EUR", rank=2, kind="sun")
+        product(b, "b1", price=100, currency="EUR", rank=2, kind="sun", list_price=200)  # -50 %
         product(b, "b2", price=120, currency="EUR", rank=1)
         s.commit()
 
@@ -245,10 +246,14 @@ def test_trend_detail_retail_presence(client):
     assert [p["name"] for p in body["retail_sample"]] == ["A1", "B2", "A4", "B1", "A2"]
     assert body["retail_sample"][-1]["out_of_stock"] is True and body["retail_sample"][0]["store"] == "Store A"
     assert body["retail_updated_at"].startswith(now.date().isoformat())
+    # only Store B publishes list prices: b1 -50 %, b2 full price -> store baseline 25 %, relative 0 on average
+    assert body["retail_markdown"] == {"compared": 2, "discounted": 1, "share_discounted": 0.5, "avg_depth": 0.5,
+                                       "relative_depth": 0.0}
 
     empty = client.get("/api/trends/shape/browline").json()
     assert (empty["retail_sku_count"], empty["retail_avg_price"], empty["retail_sample"], empty["retail_by_type"]) == (0, [], [], {})
     assert empty["retail_updated_at"] is None
+    assert empty["retail_markdown"] is None
 
 
 def test_retail_overview_shape(client):

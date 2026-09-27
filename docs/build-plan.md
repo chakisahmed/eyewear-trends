@@ -51,7 +51,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
 - **News:** GDELT news queries, best effort (rate-limited on the current network).
 - **Search:** Google Trends for France.
 - **Sitemap press:** Acuité (French optical trade press, no RSS), collected daily from its XML sitemap (`sitemap_news.py`). Only `/actualites/lunettes/`, with a 7-day window on each article's own date, at most 10 new articles per run.
-- **Stores:** Outika (outika-eyewear.tn) and MyKenza (mykenza.tn), both Tunisia, via `crawl-store`, run manually. Free: no LLM.
+- **Stores:** Outika (outika-eyewear.tn), MyKenza (mykenza.tn, sunglasses) and LaMode (lamode.tn, designer prescription frames), all Tunisia, via `crawl-store`, run manually. Free: no LLM.
 - **Archives:** a one-off backfill of the trade press from sitemaps and paged feeds. It only collects, and the CLI prints the Claude cost of analysing what it collected before anything is spent.
 
 **Trend score:**
@@ -87,6 +87,9 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
     - lazy-load `data:` placeholder images are ignored.
 
     Tagger rules v2: frame-material and gender spec labels, plus store vocabulary aliases in specs only (acier/inox → metal, carey → tortoiseshell). `taxonomy.yaml` is untouched.
+  - Step 5 (discount signal): `products.list_price` (migration 76b043af5674), read from JSON-LD `priceSpecification` (ListPrice / StrikethroughPrice) or a CSS rule, always from the same source as the selling price, and kept only when above it. Markdown is read **relative to each store's usual markdown** (MyKenza runs a store-wide -25 to -50 % sale). Stores without list prices are excluded. A declining attribute discounted at least 10 pts deeper than usual is a "déstockage" stock risk. Shown on the trend detail page (`retail_markdown`), in the report and in the weekly summary's input.
+  - Step 6 (third store): LaMode "Cadres optiques", about 183 designer prescription frames. The shape comes from the "Forme Lunette" feature (tagger rules v4). Its "VISAGE" rows (recommended face shapes) are deliberately ignored. It gives no discount signal: its JSON-LD has no list price.
+  - Before the gap UI on the overview: compute gaps separately for optical and sunglasses (product_type tags), because the shape mix differs.
   - Scouting (2026-09-27):
     - lunettek.com has ideal structured specs (Forme, Couleur, Matériau), but its catalog is dormant: 48 of 48 sampled products are out of stock and all images date from 2021.
     - lamode.tn titles are brand plus model, with no shape.

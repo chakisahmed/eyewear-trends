@@ -85,6 +85,16 @@ export interface TrendDetail extends Attribute, Tone {
   retail_by_type?: Partial<Record<"optical" | "sun", number>>;
   retail_sample?: RetailProduct[];
   retail_updated_at?: string | null;
+  retail_markdown?: Markdown | null;
+}
+
+/** Discount signal: markdown vs each store's usual sale (stores without list prices are excluded). */
+export interface Markdown {
+  compared: number;
+  discounted: number;
+  share_discounted: number;
+  avg_depth: number | null;
+  relative_depth: number;
 }
 
 export interface RetailPrice {
@@ -170,6 +180,8 @@ export interface ShelfGap extends Attribute {
   sku: number;
   share: number;
   avg_price: Record<string, number>;
+  markdown: Markdown | null;
+  clearance: boolean;
 }
 
 export interface RetailOverview {

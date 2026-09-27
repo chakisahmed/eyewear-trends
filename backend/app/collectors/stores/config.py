@@ -16,7 +16,7 @@ from cssselect import HTMLTranslator, SelectorError
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, ValidationError, field_validator, model_validator
 
 CONFIG_PATH = Path(__file__).with_name("store_configs.yaml")
-FIELD_NAMES = Literal["name", "brand", "price", "currency", "image_url"]
+FIELD_NAMES = Literal["name", "brand", "price", "list_price", "currency", "image_url"]
 _translator = HTMLTranslator()
 
 

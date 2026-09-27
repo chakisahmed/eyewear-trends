@@ -10,6 +10,11 @@ compared when the shelf data for it is trustworthy:
 - the stores' own vocabulary is understood (MAX_UNMAPPED): of the products that state a value for
   it (raw_specs "Style", "Couleur"…), too many untagged ones mean a vocabulary mismatch, not an
   absence. MyKenza's "Style" says Sport / Classique / Tendance, and colours are often SKU codes.
+
+Discount signal (list_price): a product's markdown is 1 - price / list_price. Stores run store-wide
+sales (MyKenza: every product -25 to -50 %), so an attribute's markdown is read against its store's
+usual markdown (the baseline): relative_depth > 0 means discounted deeper than the rest of the store.
+Stores that publish no list price at all are left out of markdown figures, not counted as 0 %.
 """
 
 from __future__ import annotations
@@ -32,6 +37,7 @@ OPPORTUNITY_SHARE = 0.05
 RISK_SHARE = 0.15
 MAX_UNMAPPED = 0.30  # share of stated values the tagger did not recognise, above which a dimension is skipped
 RISING = ("en_hausse", "au_pic")
+CLEARANCE_PTS = 0.10  # relative markdown (vs the store's usual) that marks a declining attribute as being cleared
 
 
 def active_products(session: Session) -> list[tuple[Product, str]]:
@@ -41,10 +47,45 @@ def active_products(session: Session) -> list[tuple[Product, str]]:
     return [(p, store) for p, store in rows if p.seen_at >= latest[p.source_id] - timedelta(days=ACTIVE_DAYS)]
 
 
+def markdown(p: Product) -> float:
+    return 1 - p.price / p.list_price if p.price and p.list_price and p.list_price > p.price else 0.0
+
+
+def store_baselines(active: list[tuple[Product, str]]) -> dict[int, float]:
+    """Usual markdown per store (source_id), for stores that publish list prices at all."""
+    by_store: dict[int, list[Product]] = defaultdict(list)
+    for p, _ in active:
+        by_store[p.source_id].append(p)
+    return {sid: mean(markdown(p) for p in ps) for sid, ps in by_store.items() if any(p.list_price for p in ps)}
+
+
+def markdown_stats(products: list[Product], baselines: dict[int, float]) -> dict | None:
+    """{compared, discounted, share_discounted, avg_depth, relative_depth}; None if no store publishes list prices."""
+    compared = [p for p in products if p.source_id in baselines]
+    if not compared:
+        return None
+    depths = [markdown(p) for p in compared]
+    discounted = [d for d in depths if d > 0]
+    return {
+        "compared": len(compared),
+        "discounted": len(discounted),
+        "share_discounted": round(len(discounted) / len(compared), 4),
+        "avg_depth": round(mean(discounted), 4) if discounted else None,
+        "relative_depth": round(mean(markdown(p) - baselines[p.source_id] for p in compared), 4),
+    }
+
+
+def attribute_markdown(session: Session, dimension: str, code: str) -> dict | None:
+    active = active_products(session)
+    ids = set(session.scalars(select(ProductTag.product_id).where(ProductTag.dimension == dimension, ProductTag.code == code)))
+    return markdown_stats([p for p, _ in active if p.id in ids], store_baselines(active))
+
+
 def shelf_by_attribute(session: Session) -> dict:
     """{"stores": [{name, products, updated}], "dimensions": {dim: {"tagged": n, "items": {code: {sku, share, avg_price}}}}}."""
     active = active_products(session)
     by_id = {p.id: p for p, _ in active}
+    baselines = store_baselines(active)
     stores: dict[str, dict] = {}
     for p, store in active:
         entry = stores.setdefault(store, {"name": store, "products": 0, "updated": p.seen_at})
@@ -81,7 +122,8 @@ def shelf_by_attribute(session: Session) -> dict:
                 if p.price and p.price > 0 and p.currency:
                     prices[p.currency].append(p.price)
             items[code] = {"sku": len(ids), "share": len(ids) / tagged,
-                           "avg_price": {cur: round(mean(v), 2) for cur, v in prices.items()}}
+                           "avg_price": {cur: round(mean(v), 2) for cur, v in prices.items()},
+                           "markdown": markdown_stats([by_id[pid] for pid in ids], baselines)}
         dimensions[dim] = {"tagged": tagged, "with_value": with_value[dim], "unmapped": unmapped[dim], "items": items}
     return {"stores": sorted(stores.values(), key=lambda s: s["name"]), "dimensions": dimensions}
 
@@ -102,14 +144,16 @@ def shelf_gaps(session: Session, week: date, shelf: dict | None = None) -> dict:
     covered = {d for d in DIMENSIONS if comparable(shelf["dimensions"][d])}
     opportunities, risks = [], []
     for snap in session.scalars(select(TrendSnapshot).where(TrendSnapshot.week == week, TrendSnapshot.dimension.in_(covered))):
-        item = shelf["dimensions"][snap.dimension]["items"].get(snap.code, {"sku": 0, "share": 0.0, "avg_price": {}})
+        item = shelf["dimensions"][snap.dimension]["items"].get(snap.code, {"sku": 0, "share": 0.0, "avg_price": {}, "markdown": None})
+        md = item["markdown"]
+        clearance = bool(md and md["relative_depth"] >= CLEARANCE_PTS)
         gap = {"dimension": snap.dimension, "code": snap.code, "label": tax.label(snap.dimension, snap.code),
                "hex": tax.get(snap.dimension, snap.code).hex,
-               "status": snap.status, "momentum": snap.momentum, **item}
+               "status": snap.status, "momentum": snap.momentum, **item, "clearance": clearance}
         if snap.status in RISING and item["share"] < OPPORTUNITY_SHARE:
             opportunities.append(gap)
-        elif snap.status == "en_baisse" and item["share"] >= RISK_SHARE:
-            risks.append(gap)
+        elif snap.status == "en_baisse" and (item["share"] >= RISK_SHARE or clearance):
+            risks.append(gap)  # well stocked, or being cleared deeper than the store's usual sale
     return {
         "opportunities": sorted(opportunities, key=lambda g: -g["momentum"]),
         "risks": sorted(risks, key=lambda g: -g["share"]),

@@ -57,6 +57,11 @@ def build_brief(session: Session, week: date) -> str:
 STATUS_WORDS = {"en_hausse": "en hausse", "au_pic": "au pic", "en_baisse": "en baisse", "stable": "stable"}
 
 
+def _relative(md: dict | None) -> str:
+    """Markdown vs the store's usual sale, e.g. "+34 pts vs habituelle"; "n/d" when no store publishes list prices."""
+    return "n/d" if md is None else f"{md['relative_depth'] * 100:+.0f} pts vs habituelle"
+
+
 def _pct(share: float) -> str:
     return f"{round(share * 100)} %"
 
@@ -70,7 +75,8 @@ def shelf_brief(session: Session, week: date) -> list[str]:
     stores = ", ".join(f"{st['name']} ({st['products']} réf.)" for st in shelf["stores"])
     lines = ["", f"Marché tunisien — enseignes suivies : {stores}. Indicateur retardé (ce qui est déjà en rayon), "
              "à comparer au signal presse international ci-dessus (indicateur avancé).",
-             "Rayon (dimension | attribut | références en rayon | part du rayon de la dimension | prix moyen) :"]
+             "Rayon (dimension | attribut | références en rayon | part du rayon de la dimension | prix moyen | "
+             "remise vs remise habituelle de l'enseigne) :"]
     for dim, data in shelf["dimensions"].items():
         if not comparable(data):
             why = (f"{data['tagged']} références renseignées" if data["tagged"] < MIN_TAGGED
@@ -79,14 +85,17 @@ def shelf_brief(session: Session, week: date) -> list[str]:
             continue
         for code, item in sorted(data["items"].items(), key=lambda kv: -kv[1]["sku"])[:6]:
             price = " / ".join(f"{v:.0f} {cur}" for cur, v in item["avg_price"].items()) or "n/d"
-            lines.append(f"{tax.dimension_labels[dim]} | {tax.label(dim, code)} | {item['sku']} | {_pct(item['share'])} | {price}")
+            lines.append(f"{tax.dimension_labels[dim]} | {tax.label(dim, code)} | {item['sku']} | {_pct(item['share'])} | {price}"
+                         f" | {_relative(item['markdown'])}")
     gaps = shelf_gaps(session, week, shelf)
     if gaps["opportunities"] or gaps["risks"]:
         lines.append("Écarts presse / rayon (calculés) :")
         lines += [f"Opportunité : {g['label']} ({tax.dimension_labels[g['dimension']]}) — {STATUS_WORDS.get(g['status'], g['status'])} dans la presse "
                   f"({g['momentum']:+.0%}), {g['sku']} référence(s) en rayon ({_pct(g['share'])})" for g in gaps["opportunities"][:3]]
         lines += [f"Risque de stock : {g['label']} ({tax.dimension_labels[g['dimension']]}) — en baisse dans la presse "
-                  f"({g['momentum']:+.0%}), {g['sku']} références en rayon ({_pct(g['share'])})" for g in gaps["risks"][:3]]
+                  f"({g['momentum']:+.0%}), {g['sku']} références en rayon ({_pct(g['share'])})"
+                  + (f", déstockage : remise {_relative(g['markdown'])}" if g["clearance"] else "")
+                  for g in gaps["risks"][:3]]
     return lines
 
 

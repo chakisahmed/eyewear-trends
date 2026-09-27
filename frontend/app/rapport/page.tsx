@@ -119,6 +119,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
                             <span className="reason">
                               {g.sku ? `${num(g.sku)} réf. en rayon (${pct(g.share)})` : "absent des rayons suivis"}
                               {Object.entries(g.avg_price).map(([cur, v]) => ` · ${num(v)} ${cur}`).join("")}
+                              {g.clearance && g.markdown && ` · déstockage : remise +${num(g.markdown.relative_depth * 100)} pts vs l'habituelle`}
                             </span>
                           </td>
                           <td className="mom"><StatusBadge status={g.status} momentum={g.momentum} /></td>

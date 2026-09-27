@@ -65,10 +65,44 @@ stores:
     fields:                            # CSS fallbacks; JSON-LD is primary
       name:      { css: ".woocommerce-loop-product__title" }   # clean: the link text carries "Spray Offert - 50%"
       price:     { css: ".price" }                              # "<ins>249 DT</ins> <del>499 DT</del>" -> 249
+      list_price: { css: ".price del" }                         # the struck-through price -> 499 (discount signal)
       image_url: { css: "img", attr: ["data-src", "data-lazy-src", "src"] }  # src is a data: placeholder
     flags:
       out_of_stock: { css: ".outofstock", exists: true }       # class on the card itself (descendant-or-self)
       categories:   { css: ".woocommerce-loop-product__title", regex: '(?i)(lunettes? de (?:soleil|vue)(?:\s+(?:femme|homme|mixte))?)' }
+
+  # LaMode (Tunisia), PrestaShop, "Cadres optiques": ~183 designer prescription frames (Balenciaga, Gucci,
+  # Dior…). Checked 2026-09-27: product JSON-LD has name, brand, price (TND), availability; the shape is
+  # in a features block ("Forme Lunette : Cat-Eye", "Genre : Femmes"). That block also lists "VISAGE"
+  # (recommended face shapes): the tagger deliberately ignores that label. robots.txt allows ?page=N.
+  # No discount signal: the JSON-LD has no list price, and it is never paired with a CSS one.
+  lamode.tn:
+    name: "LaMode"
+    base_url: "https://www.lamode.tn"
+    lang: fr
+    country: TN
+    default_currency: TND
+    delay_s: 1.5
+    listing:
+      urls: ["/36-cadres-optiques"]
+      pagination: { next: "a.next", max_pages: 20 }   # 12 per page, ~16 pages
+      product: "article.product-miniature"
+      link: "h3.product-name a"
+    product_pages:
+      enabled: true                    # the shape is only on the product page
+      max_products: 200
+    fields:                            # CSS fallbacks; JSON-LD is primary
+      name:      { css: "h3.product-name a" }
+      brand:     { css: ".product-manufacturer-title" }
+      price:     { css: ".product-price-and-shipping .price" }       # "1 420 DT"
+      list_price: { css: ".product-price-and-shipping .regular-price" }
+      image_url: { css: ".product-thumbnail img", attr: ["data-full-size-image-url", "src"] }
+    flags:
+      categories: { css: "h3.product-name a", regex: '(?i)(lunettes? de (?:soleil|vue)(?:\s+(?:femme|homme|mixte))?)' }
+    specs:                             # features block -> raw_specs (Forme Lunette, Genre, VISAGE, Magasin…)
+      rows: "#product-features-tab .card-body > div.row"
+      key: "strong"
+      value: "span"
 
 # Template (copy under `stores:` and adapt the selectors to the site):
 #

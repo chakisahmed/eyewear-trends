@@ -52,7 +52,7 @@ class StoreSyncService:
         result = SyncResult()
         for url, p in latest.items():
             # null(): SQL NULL for no flags; a plain None would be stored as the JSON text 'null'
-            values = dict(name=p.name, brand=p.brand, price=p.price, currency=p.currency, rank=p.rank,
+            values = dict(name=p.name, brand=p.brand, price=p.price, list_price=p.list_price, currency=p.currency, rank=p.rank,
                           flags=p.flags or null(), image_url=p.db_image_url(), seen_at=p.seen_at)
             row = existing.get(url)
             if row is None:

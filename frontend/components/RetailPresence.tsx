@@ -1,5 +1,5 @@
 import { Icon } from "@/components/icons";
-import { dayShort, num } from "@/lib/format";
+import { dayShort, num, pct } from "@/lib/format";
 import type { RetailPrice, TrendDetail } from "@/lib/types";
 
 /** Price with the currency's usual decimals: TND has 3 but shelf prices are whole, so trim zeros. */
@@ -45,6 +45,13 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
               · {num(stores)} enseigne{stores > 1 ? "s" : ""}
             </p>
             {(d.retail_avg_price ?? []).map(p => <p key={p.currency} className="retail-price">{priceLine(p)}</p>)}
+            {d.retail_markdown && (
+              <p className="retail-markdown">
+                {num(d.retail_markdown.discounted)}/{num(d.retail_markdown.compared)} réf. en promotion
+                {d.retail_markdown.avg_depth != null && ` · remise moyenne ${pct(d.retail_markdown.avg_depth)}`}
+                {` · ${d.retail_markdown.relative_depth >= 0 ? "+" : "−"}${num(Math.abs(d.retail_markdown.relative_depth) * 100)} pts vs la remise habituelle des enseignes`}
+              </p>
+            )}
             {(types.optical || types.sun) && (
               <p className="retail-types">
                 {types.optical ? `Optique ${num(types.optical)}` : null}

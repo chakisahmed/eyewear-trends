@@ -61,6 +61,7 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(300))
     brand: Mapped[str | None] = mapped_column(String(100))
     price: Mapped[float | None] = mapped_column(Float)
+    list_price: Mapped[float | None] = mapped_column(Float)  # pre-markdown price, only when above price (a discount)
     currency: Mapped[str | None] = mapped_column(String(3))
     rank: Mapped[int | None] = mapped_column(Integer)
     flags: Mapped[dict | None] = mapped_column(JSON)  # {"is_bestseller": True, "raw_specs": {...}}

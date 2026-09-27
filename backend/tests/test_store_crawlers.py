@@ -102,10 +102,10 @@ def test_config_loads_and_resolves_domains(cfg):
         config_for("other.test", configs)
 
 
-def test_shipped_config_has_outika_and_mykenza():
+def test_shipped_config_has_the_three_stores():
     from app.collectors.stores.config import load_store_configs
     configs = load_store_configs()
-    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn"]
+    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn", "lamode.tn"]
     outika = configs["outika-eyewear.tn"]
     assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
 
@@ -631,11 +631,121 @@ async def test_mykenza_rules_on_recorded_markup():
     assert {(t.dimension, t.code) for t in tag_product(loewe.name, loewe.flags)} >= {
         ("shape", "cat_eye"), ("audience", "women"), ("product_type", "sun")}
 
+    assert loewe.list_price == 900.0                                          # JSON-LD ListPrice: -30 %
     elon = products["ray-ban-elon-rb3958"]  # listing card only: no promo text, sale price, lazy image, stock class
     assert (elon.name, elon.price, elon.currency) == ("Lunette de Soleil Ray-Ban Elon RB3958 9196/57", 249.0, "TND")
+    assert elon.list_price == 499.0                                           # card <del>: -50 %
     assert str(elon.image_url).endswith("ray-ban-elon-rb3958-300x300.jpg") and elon.flags["out_of_stock"] is True
     assert elon.flags["categories"] == "Lunette de Soleil"
 
     square = products["ray-ban-square-rb1971"]
     assert square.price == 249.0 and ("shape", "square") in {(t.dimension, t.code) for t in tag_product(square.name, square.flags)}
     assert not any("?" in p for p in requested) and f"{men}page/2/" in requested
+
+
+# --- discount signal: list_price -----------------------------------------------------------------
+
+def test_contract_keeps_list_price_only_as_a_real_markdown():
+    assert ScrapedProduct(url=f"{BASE}/p/a", name="A", price=70, list_price=100).list_price == 100
+    assert ScrapedProduct(url=f"{BASE}/p/a", name="A", price=70, list_price=70).list_price is None   # no markdown
+    assert ScrapedProduct(url=f"{BASE}/p/a", name="A", price=70, list_price=50).list_price is None   # nonsense
+    assert ScrapedProduct(url=f"{BASE}/p/a", name="A", list_price=100).list_price is None            # no price
+
+
+def test_json_ld_list_price_from_price_specification():
+    from app.collectors.stores.parser import json_ld_fields
+    node = {"offers": [{"priceSpecification": [
+        {"price": "630", "priceCurrency": "TND"},
+        {"price": "900", "priceCurrency": "TND", "priceType": "https://schema.org/ListPrice"}]}]}
+    fields = json_ld_fields(node, BASE)
+    assert (fields["price"], fields["list_price"]) == (630.0, 900.0)
+    plain = {"offers": {"price": "45", "priceSpecification": {"price": "60", "priceType": "StrikethroughPrice"}}}
+    assert (json_ld_fields(plain, BASE)["price"], json_ld_fields(plain, BASE)["list_price"]) == (45.0, 60.0)
+
+
+def test_list_price_comes_from_the_same_source_as_the_price():
+    from app.collectors.stores.parser import merge
+    assert (lambda m: (m["price"], m["list_price"]))(merge({"price": 630.0, "list_price": 900.0}, {"price": 249.0, "list_price": 499.0})) == (630.0, 900.0)
+    # JSON-LD gives the price but no list price: never pair it with a CSS list price from elsewhere on the page
+    assert merge({"price": 630.0}, {"price": 249.0, "list_price": 499.0})["list_price"] is None
+    assert merge({}, {"price": 249.0, "list_price": 499.0})["list_price"] == 499.0
+
+
+# --- lamode.tn: optical frames, the shipped YAML rules against markup mirrored from the real site (PrestaShop)
+
+LAMODE = "https://www.lamode.tn"
+LAMODE_CAT = "/36-cadres-optiques"
+
+
+def lamode_card(pid: int, slug: str, brand: str, title: str, price: str, regular: str | None = None) -> str:
+    url = f"{LAMODE}/optique-lunettes-de-soleil-lunettes-de-vue-et-lentilles/{pid}-{slug}.html"
+    reg = f'<span class="regular-price" aria-label="Prix de base">{regular}</span>' if regular else ""
+    return (
+        f'<article class="product-miniature js-product-miniature" data-id-product="{pid}"><div class="thumbnail-container">'
+        f'<div class="thumbnail-top"><a href="{url}" class="thumbnail product-thumbnail"><picture>'
+        f'<img src="{LAMODE}/{pid}-large_default/{slug}.webp" alt="{title} - {brand}" loading="lazy"></picture></a>'
+        f'<a class="btn btn-primary buy-now" href="{url}" data-link-action="quickview"> Voir produit </a></div>'
+        f'<div class="product-description"><p class="product-manufacturer-title text-uppercase">{brand}</p>'
+        f'<h3 class="product-name"><a href="{url}" content="{url}">{title}</a></h3>'
+        f'<div class="product-price-and-shipping">{reg}<span class="price" aria-label="Prix"> {price} </span></div>'
+        '</div></div></article>'
+    )
+
+
+def lamode_product(pid: int, slug: str, brand: str, title: str, price: str, forme: str, genre: str = "Femmes") -> str:
+    url = f"{LAMODE}/optique-lunettes-de-soleil-lunettes-de-vue-et-lentilles/{pid}-{slug}.html"
+    rows = [("Forme Lunette", forme), ("Saison", "Toutes saisons"), ("Genre", genre), ("VISAGE", "Ovale"),
+            ("VISAGE", "Rond"), ("Magasin", "Magasin Centre X")]
+    features = "".join(f'<div class="row"><div class="col-xs-6 mb-1"><strong>{k}</strong></div>'
+                       f'<div class="col-xs-6"><span>{v}</span></div></div>' for k, v in rows)
+    return (
+        json_ld({"@context": "https://schema.org/", "@type": "Product", "name": title.replace(f"{brand.upper()} ", f"{brand.upper()}  "),
+                 "brand": {"@type": "Brand", "name": brand}, "image": f"{LAMODE}/{pid}-home_default/{slug}.webp",
+                 "offers": {"@type": "Offer", "priceCurrency": "TND", "price": price,
+                            "url": f"{url.replace(f'{pid}-', f'{pid}-22062-')}#/325-couleur-bordeaux",
+                            "availability": "https://schema.org/InStock"}})
+        + '<div class="product-information"><div id="product-accordion"><div id="product-features-tab" class="collapse">'
+        + f'<div class="card-body">{features}</div></div></div></div>'
+    )
+
+
+@pytest.mark.anyio
+async def test_lamode_rules_on_recorded_markup():
+    from app.collectors.stores.config import load_store_configs
+    from app.collectors.stores.tagger import tag_product
+    cfg = load_store_configs()["lamode.tn"]
+    gucci_t, bal_t, dior_t = ("Lunettes de Vue Femme GUCCI GG1003OA", "Lunettes de Vue Femme BALENCIAGA BB0273-O",
+                              "Lunettes de Vue Homme DIOR 245G")
+    pages = {
+        "/robots.txt": "User-agent: *\nDisallow: /*?q=\nDisallow: /*?order=\nDisallow: /*?search_query=\n",
+        LAMODE_CAT: (lamode_card(16506, "lunettes-de-vue-femme-balenciaga-bb0273-o", "BALENCIAGA", bal_t, "910 DT")
+                     + lamode_card(15101, "lunettes-de-vue-femme-gucci-gg1003oa", "GUCCI", gucci_t, "1 420 DT", regular="1 775 DT")
+                     + f'<nav class="pagination"><a rel="next" href="{LAMODE}{LAMODE_CAT}?page=2" class="next js-search-link">Suivant</a></nav>'),
+        f"{LAMODE_CAT}?page=2": lamode_card(14000, "lunettes-de-vue-homme-dior-245g", "DIOR", dior_t, "1 099 DT"),
+        "/optique-lunettes-de-soleil-lunettes-de-vue-et-lentilles/16506-lunettes-de-vue-femme-balenciaga-bb0273-o.html":
+            lamode_product(16506, "lunettes-de-vue-femme-balenciaga-bb0273-o", "BALENCIAGA", bal_t, "910", "Cat-Eye"),
+        "/optique-lunettes-de-soleil-lunettes-de-vue-et-lentilles/15101-lunettes-de-vue-femme-gucci-gg1003oa.html":
+            lamode_product(15101, "lunettes-de-vue-femme-gucci-gg1003oa", "Gucci", gucci_t, "1420", "Carrée"),
+        # the Dior page 404s: its listing card alone must still give a valid product
+    }
+    requested: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        requested.append(path)
+        return httpx.Response(200, text=pages[path]) if path in pages else httpx.Response(404)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        products = {p.db_url().rsplit("/", 1)[-1].split("-", 1)[0]: p for p in await crawler.crawl()}
+
+    assert set(products) == {"16506", "15101", "14000"} and f"{LAMODE_CAT}?page=2" in requested
+    bal, gucci, dior = products["16506"], products["15101"], products["14000"]
+    assert (bal.name, bal.brand, bal.price, bal.currency, bal.rank) == (bal_t, "BALENCIAGA", 910.0, "TND", 1)  # "  " collapsed
+    assert bal.flags["raw_specs"]["Forme Lunette"] == "Cat-Eye" and bal.flags["categories"] == "Lunettes de Vue Femme"
+    assert {(t.dimension, t.code) for t in tag_product(bal.name, bal.flags)} == {
+        ("shape", "cat_eye"), ("audience", "women"), ("product_type", "optical")}   # VISAGE Ovale/Rond ignored
+    assert gucci.price == 1420.0 and gucci.list_price is None     # JSON-LD price never paired with a CSS list price
+    assert (dior.name, dior.brand, dior.price) == (dior_t, "DIOR", 1099.0)          # listing card only
+    assert {(t.dimension, t.code) for t in tag_product(dior.name, dior.flags)} == {("audience", "men"), ("product_type", "optical")}

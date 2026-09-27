@@ -119,3 +119,55 @@ def test_dimension_with_unrecognised_store_vocabulary_is_not_compared(s):
     gaps = retail.shelf_gaps(s, WEEK, shelf)
     assert gaps["opportunities"] == [] and "style" in gaps["skipped_dimensions"] and "shape" not in gaps["skipped_dimensions"]
     assert "vocabulaire des boutiques non reconnu pour 50 %" in build_brief(s, WEEK)
+
+
+# --- discount signal (list_price) -------------------------------------------------------------------
+
+def add_priced(s, store: str, rows: list[tuple[str, int, float, float | None]]):
+    """rows: (shape code, count, price, list_price or None)."""
+    src = Source(name=store, kind="store", url=f"https://{store.lower()}.test", lang="fr", country="TN")
+    s.add(src)
+    s.flush()
+    i = 0
+    for code, n, price, list_price in rows:
+        for _ in range(n):
+            i += 1
+            p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"{store} {i}", price=price, list_price=list_price,
+                        currency="TND", rank=i, seen_at=NOW)
+            p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=3)]
+            s.add(p)
+    s.commit()
+
+
+def test_markdown_is_relative_to_the_store_wide_promotion(s):
+    # Promo runs a store-wide sale: square -30 %, round -60 % (clearance), aviator full price.
+    add_priced(s, "Promo", [("square", 30, 70, 100), ("round", 4, 40, 100), ("aviator", 10, 100, None)])
+    add_priced(s, "Plain", [("aviator", 10, 45, None), ("round", 3, 45, None)])  # publishes no list prices
+    baseline = (30 * 0.3 + 4 * 0.6) / 44
+    items = retail.shelf_by_attribute(s)["dimensions"]["shape"]["items"]
+    rnd = items["round"]["markdown"]
+    assert (rnd["compared"], rnd["discounted"]) == (4, 4)                  # Plain's 3 round frames are not compared
+    assert rnd["share_discounted"] == 1.0 and rnd["avg_depth"] == pytest.approx(0.6)
+    assert rnd["relative_depth"] == pytest.approx(0.6 - baseline, abs=1e-3)          # deeper than the store's usual sale
+    assert items["square"]["markdown"]["relative_depth"] == pytest.approx(0.3 - baseline, abs=1e-3)  # ~ the store-wide sale
+    avi = items["aviator"]["markdown"]
+    assert (avi["compared"], avi["discounted"], avi["avg_depth"]) == (10, 0, None)
+    assert avi["relative_depth"] == pytest.approx(-baseline, abs=1e-3)
+
+
+def test_markdown_is_none_when_no_store_publishes_list_prices(s):
+    add_store(s, "Alpha", {"square": 25})
+    assert retail.shelf_by_attribute(s)["dimensions"]["shape"]["items"]["square"]["markdown"] is None
+
+
+def test_deep_relative_markdown_makes_a_declining_trend_a_clearance_risk(s):
+    add_priced(s, "Promo", [("square", 30, 70, 100), ("round", 4, 40, 100), ("aviator", 10, 100, None)])
+    add_priced(s, "Plain", [("aviator", 10, 45, None)])
+    snapshot(s, "round", "en_baisse", -0.4)    # 4/54 = 7 % of the shelf: below RISK_SHARE, but -60 % vs -26 % usual
+    snapshot(s, "square", "en_baisse", -0.3)   # 56 % of the shelf, discounted like the rest of the store
+    gaps = retail.shelf_gaps(s, WEEK)
+    by_code = {g["code"]: g for g in gaps["risks"]}
+    assert set(by_code) == {"round", "square"}
+    assert by_code["round"]["clearance"] is True and by_code["square"]["clearance"] is False
+    brief = build_brief(s, WEEK)
+    assert "déstockage" in brief and "Ronde / Panto" in brief

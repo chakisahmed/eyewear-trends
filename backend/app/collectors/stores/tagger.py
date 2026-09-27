@@ -15,9 +15,11 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, fold, load_taxonomy
 
-RULES_VERSION = 3  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 4  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
+# v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
+#     shapes) are deliberately NOT a label: a face shape is not the frame's shape.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport"})
 SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
@@ -26,7 +28,8 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
     "materiau du cadre": "material", "matiere de la monture": "material", "materiau de la monture": "material",
     "gender": "audience", "genre": "audience", "sexe": "audience", "le sexe": "audience",
     "color": "color", "colour": "color", "couleur": "color", "coloris": "color",
-    "forme": "shape", "shape": "shape",
+    "forme": "shape", "shape": "shape", "forme lunette": "shape", "forme de lunette": "shape",
+    "forme monture": "shape", "forme de la monture": "shape",
     "style": "style",
 }
 # Store vocabulary the taxonomy does not list (taxonomy.yaml also feeds the LLM prompt and Google

@@ -19,7 +19,7 @@ from lxml import html as lxml_html
 from app.collectors.stores.config import FieldRule, ScraperConfig
 
 log = logging.getLogger(__name__)
-PRODUCT_FIELDS = ("name", "brand", "price", "currency", "image_url")
+PRODUCT_FIELDS = ("name", "brand", "price", "list_price", "currency", "image_url")
 CURRENCY_TOKENS = {  # checked in this order, case-insensitive
     "TND": "TND", "DT": "TND", "د.ت": "TND", "EUR": "EUR", "€": "EUR", "USD": "USD", "$": "USD",
     "GBP": "GBP", "£": "GBP", "MAD": "MAD", "CHF": "CHF",
@@ -127,14 +127,23 @@ def _json_price(value: Any) -> float | None:
 NOT_CURRENT_PRICE = ("listprice", "strikethroughprice", "msrp", "srp")  # schema.org priceType values
 
 
-def _current_price_spec(specs: Any) -> dict | None:
-    """The priceSpecification entry that is the actual selling price (not the struck-through list price)."""
+def _price_specs(specs: Any) -> list[tuple[str, dict]]:
+    """(price type, spec) for each priceSpecification entry with a price; type "" = selling price."""
+    out = []
     for spec in specs if isinstance(specs, list) else [specs]:
         if isinstance(spec, dict) and spec.get("price") not in (None, ""):
-            kind = str(spec.get("priceType") or "").rsplit("/", 1)[-1].lower()
-            if kind not in NOT_CURRENT_PRICE:
-                return spec
-    return None
+            out.append((str(spec.get("priceType") or "").rsplit("/", 1)[-1].lower(), spec))
+    return out
+
+
+def _current_price_spec(specs: Any) -> dict | None:
+    """The priceSpecification entry that is the actual selling price (not the struck-through list price)."""
+    return next((spec for kind, spec in _price_specs(specs) if kind not in NOT_CURRENT_PRICE), None)
+
+
+def _list_price_spec(specs: Any) -> dict | None:
+    """The pre-markdown price (schema.org ListPrice / StrikethroughPrice / MSRP), if published."""
+    return next((spec for kind, spec in _price_specs(specs) if kind in NOT_CURRENT_PRICE), None)
 
 
 DESCRIPTION_SPLIT = re.compile(r"[–—|•;\n]")  # – — | • ; newline
@@ -169,6 +178,9 @@ def json_ld_fields(node: dict, page_url: str) -> dict[str, Any]:
                 price, currency = _json_price(spec.get("price")), currency or spec.get("priceCurrency")
         if price is not None:
             out["price"] = price
+            listed = _list_price_spec(offer.get("priceSpecification"))
+            if listed:  # kept only if above the price (ScrapedProduct drops it otherwise)
+                out["list_price"] = _json_price(listed.get("price"))
         if isinstance(currency, str):
             out["currency"] = currency
     image = _first(node.get("image"))
@@ -208,6 +220,10 @@ def css_fields(element, rules: dict[str, FieldRule], scope: str, base_url: str) 
             price, price_currency = parse_price(value)
             if price is not None:
                 out["price"] = price
+        elif name == "list_price":
+            listed, _ = parse_price(value)
+            if listed is not None:
+                out["list_price"] = listed
         elif name == "image_url":
             url = urljoin(base_url, value)
             if url.startswith(("http://", "https://")):  # skip lazy-load placeholders (data:image/svg+xml,...)
@@ -296,6 +312,10 @@ def merge(*layers: dict[str, Any], default_currency: str | None = None, default_
     def usable(f: str, v: Any) -> bool:
         return v is not None and not (f == "price" and v <= 0)
     out = {f: next((layer[f] for layer in layers if usable(f, layer.get(f))), None) for f in PRODUCT_FIELDS}
+    # The list price must come from the layer that gave the price: pairing a JSON-LD sale price with a
+    # struck-through price read elsewhere on the page could invent a discount.
+    price_layer = next((layer for layer in layers if usable("price", layer.get("price"))), {})
+    out["list_price"] = price_layer.get("list_price") if usable("price", price_layer.get("list_price")) else None
     if out["currency"] is None:
         out["currency"] = default_currency
     if out["brand"] is None:

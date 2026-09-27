@@ -61,9 +61,9 @@ def test_first_source_is_kept_as_provenance_and_results_are_sorted():
 
 # --- rules v2 (mykenza / lunettek vocabulary) ----------------------------------------------------
 
-def test_rules_version_3():
+def test_rules_version_3_rond_alias_still_applies():
     from app.collectors.stores.tagger import RULES_VERSION
-    assert RULES_VERSION == 3
+    assert RULES_VERSION >= 3
 
 
 def test_masculine_rond_maps_to_round_in_specs_only():
@@ -96,3 +96,19 @@ def test_mykenza_description_sample():
                               "Style : Tendance – Matière du cadre : Plastique")
     got = codes(tag_product("Lunette de Soleil Femme Loewe LW40128I 01A", {"raw_specs": specs, "categories": "Lunette de Soleil Femme"}))
     assert got == {("shape", "cat_eye"), ("audience", "women"), ("product_type", "sun")}
+
+
+# --- rules v4 (lamode.tn) ------------------------------------------------------------------------
+
+def test_rules_version_4_forme_lunette_is_a_shape_label():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION == 4
+    assert codes(tag_product("X", {"raw_specs": {"Forme Lunette": "Cat-Eye"}})) == {("shape", "cat_eye")}
+    assert codes(tag_product("X", {"raw_specs": {"Forme de la monture": "Carrée"}})) == {("shape", "square")}
+
+
+def test_face_shape_is_never_a_frame_shape():
+    """LaMode lists VISAGE (recommended face shapes: Ovale, Rond...) next to Forme Lunette."""
+    specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}
+    assert codes(tag_product("Lunettes de Vue Femme GUCCI GG1003OA", {"raw_specs": specs})) == {
+        ("shape", "square"), ("audience", "women")}                         # no round, no oval from VISAGE

@@ -11,7 +11,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 CURRENCY_RE = re.compile(r"^[A-Z]{3}$")
 MAX_URL, MAX_NAME, MAX_BRAND = 1000, 300, 100  # products.url / name / brand column lengths
@@ -28,6 +28,7 @@ class ScrapedProduct(BaseModel):
     name: str = Field(min_length=1)
     brand: str | None = None
     price: float | None = Field(default=None, ge=0)
+    list_price: float | None = Field(default=None, ge=0)  # pre-markdown price; kept only when above price
     currency: str | None = None  # ISO 4217, e.g. "TND", "EUR"
     rank: int | None = Field(default=None, ge=1)  # 1-based position on the store's listing
     image_url: HttpUrl | None = None
@@ -37,7 +38,7 @@ class ScrapedProduct(BaseModel):
     @field_validator("name")
     @classmethod
     def _truncate_name(cls, v: str) -> str:
-        return v[:MAX_NAME]
+        return " ".join(v.split())[:MAX_NAME]  # "BALENCIAGA  BB0273-O" -> one space: same frame, same name
 
     @field_validator("brand", mode="before")
     @classmethod
@@ -80,6 +81,13 @@ class ScrapedProduct(BaseModel):
     @classmethod
     def _utc(cls, v: datetime) -> datetime:
         return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v.astimezone(timezone.utc)
+
+    @model_validator(mode="after")
+    def _list_price_is_a_markdown(self) -> ScrapedProduct:
+        """A list price only matters as a discount signal: drop it unless it is above the selling price."""
+        if self.list_price is not None and (self.price is None or self.list_price <= self.price):
+            object.__setattr__(self, "list_price", None)  # the model is frozen: bypass the setter guard
+        return self
 
     def db_url(self) -> str:
         return str(self.url)

@@ -311,6 +311,8 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
             for p, store in sample
         ],
         "retail_updated_at": (updated if updated.tzinfo else updated.replace(tzinfo=timezone.utc)).isoformat() if updated else None,
+        # discount signal vs each store's usual markdown; None when no tracked store publishes list prices
+        "retail_markdown": retail.attribute_markdown(db, dimension, code),
     }
 
 
