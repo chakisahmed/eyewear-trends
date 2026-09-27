@@ -11,7 +11,9 @@ from app.config import settings
 from app.extraction.llm import LLMProvider
 from app.extraction.service import load_prompt
 from app.models import Document, Mention, TrendSnapshot, WeeklySummary
-from app.scoring.retail import MIN_TAGGED, comparable, shelf_by_attribute, shelf_gaps, unmapped_share
+from app.scoring.retail import (
+    MIN_TAGGED, PRODUCT_TYPES, TYPE_LABELS, comparable, shelf_by_attribute, shelf_gaps_by_type, unmapped_share,
+)
 from app.taxonomy import load_taxonomy
 
 
@@ -67,33 +69,40 @@ def _pct(share: float) -> str:
 
 
 def shelf_brief(session: Session, week: date) -> list[str]:
-    """The Tunisian shelf (lagging indicator) next to the press scores; empty without store data."""
-    shelf = shelf_by_attribute(session)
-    if not shelf["stores"]:
+    """The Tunisian shelf (lagging indicator) next to the press scores, one shelf per product type
+    (prescription vs sunglasses: their shape mix differs); empty without store data."""
+    everything = shelf_by_attribute(session)
+    if not everything["stores"]:
         return []
     tax = load_taxonomy()
-    stores = ", ".join(f"{st['name']} ({st['products']} réf.)" for st in shelf["stores"])
+    stores = ", ".join(f"{st['name']} ({st['products']} réf.)" for st in everything["stores"])
     lines = ["", f"Marché tunisien — enseignes suivies : {stores}. Indicateur retardé (ce qui est déjà en rayon), "
-             "à comparer au signal presse international ci-dessus (indicateur avancé).",
-             "Rayon (dimension | attribut | références en rayon | part du rayon de la dimension | prix moyen | "
-             "remise vs remise habituelle de l'enseigne) :"]
-    for dim, data in shelf["dimensions"].items():
-        if not comparable(data):
-            why = (f"{data['tagged']} références renseignées" if data["tagged"] < MIN_TAGGED
-                   else f"vocabulaire des boutiques non reconnu pour {_pct(unmapped_share(data))} des valeurs")
-            lines.append(f"{tax.dimension_labels[dim]} : couverture insuffisante ({why}), pas de comparaison.")
+             "à comparer au signal presse international ci-dessus (indicateur avancé)."]
+    gaps = shelf_gaps_by_type(session, week)
+    for product_type in PRODUCT_TYPES:
+        shelf, label = gaps["shelves"][product_type], TYPE_LABELS[product_type]
+        if not gaps["types"][product_type]:
+            lines.append(f"Rayon {label} : couverture insuffisante (aucune référence suivie), pas de comparaison.")
             continue
-        for code, item in sorted(data["items"].items(), key=lambda kv: -kv[1]["sku"])[:6]:
-            price = " / ".join(f"{v:.0f} {cur}" for cur, v in item["avg_price"].items()) or "n/d"
-            lines.append(f"{tax.dimension_labels[dim]} | {tax.label(dim, code)} | {item['sku']} | {_pct(item['share'])} | {price}"
-                         f" | {_relative(item['markdown'])}")
-    gaps = shelf_gaps(session, week, shelf)
+        lines.append(f"Rayon {label} — {gaps['types'][product_type]} références (dimension | attribut | références "
+                     "en rayon | part du rayon de la dimension | prix moyen | remise vs remise habituelle de l'enseigne) :")
+        for dim, data in shelf["dimensions"].items():
+            if not comparable(data):
+                why = (f"{data['tagged']} références renseignées" if data["tagged"] < MIN_TAGGED
+                       else f"vocabulaire des boutiques non reconnu pour {_pct(unmapped_share(data))} des valeurs")
+                lines.append(f"{tax.dimension_labels[dim]} : couverture insuffisante ({why}), pas de comparaison.")
+                continue
+            for code, item in sorted(data["items"].items(), key=lambda kv: -kv[1]["sku"])[:6]:
+                price = " / ".join(f"{v:.0f} {cur}" for cur, v in item["avg_price"].items()) or "n/d"
+                lines.append(f"{tax.dimension_labels[dim]} | {tax.label(dim, code)} | {item['sku']} | {_pct(item['share'])} | {price}"
+                             f" | {_relative(item['markdown'])}")
     if gaps["opportunities"] or gaps["risks"]:
-        lines.append("Écarts presse / rayon (calculés) :")
-        lines += [f"Opportunité : {g['label']} ({tax.dimension_labels[g['dimension']]}) — {STATUS_WORDS.get(g['status'], g['status'])} dans la presse "
-                  f"({g['momentum']:+.0%}), {g['sku']} référence(s) en rayon ({_pct(g['share'])})" for g in gaps["opportunities"][:3]]
-        lines += [f"Risque de stock : {g['label']} ({tax.dimension_labels[g['dimension']]}) — en baisse dans la presse "
-                  f"({g['momentum']:+.0%}), {g['sku']} références en rayon ({_pct(g['share'])})"
+        lines.append("Écarts presse / rayon (calculés, par type de rayon) :")
+        lines += [f"Opportunité ({TYPE_LABELS[g['product_type']]}) : {g['label']} ({tax.dimension_labels[g['dimension']]}) — "
+                  f"{STATUS_WORDS.get(g['status'], g['status'])} dans la presse ({g['momentum']:+.0%}), "
+                  f"{g['sku']} référence(s) en rayon ({_pct(g['share'])})" for g in gaps["opportunities"][:3]]
+        lines += [f"Risque de stock ({TYPE_LABELS[g['product_type']]}) : {g['label']} ({tax.dimension_labels[g['dimension']]}) — "
+                  f"en baisse dans la presse ({g['momentum']:+.0%}), {g['sku']} références en rayon ({_pct(g['share'])})"
                   + (f", déstockage : remise {_relative(g['markdown'])}" if g["clearance"] else "")
                   for g in gaps["risks"][:3]]
     return lines

@@ -182,13 +182,17 @@ export interface ShelfGap extends Attribute {
   avg_price: Record<string, number>;
   markdown: Markdown | null;
   clearance: boolean;
+  product_type: ProductType;
 }
+
+export type ProductType = "optical" | "sun";
 
 export interface RetailOverview {
   week: string | null;
   stores: { name: string; products: number; updated: string }[];
   opportunities: ShelfGap[];
   risks: ShelfGap[];
-  skipped_dimensions: Dimension[];
+  types: Record<ProductType, number>;
+  skipped_dimensions: Record<ProductType, Dimension[]>;
   thresholds: { opportunity_share: number; risk_share: number; min_tagged: number };
 }

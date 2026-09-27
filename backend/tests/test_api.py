@@ -258,8 +258,9 @@ def test_trend_detail_retail_presence(client):
 
 def test_retail_overview_shape(client):
     body = client.get("/api/retail/overview").json()
-    assert set(body) == {"week", "stores", "opportunities", "risks", "skipped_dimensions", "thresholds"}
+    assert set(body) == {"week", "stores", "types", "opportunities", "risks", "skipped_dimensions", "thresholds"}
+    assert set(body["skipped_dimensions"]) == {"optical", "sun"}
     assert body["thresholds"] == {"opportunity_share": 0.05, "risk_share": 0.15, "min_tagged": 20}
     for gap in body["opportunities"] + body["risks"]:
-        assert {"dimension", "code", "label", "status", "momentum", "sku", "share", "avg_price"} <= set(gap)
+        assert {"dimension", "code", "label", "status", "momentum", "sku", "share", "avg_price", "product_type"} <= set(gap)
     assert all({"name", "products", "updated"} <= set(st) for st in body["stores"])

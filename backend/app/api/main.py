@@ -259,21 +259,13 @@ def trends(dimension: str, db: DB, week: date | None = None, weeks: int = Query(
     return {"week": end.isoformat(), "weeks": [w.isoformat() for w in week_list], "series": series}
 
 
-RETAIL_ACTIVE_DAYS = retail.ACTIVE_DAYS  # same shelf definition as the report and the weekly summary
 RETAIL_SAMPLE_SIZE = 5
 
 
 def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     """"Présence en boutique": store products tagged with this attribute (rule-based tags, no LLM)."""
-    latest = dict(db.execute(select(Product.source_id, func.max(Product.seen_at)).group_by(Product.source_id)).all())
-    rows = [
-        (p, store) for p, store in db.execute(
-            select(Product, Source.name).join(ProductTag, ProductTag.product_id == Product.id)
-            .join(Source, Source.id == Product.source_id)
-            .where(ProductTag.dimension == dimension, ProductTag.code == code)
-        ).all()
-        if p.seen_at >= latest[p.source_id] - timedelta(days=RETAIL_ACTIVE_DAYS)
-    ]
+    tagged = set(db.scalars(select(ProductTag.product_id).where(ProductTag.dimension == dimension, ProductTag.code == code)))
+    rows = [(p, store) for p, store in retail.active_products(db) if p.id in tagged]
     ids = [p.id for p, _ in rows]
     types = Counter(db.scalars(select(ProductTag.code).where(ProductTag.product_id.in_(ids), ProductTag.dimension == "product_type")))
 
@@ -397,11 +389,14 @@ def retail_overview(db: DB, week: date | None = None) -> dict:
     """Tunisian shelf vs press signal for the report: tracked stores, opportunities, stock risks."""
     end = _resolve_week(db, week)
     shelf = retail.shelf_by_attribute(db)
-    gaps = retail.shelf_gaps(db, end, shelf) if end else {"opportunities": [], "risks": [], "skipped_dimensions": list(retail.DIMENSIONS)}
+    gaps = retail.shelf_gaps_by_type(db, end) if end else {
+        "opportunities": [], "risks": [], "types": {t: 0 for t in retail.PRODUCT_TYPES},
+        "skipped_dimensions": {t: list(retail.DIMENSIONS) for t in retail.PRODUCT_TYPES}}
     iso = lambda d: (d if d.tzinfo else d.replace(tzinfo=timezone.utc)).isoformat()
     return {
         "week": end.isoformat() if end else None,
         "stores": [{"name": st["name"], "products": st["products"], "updated": iso(st["updated"])} for st in shelf["stores"]],
+        "types": gaps["types"],  # active products per shelf: {"optical": n, "sun": n}
         "opportunities": gaps["opportunities"],
         "risks": gaps["risks"],
         "skipped_dimensions": gaps["skipped_dimensions"],

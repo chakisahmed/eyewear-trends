@@ -27,7 +27,12 @@ def s():
         yield session
 
 
-def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict[str, int] | None = None, price=100.0):
+def type_tag(kind: str) -> ProductTag:
+    return ProductTag(dimension="product_type", code=kind, field="categories", term=kind, rules_version=4)
+
+
+def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict[str, int] | None = None, price=100.0,
+              kind: str = "sun"):
     """n_products: shape code -> number of active products; stale: shape code -> products seen long ago."""
     src = Source(name=name, kind="store", url=f"https://{name.lower()}.test", lang="fr", country="TN")
     s.add(src)
@@ -39,7 +44,7 @@ def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict
                 i += 1
                 p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"{name} {i}", price=price, currency="TND",
                             rank=i, seen_at=when)
-                p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=2)]
+                p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=2), type_tag(kind)]
                 s.add(p)
     s.commit()
 
@@ -106,7 +111,7 @@ def test_dimension_with_unrecognised_store_vocabulary_is_not_compared(s):
     for i, style in enumerate(["Sport"] * 25 + ["Classique"] * 15 + ["Tendance"] * 10):
         p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"P{i}", price=300, currency="TND", rank=i + 1,
                     seen_at=NOW, flags={"raw_specs": {"Style": style, "Forme": "Carrée"}})
-        p.tags = [ProductTag(dimension="shape", code="square", field="spec:Forme", term="carree", rules_version=3)]
+        p.tags = [ProductTag(dimension="shape", code="square", field="spec:Forme", term="carree", rules_version=3), type_tag("sun")]
         if style == "Sport":
             p.tags.append(ProductTag(dimension="style", code="sporty", field="spec:Style", term="sport", rules_version=3))
         s.add(p)
@@ -123,7 +128,7 @@ def test_dimension_with_unrecognised_store_vocabulary_is_not_compared(s):
 
 # --- discount signal (list_price) -------------------------------------------------------------------
 
-def add_priced(s, store: str, rows: list[tuple[str, int, float, float | None]]):
+def add_priced(s, store: str, rows: list[tuple[str, int, float, float | None]], kind: str = "sun"):
     """rows: (shape code, count, price, list_price or None)."""
     src = Source(name=store, kind="store", url=f"https://{store.lower()}.test", lang="fr", country="TN")
     s.add(src)
@@ -134,7 +139,7 @@ def add_priced(s, store: str, rows: list[tuple[str, int, float, float | None]]):
             i += 1
             p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"{store} {i}", price=price, list_price=list_price,
                         currency="TND", rank=i, seen_at=NOW)
-            p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=3)]
+            p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=3), type_tag(kind)]
             s.add(p)
     s.commit()
 
@@ -171,3 +176,57 @@ def test_deep_relative_markdown_makes_a_declining_trend_a_clearance_risk(s):
     assert by_code["round"]["clearance"] is True and by_code["square"]["clearance"] is False
     brief = build_brief(s, WEEK)
     assert "déstockage" in brief and "Ronde / Panto" in brief
+
+
+# --- per product type (prescription vs sunglasses shelves) ------------------------------------------
+
+def test_gaps_are_computed_within_each_product_type(s):
+    add_store(s, "Soleil", {"square": 30, "cat_eye": 1}, kind="sun")
+    add_store(s, "Vue", {"cat_eye": 25}, kind="optical")
+    snapshot(s, "cat_eye", "en_hausse", 1.5)   # 1/31 of the sun shelf, 25/25 of the optical shelf
+    snapshot(s, "square", "en_baisse", -0.4)   # 30/31 of the sun shelf, absent from the optical shelf
+    gaps = retail.shelf_gaps_by_type(s, WEEK)
+    assert [(g["code"], g["product_type"]) for g in gaps["opportunities"]] == [("cat_eye", "sun")]
+    assert [(g["code"], g["product_type"]) for g in gaps["risks"]] == [("square", "sun")]
+    assert gaps["types"] == {"optical": 25, "sun": 31}
+
+
+def test_an_empty_product_type_is_skipped_not_full_of_opportunities(s):
+    """No prescription shop crawled yet: every rising shape would look 'absent' from an empty shelf."""
+    add_store(s, "Soleil", {"square": 30}, kind="sun")
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    gaps = retail.shelf_gaps_by_type(s, WEEK)
+    assert [(g["code"], g["product_type"]) for g in gaps["opportunities"]] == [("cat_eye", "sun")]
+    assert "shape" in gaps["skipped_dimensions"]["optical"] and "shape" not in gaps["skipped_dimensions"]["sun"]
+
+
+def test_store_baseline_stays_store_wide_across_product_types(s):
+    """A store-wide sale covers both shelves: the baseline must not be recomputed per product type."""
+    src = Source(name="Mix", kind="store", url="https://mix.test", lang="fr", country="TN")
+    s.add(src)
+    s.flush()
+    for i, (code, kind, price) in enumerate([("square", "sun", 70.0)] * 20 + [("round", "optical", 40.0)] * 5):
+        p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"P{i}", price=price, list_price=100.0,
+                    currency="TND", rank=i + 1, seen_at=NOW)
+        p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=4), type_tag(kind)]
+        s.add(p)
+    s.commit()
+    optical = retail.shelf_by_attribute(s, product_type="optical")["dimensions"]["shape"]["items"]["round"]["markdown"]
+    assert optical["relative_depth"] == pytest.approx(0.6 - (20 * 0.3 + 5 * 0.6) / 25, abs=1e-3)  # vs the whole store
+
+
+def test_summary_brief_has_one_shelf_per_product_type(s):
+    add_store(s, "Soleil", {"square": 30, "cat_eye": 1}, kind="sun")
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    brief = build_brief(s, WEEK)
+    assert "Rayon solaire" in brief and "Rayon optique : couverture insuffisante" in brief
+    assert "Opportunité (solaire) : Œil de chat" in brief
+
+
+def test_sunglasses_only_attributes_are_never_prescription_opportunities(s):
+    """Shield / wraparound frames and tinted lenses are sunglasses by nature: absent from optical shelves is normal."""
+    add_store(s, "Soleil", {"square": 30}, kind="sun")
+    add_store(s, "Vue", {"round": 30}, kind="optical")
+    snapshot(s, "shield", "en_hausse", 3.6)
+    gaps = retail.shelf_gaps_by_type(s, WEEK)
+    assert [(g["code"], g["product_type"]) for g in gaps["opportunities"]] == [("shield", "sun")]

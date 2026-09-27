@@ -10,6 +10,8 @@ import { DIMENSIONS, DIMENSION_TABS, STATUS } from "@/lib/taxonomy";
 
 export const metadata = { title: "Rapport tendances lunettes" };
 
+const TYPE_LABEL = { optical: "optique", sun: "solaire" } as const;
+
 /** A4 report for buying meetings (outside the app shell; always light). Page 1: press signal;
  *  page 2 (when stores are tracked): Tunisian shelf, declines, quotes. */
 export default async function ReportPage({ searchParams }: PageProps<"/rapport">) {
@@ -115,7 +117,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
                         <tr key={`${g.dimension}-${g.code}`}>
                           <td className="vis"><Visual dimension={g.dimension} attr={g} /></td>
                           <td className="name">
-                            {g.label}
+                            {g.label} <span className="type-tag">{TYPE_LABEL[g.product_type]}</span>
                             <span className="reason">
                               {g.sku ? `${num(g.sku)} réf. en rayon (${pct(g.share)})` : "absent des rayons suivis"}
                               {Object.entries(g.avg_price).map(([cur, v]) => ` · ${num(v)} ${cur}`).join("")}
@@ -131,12 +133,16 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
                 </div>
               ))}
             </div>
-            {shelf.skipped_dimensions.length > 0 && (
-              <p className="r-shelf-note">
-                Pas de comparaison pour : {shelf.skipped_dimensions.map(d => DIMENSION_TABS[d].toLowerCase()).join(", ")} (trop
-                peu de références renseignées, ou vocabulaire des boutiques non reconnu, p. ex. codes couleur internes).
-              </p>
-            )}
+            <p className="r-shelf-note">
+              Écarts calculés séparément pour le rayon optique ({num(shelf.types.optical)} réf.) et le rayon solaire
+              ({num(shelf.types.sun)} réf.).{" "}
+              {(["optical", "sun"] as const).filter(t => shelf.skipped_dimensions[t].length > 0).map(t => (
+                <span key={t}>
+                  Pas de comparaison en {TYPE_LABEL[t]} pour : {shelf.skipped_dimensions[t].map(d => DIMENSION_TABS[d].toLowerCase()).join(", ")}.{" "}
+                </span>
+              ))}
+              (Trop peu de références renseignées, ou vocabulaire des boutiques non reconnu.)
+            </p>
           </section>
         )}
 

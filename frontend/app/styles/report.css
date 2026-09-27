@@ -76,6 +76,7 @@
   .r-shelf-grid h3 .hint { font-size: 9.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-muted); }
   .r-table .reason-only { font-weight: 400; color: var(--text-muted); }
   .r-shelf-note { margin: 1.5mm 0 0; font-size: 9.5px; color: var(--text-muted); }
+  .r-table .type-tag { margin-left: 4px; padding: 0 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 9px; font-weight: 500; color: var(--text-secondary); }
   .r-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 6mm; }
   .r-quotes { display: grid; gap: 2mm; }
   .r-quote { padding-left: 3mm; border-left: 3px solid var(--brand-coral); }

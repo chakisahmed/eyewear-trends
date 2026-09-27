@@ -37,6 +37,10 @@ OPPORTUNITY_SHARE = 0.05
 RISK_SHARE = 0.15
 MAX_UNMAPPED = 0.30  # share of stated values the tagger did not recognise, above which a dimension is skipped
 RISING = ("en_hausse", "au_pic")
+PRODUCT_TYPES = ("optical", "sun")  # separate shelves: the shape mix of prescription frames and sunglasses differs
+TYPE_LABELS = {"optical": "optique", "sun": "solaire"}
+# Attributes that only exist on sunglasses: their absence from a prescription shelf is normal, not a gap.
+SUN_ONLY = {("shape", "shield"), ("color", "tinted_lens")}
 CLEARANCE_PTS = 0.10  # relative markdown (vs the store's usual) that marks a declining attribute as being cleared
 
 
@@ -81,11 +85,20 @@ def attribute_markdown(session: Session, dimension: str, code: str) -> dict | No
     return markdown_stats([p for p, _ in active if p.id in ids], store_baselines(active))
 
 
-def shelf_by_attribute(session: Session) -> dict:
-    """{"stores": [{name, products, updated}], "dimensions": {dim: {"tagged": n, "items": {code: {sku, share, avg_price}}}}}."""
-    active = active_products(session)
+def of_type(session: Session, active: list[tuple[Product, str]], product_type: str) -> list[tuple[Product, str]]:
+    ids = set(session.scalars(select(ProductTag.product_id).where(ProductTag.dimension == "product_type",
+                                                                   ProductTag.code == product_type)))
+    return [(p, store) for p, store in active if p.id in ids]
+
+
+def shelf_by_attribute(session: Session, product_type: str | None = None) -> dict:
+    """{"stores": [{name, products, updated}], "dimensions": {dim: {"tagged": n, "items": {code: {sku, share, avg_price}}}}}.
+    product_type ("optical" / "sun") restricts the shelf; store markdown baselines stay store-wide (a sale covers
+    the whole store)."""
+    everything = active_products(session)
+    baselines = store_baselines(everything)
+    active = of_type(session, everything, product_type) if product_type else everything
     by_id = {p.id: p for p, _ in active}
-    baselines = store_baselines(active)
     stores: dict[str, dict] = {}
     for p, store in active:
         entry = stores.setdefault(store, {"name": store, "products": 0, "updated": p.seen_at})
@@ -137,19 +150,22 @@ def comparable(data: dict) -> bool:
     return data["tagged"] >= MIN_TAGGED and unmapped_share(data) <= MAX_UNMAPPED
 
 
-def shelf_gaps(session: Session, week: date, shelf: dict | None = None) -> dict:
+def shelf_gaps(session: Session, week: date, shelf: dict | None = None, product_type: str | None = None) -> dict:
     """Press status of the week vs shelf share: {"opportunities", "risks", "skipped_dimensions"}."""
-    shelf = shelf or shelf_by_attribute(session)
+    shelf = shelf or shelf_by_attribute(session, product_type)
     tax = load_taxonomy()
     covered = {d for d in DIMENSIONS if comparable(shelf["dimensions"][d])}
     opportunities, risks = [], []
     for snap in session.scalars(select(TrendSnapshot).where(TrendSnapshot.week == week, TrendSnapshot.dimension.in_(covered))):
+        if product_type == "optical" and (snap.dimension, snap.code) in SUN_ONLY:
+            continue
         item = shelf["dimensions"][snap.dimension]["items"].get(snap.code, {"sku": 0, "share": 0.0, "avg_price": {}, "markdown": None})
         md = item["markdown"]
         clearance = bool(md and md["relative_depth"] >= CLEARANCE_PTS)
         gap = {"dimension": snap.dimension, "code": snap.code, "label": tax.label(snap.dimension, snap.code),
                "hex": tax.get(snap.dimension, snap.code).hex,
-               "status": snap.status, "momentum": snap.momentum, **item, "clearance": clearance}
+               "status": snap.status, "momentum": snap.momentum, **item, "clearance": clearance,
+               "product_type": product_type}
         if snap.status in RISING and item["share"] < OPPORTUNITY_SHARE:
             opportunities.append(gap)
         elif snap.status == "en_baisse" and (item["share"] >= RISK_SHARE or clearance):
@@ -158,4 +174,25 @@ def shelf_gaps(session: Session, week: date, shelf: dict | None = None) -> dict:
         "opportunities": sorted(opportunities, key=lambda g: -g["momentum"]),
         "risks": sorted(risks, key=lambda g: -g["share"]),
         "skipped_dimensions": [d for d in DIMENSIONS if d not in covered],
+    }
+
+
+def shelf_gaps_by_type(session: Session, week: date) -> dict:
+    """Gaps computed within each product type's shelf, merged: an attribute is an opportunity on the sunglasses
+    shelf, the prescription shelf, or both. A type with no (comparable) data is skipped, never read as 'absent'."""
+    opportunities, risks, skipped, types, shelves = [], [], {}, {}, {}
+    for product_type in PRODUCT_TYPES:
+        shelf = shelf_by_attribute(session, product_type)
+        gaps = shelf_gaps(session, week, shelf, product_type)
+        opportunities += gaps["opportunities"]
+        risks += gaps["risks"]
+        skipped[product_type] = gaps["skipped_dimensions"]
+        types[product_type] = sum(st["products"] for st in shelf["stores"])
+        shelves[product_type] = shelf
+    return {
+        "opportunities": sorted(opportunities, key=lambda g: -g["momentum"]),
+        "risks": sorted(risks, key=lambda g: -g["share"]),
+        "skipped_dimensions": skipped,
+        "types": types,
+        "shelves": shelves,
     }
