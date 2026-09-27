@@ -10,6 +10,7 @@ from pathlib import Path
 import feedparser
 import httpx
 import yaml
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.collectors.base import (
@@ -20,6 +21,7 @@ from app.collectors.base import (
     http_client,
 )
 from app.config import settings
+from app.models import Source
 from app.extraction.service import EYEWEAR_RE
 from app.progress import Progress, report
 
@@ -36,11 +38,25 @@ def _published(entry) -> datetime | None:
     return datetime.fromtimestamp(timegm(parsed), tz=timezone.utc) if parsed else None
 
 
+def sync_feed_sources(session: Session, feeds: list[dict]) -> int:
+    """Press sources follow feeds.yaml: listed ones are active, removed ones are marked inactive (their
+    articles and mentions are kept as history). Only kind "press": stores and news are not feeds."""
+    listed = {f["url"] for f in feeds}
+    changed = 0
+    for source in session.scalars(select(Source).where(Source.kind == "press")):
+        active = source.url in listed
+        if source.active != active:
+            source.active, changed = active, changed + 1
+    session.commit()
+    return changed
+
+
 def collect_rss(session: Session, limit: int | None = None, progress: Progress = None) -> int:
     limit = limit or settings.max_articles_per_run
     added = 0
     with http_client() as client:
         feeds = load_feeds()
+        sync_feed_sources(session, feeds)
         for i, feed in enumerate(feeds):
             report(progress, i, len(feeds))  # feeds done so far (session is committed here)
             source = get_or_create_source(

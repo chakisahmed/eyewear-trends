@@ -5,9 +5,18 @@
 # Yield measured on 2026-09-26 (eyewear items / items in the feed):
 #   optical trade press: Optique Mag 8/10, Invision 8/20, Vision Monday 3/10  <- most of the signal
 #   fashion & streetwear: Hypebeast 4/20; the general fashion titles were 0 that day
+#
+# Rebalanced 2026-09-27 (Noé & Noah is Tunisian; its market follows France more than the US):
+#   removed 6 general US lifestyle titles (Vogue, GQ, Harper's Bazaar, Esquire, Who What Wear,
+#   Fashionista): 0 relevant articles out of everything collected since setup;
+#   added La Revue des Opticiens (French trade press, 39 eyewear items / 45 in its feed).
+#   Other French trade titles checked: Acuité (sitemap only, no RSS: needs a sitemap collector),
+#   FréquenceOptic and L'Essentiel de l'Optique (neither RSS nor sitemap), Presse Optic (feed dead since 2018).
+#   A feed removed from this list is marked inactive in `sources` by the next RSS collection.
 feeds:
   # Optical trade press: written for opticians and eyewear buyers
   - {name: Optique Mag, url: "https://www.optiquemag.fr/feed", lang: fr, country: FR}
+  - {name: La Revue des Opticiens, url: "https://larevuedesopticiens.com/rss-fr.xml", lang: fr, country: FR}
   - {name: Vision Monday, url: "https://www.visionmonday.com/rss/latest-news/", lang: en, country: US}
   - {name: Invision, url: "https://www.invisionmag.com/feed/", lang: en, country: US}
 
@@ -19,13 +28,8 @@ feeds:
   - {name: M Le Monde, url: "https://www.lemonde.fr/m-styles/rss_full.xml", lang: fr, country: FR}
   - {name: Madmoizelle, url: "https://www.madmoizelle.com/feed", lang: fr, country: FR}
 
-  # Fashion & streetwear press, English
-  - {name: Vogue, url: "https://www.vogue.com/feed/rss", lang: en, country: US}
-  - {name: GQ, url: "https://www.gq.com/feed/rss", lang: en, country: US}
-  - {name: Harper's Bazaar, url: "https://www.harpersbazaar.com/rss/all.xml/", lang: en, country: US}
-  - {name: Esquire, url: "https://www.esquire.com/rss/all.xml/", lang: en, country: US}
-  - {name: Who What Wear, url: "https://www.whowhatwear.com/rss", lang: en, country: US}
-  - {name: Fashionista, url: "https://fashionista.com/.rss/full/", lang: en, country: US}
+  # Fashion business & streetwear, English: WWD (industry trade, covers eyewear licences and launches)
+  # and Hypebeast (the only US lifestyle title that produced eyewear mentions)
   - {name: WWD, url: "https://wwd.com/feed/", lang: en, country: US}
   - {name: Hypebeast, url: "https://www.hypebeast.com/feed", lang: en, country: US}
 

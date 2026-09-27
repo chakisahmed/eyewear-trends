@@ -22,9 +22,14 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
 
   return (
     <section className="retail" aria-labelledby="retailTitle">
-      <div className="section-head">
-        <h2 className="section-title" id="retailTitle">Présence en boutique</h2>
-        {d.retail_updated_at && <span className="section-note">Relevé le {dayShort(d.retail_updated_at)}</span>}
+      {/* All tracked stores are Tunisian today (store_configs.yaml); revisit this label if that changes. */}
+      <div className="lens-head">
+        <h2 className="lens-title" id="retailTitle">Marché Tunisien (Boutiques)</h2>
+        <span className="pill lens-tag">Indicateur retardé</span>
+        {d.retail_updated_at && <span className="section-note lens-date">Relevé le {dayShort(d.retail_updated_at)}</span>}
+        <p className="lens-note">
+          Disponibilité locale : références en rayon chez les enseignes tunisiennes suivies. Ce qui est déjà vendu ici.
+        </p>
       </div>
 
       {count === 0 ? (

@@ -194,7 +194,7 @@ def overview(db: DB, week: date | None = None, top: int = Query(5, ge=1, le=20))
     stats = {
         "documents": db.scalar(select(func.count()).select_from(Document).where(Document.status == "extracted")) or 0,
         "mentions": db.scalar(select(func.count()).select_from(Mention)) or 0,
-        "sources": db.scalar(select(func.count()).select_from(Source)) or 0,
+        "sources": db.scalar(select(func.count()).select_from(Source).where(Source.active)) or 0,  # feeds.yaml drives press
         "pending": db.scalar(select(func.count()).select_from(Document).where(Document.status == "pending")) or 0,
     }
     has_demo = bool(db.scalar(select(func.count()).select_from(Document).where(Document.is_demo)))

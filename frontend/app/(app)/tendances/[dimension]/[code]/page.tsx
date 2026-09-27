@@ -77,6 +77,16 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
           </div>
         </section>
 
+        {/* Two lenses, side by side in the buyer's reading order: global momentum (leading) vs local shelves (lagging). */}
+        <div className="lens-head" id="lensSignal">
+          <h2 className="lens-title">Signal International (Presse)</h2>
+          <span className="pill lens-tag">Indicateur avancé</span>
+          <p className="lens-note">
+            Élan mondial : presse optique et mode, France et international, et recherches Google en France.
+            Ce qui arrive sur le marché.
+          </p>
+        </div>
+
         <section className="kpi-grid" aria-label="Statistiques de la tendance">
           <KpiTile label="Mentions cette semaine" value={num(d.stats.this_week, Number.isInteger(d.stats.this_week) ? 0 : 1)}
                    detail={`${prev >= 0 ? "+" : "−"}${num(Math.abs(prev), Number.isInteger(prev) ? 0 : 1)} vs sem. précédente`} icon={prev >= 0 ? "up" : undefined} />
@@ -138,7 +148,7 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
 
         <section aria-labelledby="evidenceTitle">
           <div className="section-head">
-            <h2 className="section-title" id="evidenceTitle">Sources à l&apos;appui</h2>
+            <h2 className="section-title" id="evidenceTitle">Sources à l&apos;appui (presse)</h2>
             <span className="section-note">{d.evidence.length} extrait{d.evidence.length > 1 ? "s" : ""} citant « {d.label.toLowerCase()} »</span>
           </div>
           <div className="source-cards">
