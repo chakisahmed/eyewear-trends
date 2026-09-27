@@ -84,8 +84,8 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `mentions` �
 - End-to-end: `python -m app.cli run` (or "Actualiser les données" in the UI), then check the dashboard.
 
 ## Decisions
-- **Retailer country: Tunisia.** French stays the UI language. The Google Trends geo is still `FR` (`market_geo`). Switching it to `TN` is pending a check that Tunisian search volume for eyewear keywords is not too low to read.
-- **LLM budget: $5 initial top-up.** That is about 500 article analyses at ~$0.01 each. The per-run cap (`max_extract_per_run`, 500) should be lowered so a single run cannot use the whole balance.
+- **Retailer country: Tunisia.** French stays the UI language. The Google Trends geo stays `FR` (`market_geo`) as a proxy. Checked on 2026-09-27 over 12 months: 12 French shape keywords had non-zero weeks in France (e.g. "lunettes rondes" 54/54 weeks, "lunettes masque" 50/54), but only 0–1 of 54 weeks in Tunisia. Even plain "lunettes" was non-zero on only a third of days. Tunisian search volume is below Google's reporting threshold.
+- **LLM budget: $5 initial top-up.** That is about 500 article analyses at ~$0.01 each. The per-run cap `max_extract_per_run` is 100 (about $1), so a single run cannot use the whole balance.
 - **Social media: Facebook, Instagram, Pinterest** (Phase 3).
 
 ## Open decisions
