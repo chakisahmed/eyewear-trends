@@ -63,7 +63,7 @@ class Product(Base):
     price: Mapped[float | None] = mapped_column(Float)
     currency: Mapped[str | None] = mapped_column(String(3))
     rank: Mapped[int | None] = mapped_column(Integer)
-    flags: Mapped[list | None] = mapped_column(JSON)  # ["best_seller", "new"]
+    flags: Mapped[dict | None] = mapped_column(JSON)  # {"is_bestseller": True, "raw_specs": {...}}
     image_url: Mapped[str | None] = mapped_column(String(1000))
     seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 

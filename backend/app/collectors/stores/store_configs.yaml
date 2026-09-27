@@ -1,0 +1,40 @@
+# Store extraction rules (Phase 2). One entry per retailer, keyed by domain ("www." is ignored).
+#
+# Precedence for every product field: schema.org/Product JSON-LD first (product page, then listing),
+# then the CSS rules below. Selectors are CSS only: XPath is refused when the file is loaded.
+# Extraction is deterministic (no LLM). Validated by app/collectors/stores/config.py.
+
+stores: {}   # no store is active yet
+
+# Template (copy under `stores:` and adapt the selectors to the site):
+#
+#  noe-noah.com:
+#    name: "Noé & Noah"
+#    base_url: "https://www.noe-noah.com"
+#    lang: fr                           # fr | en
+#    country: TN
+#    default_currency: TND              # used when neither JSON-LD nor CSS gives a currency
+#    delay_s: 1.5                       # pause between requests (minimum 0.5)
+#    listing:
+#      urls: ["/collections/lunettes-de-soleil", "/collections/lunettes-de-vue"]
+#      pagination: { param: page, max_pages: 5 }        # ?page=2..5; or { next: "a[rel=next]", max_pages: 5 }
+#      product: "li.product-card"       # one element per product card
+#      link: "a.product-card__link"     # link to the product page (href), required
+#    product_pages:                     # optional: open product pages for their JSON-LD and specs
+#      enabled: true
+#      max_products: 60
+#    fields:                            # CSS fallbacks: name, brand, price, currency, image_url
+#      name:      { css: ".product-card__title" }
+#      brand:     { css: ".product-card__vendor" }
+#      price:     { css: ".price-item--sale, .price-item--regular" }   # "189,000 DT" -> 189.0 TND
+#      currency:  { css: "meta[itemprop=priceCurrency]", attr: content }
+#      image_url: { css: "img", attr: ["data-src", "src"] }            # first non-empty attribute wins
+#      # scope: page    -> read on the product page instead of the listing card
+#      # regex: "..."   -> keep group 1 (or the whole match) of the extracted text
+#    flags:                             # -> ScrapedProduct.flags
+#      is_bestseller: { css: ".badge--bestseller", exists: true }
+#      is_new:        { css: ".badge--new", exists: true }
+#    specs:                             # product page table -> flags.raw_specs
+#      rows: ".product-specs tr"
+#      key: "th"
+#      value: "td"
