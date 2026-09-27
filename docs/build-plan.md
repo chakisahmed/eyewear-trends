@@ -81,6 +81,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
   - Step 2 (done): Outika config and the `crawl-store` CLI. First live crawl: 222 products. Data-quality fixes: a price ≤ 0 counts as missing (Outika publishes 0.00 for sold-out items), stock status comes from the page and not the JSON-LD (which says "InStock" for sold-out items), categories captured, empty flags stored as SQL NULL.
   - Step 3 (in progress): rule-based tagging (`tagger.py` → `product_tags`) and "Présence en boutique" on the trend detail page: SKU count, price by currency, product sample.
   - Lesson: Outika product names are model names (EVAN, ADONIA) with no shape words, so shapes cannot be tagged for this store. **Store selection criterion from now on: descriptive product titles or specs.** Image-based shape detection stays in Phase 4, because it needs a vision model.
+- **Backlog: "Shelf vs. Signal" macro view.** On the overview or the Tendances list, flag the gaps between press and shelf. A trend that is rising in the press but has few or no store references is a buying opportunity. One that is well stocked but declining in the press is a stock risk. It waits for more store data: at least 2–3 stores whose titles or specs name shapes.
 - **Phase 3:** social media: **Facebook, Instagram and Pinterest**, through a licensed data provider or the platforms' official APIs. Scraping them directly breaks their ToS.
 - **Phase 4:**
   - Compare trends with Noé & Noah's own catalog and sales data.

@@ -503,12 +503,14 @@
   .retail-img {
     display: grid;
     place-items: center;
-    aspect-ratio: 1;
+    aspect-ratio: 4 / 3;  /* frames are landscape: square boxes were mostly empty */
     background: #fff;  /* product shots are cut out on white */
     border-bottom: 1px solid var(--border);
     margin-bottom: 8px;
   }
-  .retail-img img { width: 100%; height: 100%; object-fit: contain; }
+  .retail-img { position: relative; overflow: hidden; }
+  /* absolute: the img's intrinsic height must not stretch the 4:3 box; cover trims the white margins of square shots */
+  .retail-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .retail-img svg { width: 28px; height: 28px; color: var(--text-muted); }
   .retail-name, .retail-meta, .retail-row { padding: 0 14px; min-width: 0; }
   .retail-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -519,10 +521,15 @@
 
   @media (max-width: 1100px) {
     .charts-grid, .detail-grid { grid-template-columns: 1fr; }
-    .retail-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  }
-  @media (max-width: 560px) {
-    .retail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* 5 cards never fit evenly in narrower grids: one swipeable row instead of orphan rows */
+    .retail-grid {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+    .retail-card { flex: 0 0 176px; scroll-snap-align: start; }
   }
   @media (max-width: 768px) {
     .detail-head { gap: 16px; }
