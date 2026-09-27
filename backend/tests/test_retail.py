@@ -1,0 +1,121 @@
+"""Tunisian shelf data per attribute and Shelf vs. Signal gaps (deterministic, no LLM).
+
+Uses its own in-memory database: shelf shares depend on every product present, so the shared test
+database (other tests add products) would make the numbers unstable.
+"""
+
+from datetime import date, datetime, timedelta, timezone
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.db import Base
+from app.models import Product, ProductTag, Source, TrendSnapshot
+from app.scoring import retail
+from app.scoring.summary import build_brief
+
+NOW = datetime(2026, 9, 27, 12, 0, tzinfo=timezone.utc)
+WEEK = date(2026, 9, 21)
+
+
+@pytest.fixture
+def s():
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with sessionmaker(bind=engine)() as session:
+        yield session
+
+
+def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict[str, int] | None = None, price=100.0):
+    """n_products: shape code -> number of active products; stale: shape code -> products seen long ago."""
+    src = Source(name=name, kind="store", url=f"https://{name.lower()}.test", lang="fr", country="TN")
+    s.add(src)
+    s.flush()
+    i = 0
+    for batch, when in ((n_products, seen), (stale or {}, seen - timedelta(days=60))):
+        for code, n in batch.items():
+            for _ in range(n):
+                i += 1
+                p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"{name} {i}", price=price, currency="TND",
+                            rank=i, seen_at=when)
+                p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=2)]
+                s.add(p)
+    s.commit()
+
+
+def snapshot(s, code: str, status: str, momentum: float, dimension: str = "shape"):
+    s.add(TrendSnapshot(dimension=dimension, code=code, week=WEEK, mentions=10, momentum=momentum, status=status))
+    s.commit()
+
+
+def test_shelf_counts_active_products_per_attribute(s):
+    add_store(s, "Alpha", {"square": 20, "aviator": 10}, stale={"round": 30}, price=200)
+    add_store(s, "Beta", {"square": 5, "cat_eye": 1}, price=300)
+    shelf = retail.shelf_by_attribute(s)
+    assert [(st["name"], st["products"]) for st in shelf["stores"]] == [("Alpha", 30), ("Beta", 6)]  # stale excluded
+    shapes = shelf["dimensions"]["shape"]
+    assert shapes["tagged"] == 36
+    assert shapes["items"]["square"]["sku"] == 25 and shapes["items"]["square"]["share"] == pytest.approx(25 / 36)
+    assert shapes["items"]["square"]["avg_price"] == {"TND": 220.0}
+    assert "round" not in shapes["items"]                                    # only stale products
+    assert shelf["dimensions"]["color"]["tagged"] == 0
+
+
+def test_gaps_find_opportunities_and_stock_risks(s):
+    add_store(s, "Alpha", {"square": 30, "aviator": 8, "cat_eye": 1})      # 39 tagged shapes
+    snapshot(s, "cat_eye", "en_hausse", 1.5)     # rising, 1/39 = 2.6 % of the shelf  -> opportunity
+    snapshot(s, "oval", "au_pic", 0.4)           # peaking, absent from the shelf      -> opportunity
+    snapshot(s, "aviator", "en_hausse", 2.0)     # rising but 8/39 = 20 % on the shelf -> no gap
+    snapshot(s, "square", "en_baisse", -0.4)     # declining, 77 % of the shelf        -> stock risk
+    snapshot(s, "round", "faible", 3.0)          # too little press data               -> never a gap
+    gaps = retail.shelf_gaps(s, WEEK)
+    assert [(g["code"], g["sku"]) for g in gaps["opportunities"]] == [("cat_eye", 1), ("oval", 0)]  # by momentum
+    assert [g["code"] for g in gaps["risks"]] == ["square"]
+    assert gaps["risks"][0]["share"] == pytest.approx(30 / 39) and gaps["skipped_dimensions"] == ["color", "material", "style"]
+
+
+def test_gaps_skip_dimensions_with_too_few_tagged_products(s):
+    add_store(s, "Alpha", {"square": 5})                                   # below MIN_TAGGED
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    gaps = retail.shelf_gaps(s, WEEK)
+    assert gaps["opportunities"] == [] and "shape" in gaps["skipped_dimensions"]
+
+
+def test_summary_brief_includes_the_tunisian_shelf(s):
+    add_store(s, "Alpha", {"square": 30, "cat_eye": 1})
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    snapshot(s, "square", "en_baisse", -0.4)
+    brief = build_brief(s, WEEK)
+    assert "Marché tunisien" in brief and "Alpha (31 réf.)" in brief
+    assert "Carrée | 30 | 97 %" in brief                                   # label | sku | share of the shape shelf
+    assert "Opportunité" in brief and "Œil de chat" in brief and "Risque de stock" in brief
+
+
+def test_summary_brief_without_store_data_has_no_shelf_section(s):
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    assert "Marché tunisien" not in build_brief(s, WEEK)
+
+
+def test_dimension_with_unrecognised_store_vocabulary_is_not_compared(s):
+    """MyKenza's Style field says Sport / Classique / Tendance: only "Sport" maps, so 'Minimaliste absent
+    from shelves' would be a vocabulary artefact, not a real gap."""
+    src = Source(name="Kenza", kind="store", url="https://kenza.test", lang="fr", country="TN")
+    s.add(src)
+    s.flush()
+    for i, style in enumerate(["Sport"] * 25 + ["Classique"] * 15 + ["Tendance"] * 10):
+        p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"P{i}", price=300, currency="TND", rank=i + 1,
+                    seen_at=NOW, flags={"raw_specs": {"Style": style, "Forme": "Carrée"}})
+        p.tags = [ProductTag(dimension="shape", code="square", field="spec:Forme", term="carree", rules_version=3)]
+        if style == "Sport":
+            p.tags.append(ProductTag(dimension="style", code="sporty", field="spec:Style", term="sport", rules_version=3))
+        s.add(p)
+    s.commit()
+    shelf = retail.shelf_by_attribute(s)
+    style = shelf["dimensions"]["style"]
+    assert (style["tagged"], style["with_value"], style["unmapped"]) == (25, 50, 25)   # 50 % not understood
+    assert not retail.comparable(style) and retail.comparable(shelf["dimensions"]["shape"])
+    snapshot(s, "minimalist", "en_hausse", 1.2, dimension="style")
+    gaps = retail.shelf_gaps(s, WEEK, shelf)
+    assert gaps["opportunities"] == [] and "style" in gaps["skipped_dimensions"] and "shape" not in gaps["skipped_dimensions"]
+    assert "vocabulaire des boutiques non reconnu pour 50 %" in build_brief(s, WEEK)

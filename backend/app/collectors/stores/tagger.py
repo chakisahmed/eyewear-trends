@@ -15,8 +15,9 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, fold, load_taxonomy
 
-RULES_VERSION = 2  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 3  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
+# v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport"})
 SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
@@ -34,6 +35,7 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
 SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal")),
     "color": (("carey", "tortoiseshell"),),  # Hawkers' word for tortoiseshell
+    "shape": (("rond", "round"), ("ronds", "round")),  # masculine forms; the taxonomy lists ronde / rondes
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),

@@ -2,7 +2,7 @@ import "server-only";
 
 import { connection } from "next/server";
 
-import type { Demand, Meta, Overview, Paged, SourceItem, Taxonomy, TrendDetail, Trends } from "./types";
+import type { Demand, Meta, Overview, Paged, RetailOverview, SourceItem, Taxonomy, TrendDetail, Trends } from "./types";
 
 const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
 
@@ -41,6 +41,7 @@ export const api = {
   meta: () => get<Meta>("/api/meta"),
   taxonomy: () => get<Taxonomy>("/api/taxonomy"),
   overview: (week?: string) => get<Overview>("/api/overview", { week }),
+  retailOverview: (week?: string) => get<RetailOverview>("/api/retail/overview", { week }),
   trends: (dimension: string, weeks: number, week?: string) => get<Trends>(`/api/trends/${dimension}`, { weeks, week }),
   trendDetail: (dimension: string, code: string, week?: string) =>
     get<TrendDetail>(`/api/trends/${dimension}/${encodeURIComponent(code)}`, { week }),

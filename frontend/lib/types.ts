@@ -161,3 +161,22 @@ export interface Meta {
 }
 
 export type Taxonomy = Record<Dimension, { label: string; items: Attribute[] }>;
+
+/** Tunisian shelf vs press signal (report): computed gaps, no LLM. */
+export interface ShelfGap extends Attribute {
+  dimension: Dimension;
+  status: Status;
+  momentum: number;
+  sku: number;
+  share: number;
+  avg_price: Record<string, number>;
+}
+
+export interface RetailOverview {
+  week: string | null;
+  stores: { name: string; products: number; updated: string }[];
+  opportunities: ShelfGap[];
+  risks: ShelfGap[];
+  skipped_dimensions: Dimension[];
+  thresholds: { opportunity_share: number; risk_share: number; min_tagged: number };
+}

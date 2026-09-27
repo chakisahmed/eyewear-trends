@@ -61,9 +61,15 @@ def test_first_source_is_kept_as_provenance_and_results_are_sorted():
 
 # --- rules v2 (mykenza / lunettek vocabulary) ----------------------------------------------------
 
-def test_rules_version_2():
+def test_rules_version_3():
     from app.collectors.stores.tagger import RULES_VERSION
-    assert RULES_VERSION == 2
+    assert RULES_VERSION == 3
+
+
+def test_masculine_rond_maps_to_round_in_specs_only():
+    assert codes(tag_product("X", {"raw_specs": {"Forme": "Rond"}})) == {("shape", "round")}
+    assert codes(tag_product("X", {"raw_specs": {"Forme": "Ronds"}})) == {("shape", "round")}
+    assert codes(tag_product("Rond point", None)) == set()  # free text: no alias
 
 
 def test_frame_material_labels_and_steel_alias():

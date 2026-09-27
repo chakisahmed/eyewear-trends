@@ -19,6 +19,7 @@ from app.config import settings
 from app.db import SessionLocal, get_session, init_db
 from app.jobs.pipeline import ALL_STEPS, active_run, execute_run, interrupt_orphaned_runs, start_run
 from app.models import Document, JobRun, Mention, Product, ProductTag, SearchInterest, Source, TrendSnapshot, WeeklySummary
+from app.scoring import retail
 from app.scoring.summary import latest_week
 from app.demo import clear_demo, seed_demo
 from app.scoring.trends import FALLING, compute_snapshots, week_start
@@ -258,7 +259,7 @@ def trends(dimension: str, db: DB, week: date | None = None, weeks: int = Query(
     return {"week": end.isoformat(), "weeks": [w.isoformat() for w in week_list], "series": series}
 
 
-RETAIL_ACTIVE_DAYS = 14  # a product counts if seen within this many days of its store's latest crawl
+RETAIL_ACTIVE_DAYS = retail.ACTIVE_DAYS  # same shelf definition as the report and the weekly summary
 RETAIL_SAMPLE_SIZE = 5
 
 
@@ -386,6 +387,23 @@ def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, we
         "brands": [{"name": b, "count": n} for b, n in brand_counts.most_common(10)],
         "evidence": [_mention_row(m, d, s) for m, d, s in evidence],
         **retail,
+    }
+
+
+@app.get("/api/retail/overview")
+def retail_overview(db: DB, week: date | None = None) -> dict:
+    """Tunisian shelf vs press signal for the report: tracked stores, opportunities, stock risks."""
+    end = _resolve_week(db, week)
+    shelf = retail.shelf_by_attribute(db)
+    gaps = retail.shelf_gaps(db, end, shelf) if end else {"opportunities": [], "risks": [], "skipped_dimensions": list(retail.DIMENSIONS)}
+    iso = lambda d: (d if d.tzinfo else d.replace(tzinfo=timezone.utc)).isoformat()
+    return {
+        "week": end.isoformat() if end else None,
+        "stores": [{"name": st["name"], "products": st["products"], "updated": iso(st["updated"])} for st in shelf["stores"]],
+        "opportunities": gaps["opportunities"],
+        "risks": gaps["risks"],
+        "skipped_dimensions": gaps["skipped_dimensions"],
+        "thresholds": {"opportunity_share": retail.OPPORTUNITY_SHARE, "risk_share": retail.RISK_SHARE, "min_tagged": retail.MIN_TAGGED},
     }
 
 

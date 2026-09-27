@@ -11,6 +11,7 @@ from app.config import settings
 from app.extraction.llm import LLMProvider
 from app.extraction.service import load_prompt
 from app.models import Document, Mention, TrendSnapshot, WeeklySummary
+from app.scoring.retail import MIN_TAGGED, comparable, shelf_by_attribute, shelf_gaps, unmapped_share
 from app.taxonomy import load_taxonomy
 
 
@@ -49,7 +50,44 @@ def build_brief(session: Session, week: date) -> str:
     ).all()
     if extracts:
         lines += ["", "Extraits de sources:"] + [f"- {e}" for e in extracts]
+    lines += shelf_brief(session, week)
     return "\n".join(lines)
+
+
+STATUS_WORDS = {"en_hausse": "en hausse", "au_pic": "au pic", "en_baisse": "en baisse", "stable": "stable"}
+
+
+def _pct(share: float) -> str:
+    return f"{round(share * 100)} %"
+
+
+def shelf_brief(session: Session, week: date) -> list[str]:
+    """The Tunisian shelf (lagging indicator) next to the press scores; empty without store data."""
+    shelf = shelf_by_attribute(session)
+    if not shelf["stores"]:
+        return []
+    tax = load_taxonomy()
+    stores = ", ".join(f"{st['name']} ({st['products']} réf.)" for st in shelf["stores"])
+    lines = ["", f"Marché tunisien — enseignes suivies : {stores}. Indicateur retardé (ce qui est déjà en rayon), "
+             "à comparer au signal presse international ci-dessus (indicateur avancé).",
+             "Rayon (dimension | attribut | références en rayon | part du rayon de la dimension | prix moyen) :"]
+    for dim, data in shelf["dimensions"].items():
+        if not comparable(data):
+            why = (f"{data['tagged']} références renseignées" if data["tagged"] < MIN_TAGGED
+                   else f"vocabulaire des boutiques non reconnu pour {_pct(unmapped_share(data))} des valeurs")
+            lines.append(f"{tax.dimension_labels[dim]} : couverture insuffisante ({why}), pas de comparaison.")
+            continue
+        for code, item in sorted(data["items"].items(), key=lambda kv: -kv[1]["sku"])[:6]:
+            price = " / ".join(f"{v:.0f} {cur}" for cur, v in item["avg_price"].items()) or "n/d"
+            lines.append(f"{tax.dimension_labels[dim]} | {tax.label(dim, code)} | {item['sku']} | {_pct(item['share'])} | {price}")
+    gaps = shelf_gaps(session, week, shelf)
+    if gaps["opportunities"] or gaps["risks"]:
+        lines.append("Écarts presse / rayon (calculés) :")
+        lines += [f"Opportunité : {g['label']} ({tax.dimension_labels[g['dimension']]}) — {STATUS_WORDS.get(g['status'], g['status'])} dans la presse "
+                  f"({g['momentum']:+.0%}), {g['sku']} référence(s) en rayon ({_pct(g['share'])})" for g in gaps["opportunities"][:3]]
+        lines += [f"Risque de stock : {g['label']} ({tax.dimension_labels[g['dimension']]}) — en baisse dans la presse "
+                  f"({g['momentum']:+.0%}), {g['sku']} références en rayon ({_pct(g['share'])})" for g in gaps["risks"][:3]]
+    return lines
 
 
 def generate_weekly_summary(session: Session, provider: LLMProvider, week: date | None = None) -> WeeklySummary | None:

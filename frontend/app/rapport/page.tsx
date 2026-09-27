@@ -10,11 +10,15 @@ import { DIMENSIONS, DIMENSION_TABS, STATUS } from "@/lib/taxonomy";
 
 export const metadata = { title: "Rapport tendances lunettes" };
 
-/** One-page A4 report for buying meetings (outside the app shell; always light). */
+/** A4 report for buying meetings (outside the app shell; always light). Page 1: press signal;
+ *  page 2 (when stores are tracked): Tunisian shelf, declines, quotes. */
 export default async function ReportPage({ searchParams }: PageProps<"/rapport">) {
   const { week: weekParam } = await searchParams;
   const week = typeof weekParam === "string" ? weekParam : undefined;
-  const [meta, overview, quotes] = await Promise.all([api.meta(), api.overview(week), api.sources({ limit: 3 })]);
+  const [meta, overview, quotes, shelf] = await Promise.all([
+    api.meta(), api.overview(week), api.sources({ limit: 3 }),
+    api.retailOverview(week).catch(() => null),  // optional section: the report must not fail without it
+  ]);
   const current = overview.week;
   const rising = DIMENSIONS.flatMap(d => overview.rising[d] ?? []).filter(r => r.status === "en_hausse").length;
   const reasonText = (r: (typeof overview.declining)[number]) =>
@@ -38,7 +42,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
             <div>
               <h1 className="r-title">Rapport tendances lunettes</h1>
               <p className="r-sub">
-                {current ? `Semaine du ${dayLong(current)}` : "Aucune semaine analysée"} · presse, actualités, boutiques et réseaux sociaux (FR + EN)
+                {current ? `Semaine du ${dayLong(current)}` : "Aucune semaine analysée"} · presse et actualités (FR + EN), boutiques tunisiennes
               </p>
             </div>
           </div>
@@ -90,6 +94,51 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
           </div>
         </section>
 
+        {shelf && shelf.stores.length > 0 && (
+          <section className="r-shelf" aria-labelledby="shelfTitle">
+            <h2 className="r-section-title" id="shelfTitle">
+              <Icon name="demand" />Marché Tunisien (boutiques)
+              <span className="note">
+                {shelf.stores.map(st => `${st.name} ${num(st.products)} réf.`).join(" · ")} · indicateur retardé, à comparer au signal presse
+              </span>
+            </h2>
+            <div className="r-shelf-grid">
+              {([
+                ["Opportunités", `en hausse dans la presse, rares en rayon (< ${pct(shelf.thresholds.opportunity_share)})`, shelf.opportunities, "up"],
+                ["Risques de stock", `en baisse dans la presse, très présents en rayon (≥ ${pct(shelf.thresholds.risk_share)})`, shelf.risks, "down"],
+              ] as const).map(([title, hint, gaps, icon]) => (
+                <div key={title}>
+                  <h3><Icon name={icon} />{title}<span className="hint">{hint}</span></h3>
+                  <table className="r-table">
+                    <tbody>
+                      {gaps.slice(0, 3).map(g => (
+                        <tr key={`${g.dimension}-${g.code}`}>
+                          <td className="vis"><Visual dimension={g.dimension} attr={g} /></td>
+                          <td className="name">
+                            {g.label}
+                            <span className="reason">
+                              {g.sku ? `${num(g.sku)} réf. en rayon (${pct(g.share)})` : "absent des rayons suivis"}
+                              {Object.entries(g.avg_price).map(([cur, v]) => ` · ${num(v)} ${cur}`).join("")}
+                            </span>
+                          </td>
+                          <td className="mom"><StatusBadge status={g.status} momentum={g.momentum} /></td>
+                        </tr>
+                      ))}
+                      {!gaps.length && <tr><td className="name reason-only">Aucun écart net cette semaine.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+            {shelf.skipped_dimensions.length > 0 && (
+              <p className="r-shelf-note">
+                Pas de comparaison pour : {shelf.skipped_dimensions.map(d => DIMENSION_TABS[d].toLowerCase()).join(", ")} (trop
+                peu de références renseignées, ou vocabulaire des boutiques non reconnu, p. ex. codes couleur internes).
+              </p>
+            )}
+          </section>
+        )}
+
         <div className="r-bottom">
           <section aria-labelledby="downTitle">
             <h2 className="r-section-title" id="downTitle"><Icon name="down" />En baisse</h2>
@@ -125,7 +174,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
 
         <footer className="r-foot">
           <span className="method">Momentum : mentions pondérées vs moyenne des 4 semaines précédentes, avec l&apos;intérêt Google Trends. « En baisse » : volume −25&#8239;% ou majorité d&apos;avis « en recul ».</span>
-          <span>Généré automatiquement · Noé &amp; Noah · page 1/1</span>
+          <span>Généré automatiquement · Noé &amp; Noah</span>
         </footer>
       </main>
     </div>

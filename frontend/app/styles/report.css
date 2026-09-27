@@ -70,6 +70,12 @@
   .r-table .reason { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); }
 
   /* Bottom: declines + quotes */
+  .r-shelf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 6mm; }
+  .r-shelf-grid h3 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 6px; margin: 0 0 1mm; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+  .r-shelf-grid h3 svg { width: 12px; height: 12px; align-self: center; color: var(--brand-coral); }
+  .r-shelf-grid h3 .hint { font-size: 9.5px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text-muted); }
+  .r-table .reason-only { font-weight: 400; color: var(--text-muted); }
+  .r-shelf-note { margin: 1.5mm 0 0; font-size: 9.5px; color: var(--text-muted); }
   .r-bottom { display: grid; grid-template-columns: 1fr 1.25fr; gap: 6mm; }
   .r-quotes { display: grid; gap: 2mm; }
   .r-quote { padding-left: 3mm; border-left: 3px solid var(--brand-coral); }
@@ -103,6 +109,8 @@
   .report-toolbar { display: none; }
   .sheet { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; }
   .r-dim, .r-quote, .r-bottom > section { break-inside: avoid; }
+  /* page 1: summary + trends (press signal); page 2: Tunisian shelf, declines, quotes */
+  .r-shelf { break-before: page; break-inside: avoid; padding-top: 12mm; }  /* @page margin is 0: same top margin as the sheet padding */
 }
 
 /* The report is always light: pin the light tokens on the wrapper so a dark-mode viewer still

@@ -249,3 +249,12 @@ def test_trend_detail_retail_presence(client):
     empty = client.get("/api/trends/shape/browline").json()
     assert (empty["retail_sku_count"], empty["retail_avg_price"], empty["retail_sample"], empty["retail_by_type"]) == (0, [], [], {})
     assert empty["retail_updated_at"] is None
+
+
+def test_retail_overview_shape(client):
+    body = client.get("/api/retail/overview").json()
+    assert set(body) == {"week", "stores", "opportunities", "risks", "skipped_dimensions", "thresholds"}
+    assert body["thresholds"] == {"opportunity_share": 0.05, "risk_share": 0.15, "min_tagged": 20}
+    for gap in body["opportunities"] + body["risks"]:
+        assert {"dimension", "code", "label", "status", "momentum", "sku", "share", "avg_price"} <= set(gap)
+    assert all({"name", "products", "updated"} <= set(st) for st in body["stores"])
