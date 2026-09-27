@@ -20,6 +20,7 @@ from app.collectors.base import (
     get_or_create_source,
     http_client,
 )
+from app.collectors.sitemap_news import load_sitemap_sources
 from app.config import settings
 from app.models import Source
 from app.extraction.service import EYEWEAR_RE
@@ -56,7 +57,8 @@ def collect_rss(session: Session, limit: int | None = None, progress: Progress =
     added = 0
     with http_client() as client:
         feeds = load_feeds()
-        sync_feed_sources(session, feeds)
+        # sitemap-collected press sources (sitemap_news.py) count as listed too
+        sync_feed_sources(session, feeds + load_sitemap_sources())
         for i, feed in enumerate(feeds):
             report(progress, i, len(feeds))  # feeds done so far (session is committed here)
             source = get_or_create_source(

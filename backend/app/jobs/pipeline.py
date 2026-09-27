@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.collectors.google_trends import collect_google_trends
 from app.collectors.news_gdelt import collect_news
 from app.collectors.rss_blogs import collect_rss
+from app.collectors.sitemap_news import collect_sitemap_sources
 from app.config import settings
 from app.db import SessionLocal, init_db
 from app.demo import clear_demo
@@ -93,6 +94,7 @@ def execute_run(run_id: int) -> dict:
                 report["demo_removed"] = True
             if "rss" in steps:
                 report["rss"] = collect_rss(session, progress=begin("rss"))
+                report["sitemaps"] = collect_sitemap_sources(session, progress=begin("rss"))  # press without RSS
             if "news" in steps:
                 report["news"] = collect_news(session, progress=begin("news"))
             if "google_trends" in steps:

@@ -10,7 +10,7 @@
 #   removed 6 general US lifestyle titles (Vogue, GQ, Harper's Bazaar, Esquire, Who What Wear,
 #   Fashionista): 0 relevant articles out of everything collected since setup;
 #   added La Revue des Opticiens (French trade press, 39 eyewear items / 45 in its feed).
-#   Other French trade titles checked: Acuité (sitemap only, no RSS: needs a sitemap collector),
+#   Acuité has no RSS: collected from its sitemap (see sitemap_sources below). Other French trade titles checked:
 #   FréquenceOptic and L'Essentiel de l'Optique (neither RSS nor sitemap), Presse Optic (feed dead since 2018).
 #   A feed removed from this list is marked inactive in `sources` by the next RSS collection.
 feeds:
@@ -63,3 +63,18 @@ backfill:
     sitemap: "https://www.optiquemag.fr/wp-sitemap-posts-post-1.xml"   # has <lastmod> dates
     lang: fr
     country: FR
+
+# Press sites without RSS, collected daily from their XML sitemap (collectors/sitemap_news.py, in the
+# pipeline's "rss" step). Candidates: URLs matching `include` whose <lastmod> is within `lookback_days`,
+# newest first; kept only if the page's own publication date is also recent (sites re-save old pages).
+# max_checked caps downloads per run; max_new caps new articles per run (~$0.01 of Claude analysis each).
+sitemap_sources:
+  - name: Acuité
+    url: "https://www.acuite.fr/"
+    sitemap: "https://www.acuite.fr/sitemap.xml"   # index of 24 pages (~46k URLs, ~8 MB), not date-ordered
+    include: ["/actualites/lunettes/"]             # frames, eyewear makers, trends; not regulation or lenses
+    lang: fr
+    country: FR
+    lookback_days: 7
+    max_checked: 40
+    max_new: 10

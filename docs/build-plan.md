@@ -50,6 +50,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
 - **Feeds:** 17 RSS feeds. Trade press: Optique Mag, Vision Monday, Invision. FR and EN fashion media: Vogue, GQ, Grazia, M Le Monde, WWD, Hypebeast and others.
 - **News:** GDELT news queries, best effort (rate-limited on the current network).
 - **Search:** Google Trends for France.
+- **Sitemap press:** Acuité (French optical trade press, no RSS), collected daily from its XML sitemap (`sitemap_news.py`). Only `/actualites/lunettes/`, with a 7-day window on each article's own date, at most 10 new articles per run.
 - **Stores:** Outika (outika-eyewear.tn) and MyKenza (mykenza.tn), both Tunisia, via `crawl-store`, run manually. Free: no LLM.
 - **Archives:** a one-off backfill of the trade press from sitemaps and paged feeds. It only collects, and the CLI prints the Claude cost of analysing what it collected before anything is spent.
 

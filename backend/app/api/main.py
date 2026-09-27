@@ -112,7 +112,7 @@ def _aware(dt: datetime | None) -> datetime | None:
 
 
 STEP_LABELS = {
-    "rss": "Presse (flux RSS)", "news": "Actualités", "google_trends": "Google Trends",
+    "rss": "Presse (flux RSS et sitemaps)", "news": "Actualités", "google_trends": "Google Trends",
     "extract": "Analyse IA", "score": "Calcul des tendances", "summary": "Résumé IA",
 }
 
