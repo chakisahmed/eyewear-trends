@@ -111,23 +111,36 @@ def test_run_stops_when_google_keeps_rate_limiting():
     assert len(attempted) == gt.STOP_AFTER_FAILURES          # stopped after 3 keywords, didn't hammer on
 
 
-def test_empty_answer_is_a_soft_block_not_missing_volume(monkeypatch):
-    """Throttled, Google sometimes answers with an empty frame instead of HTTP 429. Genuinely silent
-    keywords come back as rows of zeros. An empty frame must be retried, and reported if it persists."""
-    shapes = list(load_taxonomy().items["shape"].values())
-    empty_left = {shapes[0].query_fr: 1, shapes[1].query_fr: 9}
+def empty_for(monkeypatch, keywords: set[str]):
+    """Google answers an empty frame for these keywords (low volume, or throttling if the control is in it)."""
     real = FakeTrendReq.interest_over_time
 
     def maybe_empty(self):
         (k,) = self.kw
-        if empty_left.get(k, 0) > 0:
-            empty_left[k] -= 1
-            return pd.DataFrame()
-        return real(self)
+        return pd.DataFrame() if k in keywords else real(self)
 
     monkeypatch.setattr(FakeTrendReq, "interest_over_time", maybe_empty)
+
+
+def test_empty_keyword_with_a_healthy_control_is_no_volume_not_a_block(monkeypatch):
+    """Low-volume keywords (e.g. 'lunettes œil de chat' in France over 3 months) come back empty too. If the
+    control keyword ('lunettes') answers with data, Google is fine: no retries, no stop, the run goes on."""
+    shapes = list(load_taxonomy().items["shape"].values())
+    quiet = {it.query_fr for it in shapes[:4]}  # 4 in a row: would trip the stop rule if miscounted
+    empty_for(monkeypatch, quiet)
     with SessionLocal() as s:
         gt.collect_google_trends(s, dimensions=("shape",))
         fr = {r.code for r in s.scalars(select(SearchInterest).where(SearchInterest.lang == "fr"))}
-    assert shapes[0].code in fr          # empty once, then data on the retry: kept
-    assert shapes[1].code not in fr      # empty on every attempt: counted as rate-limited (not "no volume")
+    assert not {it.code for it in shapes[:4]} & fr and shapes[4].code in fr  # the run continued past them
+    assert all(sum(p == [kw] for p in FakeTrendReq.payloads) == 1 for kw in quiet)  # asked once each, no retries
+
+
+def test_empty_keyword_and_empty_control_is_a_soft_block(monkeypatch):
+    """Throttled, Google answers empty for everything, the control included: retry, then stop the run."""
+    shapes = list(load_taxonomy().items["shape"].values())
+    empty_for(monkeypatch, {it.query_fr for it in shapes} | {gt.CONTROL_KEYWORDS["fr"]})
+    with SessionLocal() as s:
+        gt.collect_google_trends(s, dimensions=("shape",))
+    attempted = [p[0] for p in FakeTrendReq.payloads if p[0] != gt.CONTROL_KEYWORDS["fr"]]
+    assert len(set(attempted)) == gt.STOP_AFTER_FAILURES                     # stopped after 3 blocked keywords
+    assert attempted.count(shapes[0].query_fr) == len(gt.BACKOFF_S) + 1      # each one retried

@@ -26,6 +26,10 @@ log = logging.getLogger(__name__)
 PAUSE_S = 4  # between requests: Google rate-limits aggressively (HTTP 429 after a few dozen quick requests)
 BACKOFF_S = (30, 90)  # waits before the 2nd and 3rd attempt of a failed keyword
 STOP_AFTER_FAILURES = 3  # consecutive keywords failing all attempts: Google is blocking us, stop the run
+# An empty answer is ambiguous: too little volume for the period, or a soft rate limit. A keyword that always
+# has volume in the same geo tells them apart: control empty too -> throttled; control fine -> no volume.
+CONTROL_KEYWORDS = {"fr": "lunettes", "en": "glasses"}
+NO_VOLUME = object()  # _fetch result for a keyword Google has no data for
 
 
 def reset_search_interest(session: Session) -> int:
@@ -35,14 +39,27 @@ def reset_search_interest(session: Session) -> int:
     return n
 
 
-def _fetch(pytrends, keyword: str, geo: str):
+def _answers(pytrends, keyword: str, geo: str) -> bool:
+    """Does Google return data for this (high-volume) keyword right now?"""
+    try:
+        pytrends.build_payload([keyword], timeframe="today 3-m", geo=geo)
+        df = pytrends.interest_over_time()
+        return not df.empty and keyword in df and bool((df[keyword] > 0).any())
+    except Exception:
+        return False
+
+
+def _fetch(pytrends, keyword: str, geo: str, control: str | None = None):
+    """DataFrame with data, NO_VOLUME, or None (still failing after all attempts: rate-limited)."""
     attempts = len(BACKOFF_S) + 1
     for attempt in range(1, attempts + 1):
         try:
             pytrends.build_payload([keyword], timeframe="today 3-m", geo=geo)
             df = pytrends.interest_over_time()
-            if df.empty:  # throttled Google may answer "no rows" instead of 429; real no-volume = rows of zeros
-                raise RuntimeError("empty answer (soft rate limit)")
+            if df.empty:
+                if control and _answers(pytrends, control, geo):
+                    return NO_VOLUME  # Google is answering: this keyword simply has too little volume
+                raise RuntimeError("empty answer and the control keyword is empty too (soft rate limit)")
             return df
         except Exception as e:  # pytrends raises bare exceptions on 429 / format changes
             log.warning("Google Trends failed for %r (attempt %d/%d): %s", keyword, attempt, attempts, e)
@@ -77,8 +94,11 @@ def collect_google_trends(
     for n, (it, lang, geo) in enumerate(jobs):
         report(progress, n, len(jobs))
         kw = it.query_fr if lang == "fr" else it.query_en
-        df = _fetch(pytrends, kw, geo)
+        df = _fetch(pytrends, kw, geo, CONTROL_KEYWORDS.get(lang))
         time.sleep(PAUSE_S)
+        if df is NO_VOLUME:
+            silent, in_a_row = silent + 1, 0
+            continue
         if df is None:
             failed, in_a_row = failed + 1, in_a_row + 1
             if in_a_row >= STOP_AFTER_FAILURES:
