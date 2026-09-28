@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { LoadDemoButton } from "@/components/shell/HeaderActions";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { ShelfGaps } from "@/components/ShelfGaps";
 import { SummaryBody } from "@/components/Summary";
 import { EmptyState, KpiTile, LangPill, TrendRowLink } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -12,7 +13,10 @@ import { DIMENSIONS, DIMENSION_TABS } from "@/lib/taxonomy";
 export default async function OverviewPage({ searchParams }: PageProps<"/">) {
   const { week: weekParam } = await searchParams;
   const week = typeof weekParam === "string" ? weekParam : undefined;
-  const [meta, overview, latest] = await Promise.all([api.meta(), api.overview(week), api.sources({ limit: 4 })]);
+  const [meta, overview, latest, shelf] = await Promise.all([
+    api.meta(), api.overview(week), api.sources({ limit: 4 }),
+    api.retailOverview(week).catch(() => null),  // optional block: the overview must not fail without it
+  ]);
   const current = overview.week;
 
   return (
@@ -74,6 +78,8 @@ export default async function OverviewPage({ searchParams }: PageProps<"/">) {
               })}
             </div>
           </section>
+
+          {shelf && shelf.stores.length > 0 && <ShelfGaps data={shelf} />}
 
           <section className="bottom-grid">
             <article className="card trend-card decline-card" aria-label="Tendances en baisse">

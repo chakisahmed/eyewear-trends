@@ -564,6 +564,20 @@ button { font-family: inherit; }
 }
 
 /* ============================================================
+   PRESSE VS RAYONS (shelf gaps)
+   ============================================================ */
+.shelf-gaps { margin-bottom: 24px; }
+.shelf-gaps .trend-grid { margin-bottom: 8px; }
+.gap-row { grid-template-columns: 36px minmax(0, 1fr) auto; }
+.gap-text { display: flex; flex-direction: column; min-width: 0; }
+.gap-detail { font-size: 12.5px; line-height: 1.4; color: var(--text-secondary); }  /* wraps: the shelf detail is the point */
+.shelf-gaps .section-head { flex-wrap: wrap; row-gap: 4px; }
+.shelf-gaps .section-title { white-space: nowrap; }
+.gap-hint { margin: -4px 0 6px; font-size: 12.5px; color: var(--text-muted); }
+.gap-icon { width: 16px; height: 16px; margin-right: 6px; vertical-align: -2px; color: var(--brand-coral); }
+.gap-note { margin: 0; font-size: 12.5px; color: var(--text-muted); }
+
+/* ============================================================
    BOTTOM ROW
    ============================================================ */
 .bottom-grid {
