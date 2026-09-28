@@ -122,25 +122,15 @@ def empty_for(monkeypatch, keywords: set[str]):
     monkeypatch.setattr(FakeTrendReq, "interest_over_time", maybe_empty)
 
 
-def test_empty_keyword_with_a_healthy_control_is_no_volume_not_a_block(monkeypatch):
-    """Low-volume keywords (e.g. 'lunettes œil de chat' in France over 3 months) come back empty too. If the
-    control keyword ('lunettes') answers with data, Google is fine: no retries, no stop, the run goes on."""
+def test_empty_answer_is_asked_once_and_never_stops_the_run(monkeypatch, caplog):
+    """Empty = too little volume OR throttling (indistinguishable): ask once, store nothing, keep going, report it."""
     shapes = list(load_taxonomy().items["shape"].values())
-    quiet = {it.query_fr for it in shapes[:4]}  # 4 in a row: would trip the stop rule if miscounted
-    empty_for(monkeypatch, quiet)
+    empties = {it.query_fr for it in shapes[:4]}  # 4 in a row: would trip the stop rule if counted as failures
+    empty_for(monkeypatch, empties)
+    caplog.set_level("INFO", logger="app.collectors.google_trends")
     with SessionLocal() as s:
         gt.collect_google_trends(s, dimensions=("shape",))
         fr = {r.code for r in s.scalars(select(SearchInterest).where(SearchInterest.lang == "fr"))}
     assert not {it.code for it in shapes[:4]} & fr and shapes[4].code in fr  # the run continued past them
-    assert all(sum(p == [kw] for p in FakeTrendReq.payloads) == 1 for kw in quiet)  # asked once each, no retries
-
-
-def test_empty_keyword_and_empty_control_is_a_soft_block(monkeypatch):
-    """Throttled, Google answers empty for everything, the control included: retry, then stop the run."""
-    shapes = list(load_taxonomy().items["shape"].values())
-    empty_for(monkeypatch, {it.query_fr for it in shapes} | {gt.CONTROL_KEYWORDS["fr"]})
-    with SessionLocal() as s:
-        gt.collect_google_trends(s, dimensions=("shape",))
-    attempted = [p[0] for p in FakeTrendReq.payloads if p[0] != gt.CONTROL_KEYWORDS["fr"]]
-    assert len(set(attempted)) == gt.STOP_AFTER_FAILURES                     # stopped after 3 blocked keywords
-    assert attempted.count(shapes[0].query_fr) == len(gt.BACKOFF_S) + 1      # each one retried
+    assert all(sum(p == [kw] for p in FakeTrendReq.payloads) == 1 for kw in empties)  # asked once each
+    assert any("4 empty answers" in r.getMessage() and "--missing" in r.getMessage() for r in caplog.records)
