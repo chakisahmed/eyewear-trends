@@ -123,3 +123,32 @@ def test_a_new_product_starts_active_and_first_seen_now(temp_engine):
         s.add(p)
         s.commit()
         assert p.is_active is True and p.dropped_at is None and p.first_seen_at is not None
+
+
+# --- store crawl log (d7a3c94e1b28) -----------------------------------------------------------------
+
+def test_store_crawls_migration_adds_only_a_table_and_downgrades_cleanly(temp_engine):
+    cfg = alembic_config()
+    with temp_engine.begin() as conn:
+        cfg.attributes["connection"] = conn
+        command.upgrade(cfg, "c5e8b13f7a90")
+        conn.execute(text("insert into sources (id, name, kind, url, lang, active) values (1, 'A', 'store', 'https://a.test', 'fr', 1)"))
+        for pid in range(1, 5):                                                 # products and tags as the previous revision stores them
+            conn.execute(text("insert into products (id, source_id, url, name, seen_at, first_seen_at, is_active) "
+                              "values (:i, 1, :u, 'P', :t, :t, 1)"), {"i": pid, "u": f"https://a.test/{pid}", "t": STAMP})
+            conn.execute(text("insert into product_tags (product_id, dimension, code, field, term, rules_version) "
+                              "values (:i, 'color', 'blue', 'name', 'blue', 10)"), {"i": pid})
+        assert "store_crawls" not in inspect(conn).get_table_names()
+        command.upgrade(cfg, "head")
+        assert "store_crawls" in inspect(conn).get_table_names()
+        assert conn.execute(text("select count(*) from products")).scalar() == 4
+        assert conn.execute(text("select count(*) from store_crawls")).scalar() == 0   # nothing to backfill
+        assert schema_diff(conn) == []
+        conn.execute(text("insert into store_crawls (source_id, started_at, status, trigger) "
+                          "values (1, '2026-09-29 20:00:00', 'running', 'batch')"))
+        command.downgrade(cfg, "c5e8b13f7a90")
+        assert "store_crawls" not in inspect(conn).get_table_names()
+        assert conn.execute(text("select count(*) from products")).scalar() == 4       # the log goes, the catalog stays
+        assert conn.execute(text("select count(*) from product_tags")).scalar() == 4
+        command.upgrade(cfg, "head")
+        assert schema_diff(conn) == []

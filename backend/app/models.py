@@ -107,6 +107,33 @@ class ProductTag(Base):
     product: Mapped[Product] = relationship(back_populates="tags")
 
 
+class StoreCrawl(Base):
+    """One crawl of one store (`crawl-store`, `crawl-stores`): what it read, what it changed, and how it ended.
+
+    Crawls run outside the app (Windows Task Scheduler), so this is the only trace the dashboard can read. One row per
+    store per crawl, never per product. `crawl-stores` judges which stores are due from the last `ok` crawl."""
+
+    __tablename__ = "store_crawls"
+    __table_args__ = (Index("ix_store_crawls_source_id_started_at", "source_id", "started_at"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # NULL while running
+    # running | ok (complete listing) | incomplete (synced, but the listing may have missed products) | failed
+    status: Mapped[str] = mapped_column(String(12))
+    trigger: Mapped[str] = mapped_column(String(12))  # single (crawl-store) | batch (crawl-stores)
+    listed: Mapped[int | None] = mapped_column(Integer)  # product URLs the listings returned
+    crawled: Mapped[int | None] = mapped_column(Integer)  # valid products built from them
+    inserted: Mapped[int | None] = mapped_column(Integer)
+    updated: Mapped[int | None] = mapped_column(Integer)
+    reactivated: Mapped[int | None] = mapped_column(Integer)
+    dropped: Mapped[int | None] = mapped_column(Integer)
+    drop_skipped: Mapped[str | None] = mapped_column(String(300))  # why nothing was dropped (incomplete, listing shrank)
+    problems: Mapped[list | None] = mapped_column(JSON)  # the CrawlReport's reasons the listing may be incomplete
+    error: Mapped[str | None] = mapped_column(Text)
+
+
 class Mention(Base):
     """One taxonomy attribute found in a document — the evidence behind every trend."""
 
