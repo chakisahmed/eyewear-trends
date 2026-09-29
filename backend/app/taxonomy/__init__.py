@@ -25,6 +25,32 @@ class Item:
     hex: str | None = None
 
 
+@dataclass(frozen=True)
+class ColorTier:
+    """The three tiers of a frame color (stakeholder schema, 2026-09-29).
+
+    family: Palier 1, the taxonomy color code (`black`, `tortoiseshell`).
+    hex: Palier 2, the taxonomy's hex for that family. A default, not a measured shade of one product.
+    supplier_code: Palier 3, a commercial variant or supplier material code ("HV/BL"). Never in the YAML: it is
+    ingested per product by a crawler, so it is only carried here."""
+
+    family: str
+    hex: str
+    supplier_code: str | None = None
+
+
+MAX_SUPPLIER_CODE = 60
+_HEX = re.compile(r"^#[0-9a-f]{6}$")
+
+
+def clean_supplier_code(raw: object) -> str | None:
+    """Palier 3 as stored: whitespace collapsed, case kept (codes are the store's own), None when empty."""
+    if not isinstance(raw, str):
+        return None
+    code = " ".join(raw.split())[:MAX_SUPPLIER_CODE]
+    return code or None
+
+
 @dataclass
 class Taxonomy:
     dimension_labels: dict[str, str]
@@ -42,6 +68,12 @@ class Taxonomy:
 
     def label(self, dimension: str, code: str) -> str:
         return self.items[dimension][code].label_fr
+
+    def color_tier(self, code: str, supplier_code: str | None = None) -> ColorTier:
+        """Palier 1 + 2 for a color family, with the Palier 3 code a crawler supplied (if any)."""
+        item = self.items["color"][code]
+        assert item.hex, code  # load_taxonomy guarantees a hex on every color
+        return ColorTier(family=item.code, hex=item.hex, supplier_code=clean_supplier_code(supplier_code))
 
     def normalize(self, term: str, dimension: str | None = None) -> tuple[str, str] | None:
         """Map a free-text term (FR or EN) to (dimension, code), or None if unknown."""
@@ -113,4 +145,7 @@ def load_taxonomy(path: Path = TAXONOMY_PATH) -> Taxonomy:
             )
             for code, v in spec["items"].items()
         }
+    for code, item in tax.items.get("color", {}).items():
+        if not (item.hex and _HEX.match(item.hex)):
+            raise ValueError(f"taxonomy color {code!r} needs a #rrggbb hex (Palier 2), got {item.hex!r}")
     return tax

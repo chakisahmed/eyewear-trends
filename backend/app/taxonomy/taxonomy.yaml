@@ -74,6 +74,9 @@ dimensions:
         query: {fr: lunettes papillon, en: butterfly glasses}
 
   color:
+    # Three-tier color schema. Each item here is a Palier 1 family (its code) with its Palier 2 hex.
+    # Palier 3 (supplier / commercial variant code, e.g. "HV/BL") is deliberately NOT listed: it is ingested
+    # per product by the store crawlers (flags["variants"]) and stored on product_tags.supplier_code.
     label_fr: Couleur
     items:
       black:

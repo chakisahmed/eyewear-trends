@@ -32,7 +32,7 @@ class ScrapedProduct(BaseModel):
     currency: str | None = None  # ISO 4217, e.g. "TND", "EUR"
     rank: int | None = Field(default=None, ge=1)  # 1-based position on the store's listing
     image_url: HttpUrl | None = None
-    flags: dict[str, Any] | None = None  # e.g. {"is_bestseller": True, "raw_specs": {"Forme": "Pilote"}}
+    flags: dict[str, Any] | None = None  # e.g. {"is_bestseller": True, "raw_specs": {"Forme": "Pilote"}, "variants": [{"code": "HV/BL", "color": "Havana / Blue"}]}
     seen_at: datetime = Field(default_factory=utcnow)
 
     @field_validator("name")

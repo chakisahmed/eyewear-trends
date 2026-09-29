@@ -74,17 +74,20 @@ class StoreSyncService:
     def _apply_tags(self, row: Product, name: str, flags: dict | None) -> None:
         """Make row.tags equal the tagger's output. Diffed, not replaced: a delete + re-insert of the same
         (dimension, code) in one flush would hit the unique constraint (SQLAlchemy inserts first)."""
-        wanted = {(t.dimension, t.code): t for t in tag_product(name, flags)}
-        current = {(t.dimension, t.code): t for t in row.tags}
+        wanted = {(t.dimension, t.code, t.supplier_code): t for t in tag_product(name, flags)}
+        current = {(t.dimension, t.code, t.supplier_code): t for t in row.tags}
         for key, tag in current.items():
             if key not in wanted:
                 row.tags.remove(tag)  # delete-orphan
         for key, t in wanted.items():
             if key in current:
-                current[key].field, current[key].term, current[key].rules_version = t.field, t.term, RULES_VERSION
+                cur = current[key]
+                cur.field, cur.term, cur.rules_version = t.field, t.term, RULES_VERSION
+                cur.color_family, cur.color_hex = t.color_family, t.color_hex
             else:
                 row.tags.append(ProductTag(dimension=t.dimension, code=t.code, field=t.field, term=t.term,
-                                           rules_version=RULES_VERSION))
+                                           rules_version=RULES_VERSION, color_family=t.color_family,
+                                           color_hex=t.color_hex, supplier_code=t.supplier_code))
 
     def retag_all(self, source_id: int | None = None) -> int:
         """Re-run the tagger over stored products (after a rules or taxonomy change). Idempotent, no network."""

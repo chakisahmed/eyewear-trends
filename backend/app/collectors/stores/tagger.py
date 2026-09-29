@@ -7,19 +7,27 @@ A product's name, categories and raw_specs are matched against taxonomy.yaml syn
 - in free text (name, categories) a few ambiguous synonyms are ignored ("or" = gold in French, but
   also the English word); they still count inside a scoped spec ("Couleur: Or").
 Categories also give non-taxonomy tags: audience (men/women/unisex), product_type (optical/sun).
+
+Color tags carry the three-tier schema: family (Palier 1, the taxonomy code) and hex (Palier 2, the taxonomy's hex
+for it) are attached automatically. Palier 3, a commercial variant code such as "HV/BL", comes from the crawler as
+`flags["variants"] = [{"code": "HV/BL", "color": "Havana / Blue"}]`: each variant's color label is matched like a
+"Couleur" spec and the tag it produces keeps that variant's code. A variant whose label matches no family produces
+no tag (a code is never guessed into a family); it stays in flags.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.taxonomy import Taxonomy, fold, load_taxonomy
+from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 4  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 5  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
 #     shapes) are deliberately NOT a label: a face shape is not the frame's shape.
+# v5: color tags carry family + hex (Palier 1-2) and, from flags["variants"], the variant code (Palier 3).
+#     Matching is unchanged; retag-products backfills the new columns on existing tags.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport"})
 SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
@@ -55,6 +63,9 @@ class Tag:
     code: str
     field: str  # where it matched: "name" | "categories" | "spec:<key>"
     term: str  # the folded phrase that matched
+    color_family: str | None = None  # Palier 1, color tags only (equals `code` today)
+    color_hex: str | None = None  # Palier 2, the taxonomy's hex for the family
+    supplier_code: str | None = None  # Palier 3, from the crawler's variants
 
 
 Index = tuple[tuple[str, str], ...]  # (folded phrase, code), longest phrase first
@@ -98,13 +109,21 @@ def _match(text: str, index: Index, *, skip_ambiguous: bool) -> list[tuple[str, 
 def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None) -> list[Tag]:
     """All tags for one product. The first source to find a (dimension, code) is kept as provenance,
     in order of reliability: scoped specs, then categories, then the name."""
-    idx = _indexes(taxonomy or load_taxonomy())
+    taxonomy = taxonomy or load_taxonomy()
+    idx = _indexes(taxonomy)
     dims = [d for d in idx if not d.startswith("_")]
     flags = flags or {}
-    tags: dict[tuple[str, str], Tag] = {}
+    tags: dict[tuple[str, str, str | None], Tag] = {}
 
-    def add(dim: str, code: str, field: str, term: str) -> None:
-        tags.setdefault((dim, code), Tag(dim, code, field, term))
+    def add(dim: str, code: str, field: str, term: str, supplier_code: str | None = None) -> None:
+        key = (dim, code, supplier_code)
+        if key in tags:
+            return
+        if dim == "color":
+            tier = taxonomy.color_tier(code, supplier_code)
+            tags[key] = Tag(dim, code, field, term, tier.family, tier.hex, tier.supplier_code)
+        else:
+            tags[key] = Tag(dim, code, field, term)
 
     specs = flags.get("raw_specs")
     for key, value in (specs.items() if isinstance(specs, dict) else ()):
@@ -126,4 +145,17 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
         for code, term in _match(name or "", idx[dim], skip_ambiguous=True):
             add(dim, code, "name", term)
 
-    return sorted(tags.values(), key=lambda t: (t.dimension, t.code))
+    # Palier 3: a variant's label decides its family, its code rides along on the tag. Once a family has coded
+    # tags, the uncoded tag of that family (from the name or a spec) adds nothing and is dropped.
+    for variant in flags.get("variants") if isinstance(flags.get("variants"), list) else ():
+        if not isinstance(variant, dict):
+            continue
+        code, label = clean_supplier_code(variant.get("code")), variant.get("color")
+        if code and isinstance(label, str):
+            for family, term in _match(label, idx["_spec_color"], skip_ambiguous=False):
+                add("color", family, "variant", term, code)
+    coded = {(d, c) for d, c, s in tags if s}
+    for key in [k for k in tags if k[2] is None and k[:2] in coded]:
+        del tags[key]
+
+    return sorted(tags.values(), key=lambda t: (t.dimension, t.code, t.supplier_code or ""))

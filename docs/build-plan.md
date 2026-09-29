@@ -37,7 +37,7 @@ design/kimi/       HTML mockups A–F the frontend was ported from
 - `sources`
 - `documents`
 - `products` (store catalog items, upserted by url)
-- `product_tags` (product → taxonomy code links from the rule-based tagger, with provenance)
+- `product_tags` (product → taxonomy code links from the rule-based tagger, with provenance; color tags carry three tiers: `color_family` (Palier 1), `color_hex` (Palier 2, from the taxonomy) and `supplier_code` (Palier 3, a store's own variant code, from the crawler and never stored in the YAML))
 - `mentions` (the evidence behind every trend)
 - `search_interest`
 - `trend_snapshots`
@@ -89,6 +89,7 @@ Foreign keys: `documents` → `sources`, `products` → `sources`, `product_tags
     Tagger rules v2: frame-material and gender spec labels, plus store vocabulary aliases in specs only (acier/inox → metal, carey → tortoiseshell). `taxonomy.yaml` is untouched.
   - Step 5 (discount signal): `products.list_price` (migration 76b043af5674), read from JSON-LD `priceSpecification` (ListPrice / StrikethroughPrice) or a CSS rule, always from the same source as the selling price, and kept only when above it. Markdown is read **relative to each store's usual markdown** (MyKenza runs a store-wide -25 to -50 % sale). Stores without list prices are excluded. A declining attribute discounted at least 10 pts deeper than usual is a "déstockage" stock risk. Shown on the trend detail page (`retail_markdown`), in the report and in the weekly summary's input.
   - Step 6 (third store): LaMode "Cadres optiques", about 183 designer prescription frames. The shape comes from the "Forme Lunette" feature (tagger rules v4). Its "VISAGE" rows (recommended face shapes) are deliberately ignored. It gives no discount signal: its JSON-LD has no list price.
+  - Step 7 (3-tier colors, migration a41c7d9e2b56, tagger rules v5): color tags carry family, hex and an optional supplier/variant code. A crawler that exposes variants writes `flags["variants"] = [{"code": "HV/BL", "color": "Havana"}, …]`; each label the tagger recognises gives one tag per code, so two codes of one family coexist. Uniqueness is `(product, dimension, code, supplier_code)` plus a partial unique index for uncoded tags (SQL treats NULLs as distinct). Existing tags were backfilled by `retag-products`; no store exposed variant codes yet.
   - Gaps per product type (done): opportunities and risks are computed within the prescription shelf and the sunglasses shelf separately (product_type tags), while store discount baselines stay store-wide. A shelf with no comparable data is skipped. Sunglasses-only attributes (shield / wraparound frames, tinted lenses) are never prescription opportunities. First real result: aviator is rising in the press but only 3 % of the prescription shelf.
   - Scouting (2026-09-27):
     - lunettek.com has ideal structured specs (Forme, Couleur, Matériau), but its catalog is dormant: 48 of 48 sampled products are out of stock and all images date from 2021.

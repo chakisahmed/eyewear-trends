@@ -102,7 +102,7 @@ def test_mykenza_description_sample():
 
 def test_rules_version_4_forme_lunette_is_a_shape_label():
     from app.collectors.stores.tagger import RULES_VERSION
-    assert RULES_VERSION == 4
+    assert RULES_VERSION >= 4  # 5 since the color tiers (test_color_tiers.py)
     assert codes(tag_product("X", {"raw_specs": {"Forme Lunette": "Cat-Eye"}})) == {("shape", "cat_eye")}
     assert codes(tag_product("X", {"raw_specs": {"Forme de la monture": "Carrée"}})) == {("shape", "square")}
 

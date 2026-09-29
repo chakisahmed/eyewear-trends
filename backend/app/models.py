@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -76,7 +76,11 @@ class ProductTag(Base):
 
     __tablename__ = "product_tags"
     __table_args__ = (
-        UniqueConstraint("product_id", "dimension", "code"),
+        # One tag per (product, dimension, code, supplier_code): a product may list several variant codes of one
+        # color family. NULLs are distinct in SQL, so the partial index keeps "at most one uncoded tag" as before.
+        UniqueConstraint("product_id", "dimension", "code", "supplier_code"),
+        Index("uq_product_tags_uncoded", "product_id", "dimension", "code", unique=True,
+              sqlite_where=text("supplier_code IS NULL"), postgresql_where=text("supplier_code IS NULL")),
         Index("ix_product_tags_dimension_code", "dimension", "code"),  # the trend detail lookup
     )
 
@@ -87,6 +91,12 @@ class ProductTag(Base):
     field: Mapped[str] = mapped_column(String(40))  # provenance: name | categories | spec:<key>
     term: Mapped[str] = mapped_column(String(100))  # the folded synonym that matched
     rules_version: Mapped[int] = mapped_column(Integer)
+    # Three-tier color schema, set on dimension == "color" tags only (NULL everywhere else, and on tags made
+    # before rules v5 until `retag-products`): family (Palier 1) is the code, hex (Palier 2) the taxonomy's
+    # hex for it, supplier_code (Palier 3) the store's commercial variant code, e.g. "HV/BL".
+    color_family: Mapped[str | None] = mapped_column(String(40))
+    color_hex: Mapped[str | None] = mapped_column(String(7))
+    supplier_code: Mapped[str | None] = mapped_column(String(60))
 
     product: Mapped[Product] = relationship(back_populates="tags")
 
