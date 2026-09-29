@@ -32,9 +32,9 @@ def type_tag(kind: str) -> ProductTag:
 
 
 def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict[str, int] | None = None, price=100.0,
-              kind: str = "sun"):
+              kind: str = "sun", country: str = "TN"):
     """n_products: shape code -> number of active products; stale: shape code -> products seen long ago."""
-    src = Source(name=name, kind="store", url=f"https://{name.lower()}.test", lang="fr", country="TN")
+    src = Source(name=name, kind="store", url=f"https://{name.lower()}.test", lang="fr", country=country)
     s.add(src)
     s.flush()
     i = 0
@@ -65,6 +65,17 @@ def test_shelf_counts_active_products_per_attribute(s):
     assert shapes["items"]["square"]["avg_price"] == {"TND": 220.0}
     assert "round" not in shapes["items"]                                    # only stale products
     assert shelf["dimensions"]["color"]["tagged"] == 0
+
+
+def test_a_foreign_brand_catalog_is_not_part_of_the_tunisian_shelf(s):
+    add_store(s, "Alpha", {"square": 30, "cat_eye": 1})
+    add_store(s, "Etnia", {"cat_eye": 40}, country="ES")                   # a creator brand's own catalog, Spain
+    snapshot(s, "cat_eye", "en_hausse", 1.5)
+    shelf = retail.shelf_by_attribute(s)
+    assert [st["name"] for st in shelf["stores"]] == ["Alpha"] and shelf["dimensions"]["shape"]["tagged"] == 31
+    assert [g["code"] for g in retail.shelf_gaps_by_type(s, WEEK)["opportunities"]] == ["cat_eye"]  # still rare in Tunisia
+    assert {store for _, store in retail.active_products(s)} == {"Alpha", "Etnia"}  # trend pages still see every store
+    assert "Etnia" not in build_brief(s, WEEK)
 
 
 def test_gaps_find_opportunities_and_stock_risks(s):

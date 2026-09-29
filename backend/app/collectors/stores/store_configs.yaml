@@ -104,6 +104,50 @@ stores:
       key: "strong"
       value: "span"
 
+  # Etnia Barcelona (Spain), Shopify, the brand's own catalog: the first creator-brand store, not a Tunisian shelf
+  # (country ES keeps it out of the "Marché Tunisien" shares and gaps). Checked 2026-09-29, en-es market, EUR:
+  # - listings are server-rendered, 24 cards per page, <link rel=next> (the filter survives in it). Optical ~315,
+  #   sun ~369. The /collections/*.json endpoint strips the product list, so the HTML is read;
+  # - product pages carry schema.org Product JSON-LD (name, brand, per-variant offers in EUR) and one color swatch
+  #   per variant: value = the commercial code (Palier 3), data-option-display-label = the store's color name
+  #   (aria-label adds " - Notify me" when that color is sold out). Product .json is never fetched: it has the codes
+  #   but not the color names;
+  # - model names (KORE, IZZI) carry no shape. Shape, gender and material come from the store's own filters,
+  #   listed one value at a time. The shape metafield span is absent from product pages (0 of 9 sampled): unused;
+  # - robots.txt forbids sort_by, "+" and two filters in one URL (Python's robotparser does not apply that last
+  #   rule, which starts with "*"). Facet passes use one filter per request by construction; tested.
+  etniabarcelona.com:
+    name: "Etnia Barcelona"
+    base_url: "https://etniabarcelona.com"   # the apex: www 301-redirects here
+    lang: en
+    country: ES
+    default_currency: EUR
+    default_brand: "Etnia Barcelona"
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/optical", categories: "Optique" }
+        - { url: "/collections/sun", categories: "Solaire" }
+      pagination: { next: "link[rel=next]", max_pages: 20 }   # optical 14 pages, sun 16
+      product: "li.product-grid__item"
+      link: "a.product-card__link"                            # /collections/optical/products/kore?variant=…
+      url_regex: '(/products/[^/?#]+)'                        # -> /products/kore: one product per frame
+      facets:                                                 # values and labels read from the listing's filter form
+        - { name: "Forme", param: "filter.p.m.custom.shape" }        # CAT-EYE/BUTTERFLY, OVAL, PANTOS, PILOT…
+        - { name: "Gender", param: "filter.v.m.custom.gender" }      # Man, Woman, Unisex
+        - { name: "Materials", param: "filter.p.m.custom.material" } # Acetate, Metal, Combination
+    product_pages:
+      enabled: true                    # prices and color variants live on the product page
+      max_products: 800
+    fields:                            # CSS fallbacks; JSON-LD is primary
+      name:  { css: "a.product-card__link .visually-hidden" }
+      price: { css: ".price" }                                # "255,46 €"
+    variants:                          # -> flags.variants = [{code: "HV/BL", color: "Havana", in_stock: true}, …]
+      rows: "input[type=radio][name^=Color]"                  # sun pages also have LensName-… radios: excluded
+      code: { attr: value }
+      label: { attr: [data-option-display-label, aria-label], regex: '^(.*?)(?:\s+-\s+Notify me)?$' }
+      available: { attr: data-option-available }
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

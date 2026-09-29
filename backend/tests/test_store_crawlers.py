@@ -102,10 +102,11 @@ def test_config_loads_and_resolves_domains(cfg):
         config_for("other.test", configs)
 
 
-def test_shipped_config_has_the_three_stores():
+def test_shipped_config_has_the_four_stores():
     from app.collectors.stores.config import load_store_configs
     configs = load_store_configs()
-    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn", "lamode.tn"]
+    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn", "lamode.tn", "etniabarcelona.com"]
+    assert [c.country for c in configs.values()] == ["TN", "TN", "TN", "ES"]  # Etnia is a brand catalog, not a Tunisian shelf
     outika = configs["outika-eyewear.tn"]
     assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
 

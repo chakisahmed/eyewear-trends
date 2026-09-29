@@ -16,7 +16,7 @@ from urllib.parse import urljoin
 
 from lxml import html as lxml_html
 
-from app.collectors.stores.config import FieldRule, ScraperConfig
+from app.collectors.stores.config import FieldRule, ScraperConfig, ValueRule, VariantsRule
 
 log = logging.getLogger(__name__)
 PRODUCT_FIELDS = ("name", "brand", "price", "list_price", "currency", "image_url")
@@ -194,11 +194,8 @@ def json_ld_fields(node: dict, page_url: str) -> dict[str, Any]:
 
 # --- CSS rules ---------------------------------------------------------------------------------------
 
-def _extract(element, rule: FieldRule) -> str | None:
-    matches = element.cssselect(rule.css)
-    if not matches:
-        return None
-    el = matches[0]
+def _read(el, rule: FieldRule | ValueRule) -> str | None:
+    """The element's text, or its first non-empty rule.attr, then rule.regex (group 1, or the whole match)."""
     if rule.attr:
         attrs = [rule.attr] if isinstance(rule.attr, str) else rule.attr
         value = next((el.get(a).strip() for a in attrs if (el.get(a) or "").strip()), None)
@@ -207,7 +204,12 @@ def _extract(element, rule: FieldRule) -> str | None:
     if value and rule.regex:
         m = re.search(rule.regex, value)
         value = (m.group(1) if m.groups() else m.group(0)).strip() if m else None
-    return value
+    return value or None
+
+
+def _extract(element, rule: FieldRule) -> str | None:
+    matches = element.cssselect(rule.css)
+    return _read(matches[0], rule) if matches else None
 
 
 def css_fields(element, rules: dict[str, FieldRule], scope: str, base_url: str) -> dict[str, Any]:
@@ -253,6 +255,54 @@ def _tree(html: str):
     return lxml_html.fromstring(html) if html and html.strip() else lxml_html.fromstring("<html></html>")
 
 
+def canonical_url(url: str, url_regex: str | None) -> str:
+    """The product's identity URL: group 1 of url_regex made absolute ("/collections/sun/products/izzi?variant=1"
+    -> "/products/izzi"), so one frame listed in two collections, or once per color, is one product."""
+    m = re.search(url_regex, url) if url_regex else None
+    return urljoin(url, m.group(1)) if m and m.group(1) else url
+
+
+def facet_values(html: str, param: str) -> list[tuple[str, str]]:
+    """(value, label) of each option of a listing filter (<input name=param>), deduplicated: Shopify themes render
+    the filter twice (desktop and mobile). Label: aria-label, else its <label for=id>, else the enclosing label."""
+    tree = _tree(html)
+    labels = {lab.get("for"): " ".join(lab.text_content().split()) for lab in tree.cssselect("label[for]")}
+    out: dict[str, str] = {}
+    for inp in tree.cssselect("input[name]"):
+        value = (inp.get("value") or "").strip()
+        if inp.get("name") != param or not value or value in out:
+            continue
+        enclosing = next((a for a in inp.iterancestors("label")), None)
+        label = ((inp.get("aria-label") or "").strip() or labels.get(inp.get("id"))
+                 or (" ".join(enclosing.text_content().split()) if enclosing is not None else ""))
+        if label:
+            out[value] = label
+    return list(out.items())
+
+
+def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
+    """[{"code": "HV/BL", "color": "Havana", "in_stock": True}, …] in page order, one entry per code."""
+    def value(row, r: ValueRule | None) -> str | None:
+        if r is None:
+            return None
+        el = row if r.css is None else next(iter(row.cssselect(r.css)), None)
+        return _read(el, r) if el is not None else None
+
+    variants: dict[str, dict[str, Any]] = {}
+    for row in tree.cssselect(rule.rows):
+        code = value(row, rule.code)
+        if not code or code in variants:
+            continue
+        variant: dict[str, Any] = {"code": code}
+        if label := value(row, rule.label):
+            variant["color"] = label
+        available = {"true": True, "1": True, "false": False, "0": False}.get((value(row, rule.available) or "").lower())
+        if available is not None:
+            variant["in_stock"] = available
+        variants[code] = variant
+    return list(variants.values())
+
+
 def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int = 1) -> list[ListingItem]:
     """One item per product card, ranked in page order; JSON-LD matched to cards by absolute URL."""
     tree = _tree(html)
@@ -269,7 +319,7 @@ def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int 
         href = (links[0].get("href") or "").strip() if links else ""
         if not href:
             continue
-        url = urljoin(page_url, href)
+        url = canonical_url(urljoin(page_url, href), cfg.listing.url_regex)
         items.append(ListingItem(
             url=url, rank=start_rank + len(items), json_ld=by_url.get(url, {}),
             css=css_fields(card, cfg.fields, "card", page_url), flags=css_flags(card, cfg, "card"),
@@ -302,6 +352,11 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
         specs = described | specs  # a table value wins over the description on the same label
     if specs:
         flags["raw_specs"] = specs
+    if cfg.variants and (variants := parse_variants(tree, cfg.variants)):
+        flags["variants"] = variants
+        stock = [v["in_stock"] for v in variants if "in_stock" in v]
+        if stock:  # sold out only when no variant is available; an explicit out_of_stock flag rule wins
+            flags.setdefault("out_of_stock", not any(stock))
     return ProductPage(json_ld=json_ld, css=css_fields(tree, cfg.fields, "page", page_url), flags=flags)
 
 

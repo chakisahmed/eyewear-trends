@@ -107,6 +107,18 @@ def test_rules_version_4_forme_lunette_is_a_shape_label():
     assert codes(tag_product("X", {"raw_specs": {"Forme de la monture": "Carrée"}})) == {("shape", "square")}
 
 
+def test_rules_version_6_etnia_shape_labels_give_one_shape_each():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 6
+    shape = lambda v: codes(tag_product("KORE", {"raw_specs": {"Forme": v}}))
+    assert shape("PANTOS SQUARE") == {("shape", "square")}                   # not also round (pantos)
+    assert shape("CAT-EYE/BUTTERFLY") == {("shape", "cat_eye")}              # not also butterfly
+    assert shape("PANTOS") == {("shape", "round")} and shape("PILOT") == {("shape", "aviator")}
+    assert shape("RECTANGULAR") == {("shape", "rectangle")}
+    assert shape("PEAR") == shape("OTHER") == set()
+    assert codes(tag_product("Pantos square edition", None)) == {("shape", "round"), ("shape", "square")}  # alias: specs only
+
+
 def test_face_shape_is_never_a_frame_shape():
     """LaMode lists VISAGE (recommended face shapes: Ovale, Rond...) next to Forme Lunette."""
     specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}

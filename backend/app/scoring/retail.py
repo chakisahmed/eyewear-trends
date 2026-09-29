@@ -42,13 +42,18 @@ TYPE_LABELS = {"optical": "optique", "sun": "solaire"}
 # Attributes that only exist on sunglasses: their absence from a prescription shelf is normal, not a gap.
 SUN_ONLY = {("shape", "shield"), ("color", "tinted_lens")}
 CLEARANCE_PTS = 0.10  # relative markdown (vs the store's usual) that marks a declining attribute as being cleared
+MARKET_COUNTRY = "TN"  # the "Marché Tunisien" lens: shelf shares and gaps only count stores of this country
 
 
-def active_products(session: Session) -> list[tuple[Product, str]]:
-    """(product, store name) for every product still on its store's shelf."""
+def active_products(session: Session, country: str | None = None) -> list[tuple[Product, str]]:
+    """(product, store name) for every product still on its store's shelf; country restricts it to one market's
+    stores (Source.country)."""
     latest = dict(session.execute(select(Product.source_id, func.max(Product.seen_at)).group_by(Product.source_id)).all())
-    rows = session.execute(select(Product, Source.name).join(Source, Source.id == Product.source_id)).all()
-    return [(p, store) for p, store in rows if p.seen_at >= latest[p.source_id] - timedelta(days=ACTIVE_DAYS)]
+    query = select(Product, Source.name).join(Source, Source.id == Product.source_id)
+    if country:
+        query = query.where(Source.country == country)
+    return [(p, store) for p, store in session.execute(query).all()
+            if p.seen_at >= latest[p.source_id] - timedelta(days=ACTIVE_DAYS)]
 
 
 def markdown(p: Product) -> float:
@@ -91,11 +96,12 @@ def of_type(session: Session, active: list[tuple[Product, str]], product_type: s
     return [(p, store) for p, store in active if p.id in ids]
 
 
-def shelf_by_attribute(session: Session, product_type: str | None = None) -> dict:
+def shelf_by_attribute(session: Session, product_type: str | None = None, country: str | None = MARKET_COUNTRY) -> dict:
     """{"stores": [{name, products, updated}], "dimensions": {dim: {"tagged": n, "items": {code: {sku, share, avg_price}}}}}.
     product_type ("optical" / "sun") restricts the shelf; store markdown baselines stay store-wide (a sale covers
-    the whole store)."""
-    everything = active_products(session)
+    the whole store). The shelf is the Tunisian market's by default: a creator brand's own catalog (Etnia Barcelona,
+    Spain) is not a Tunisian shelf, so it never enters these shares or the gaps built on them."""
+    everything = active_products(session, country)
     baselines = store_baselines(everything)
     active = of_type(session, everything, product_type) if product_type else everything
     by_id = {p.id: p for p, _ in active}

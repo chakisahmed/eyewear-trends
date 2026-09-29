@@ -31,6 +31,15 @@ def check_css(css: str) -> str:
     return css
 
 
+def check_regex(v: str | None) -> str | None:
+    if v is not None:
+        try:
+            re.compile(v)
+        except re.error as e:
+            raise ValueError(f"invalid regex {v!r}: {e}") from e
+    return v
+
+
 def normalize_domain(value: str) -> str:
     host = (urlsplit(value).hostname if "://" in value else value) or ""
     host = host.strip().lower().rstrip(".")
@@ -55,12 +64,7 @@ class FieldRule(_Strict):
     @field_validator("regex")
     @classmethod
     def _compiles(cls, v: str | None) -> str | None:
-        if v is not None:
-            try:
-                re.compile(v)
-            except re.error as e:
-                raise ValueError(f"invalid regex {v!r}: {e}") from e
-        return v
+        return check_regex(v)
 
 
 class FlagRule(FieldRule):
@@ -73,6 +77,38 @@ class SpecsRule(_Strict):
     value: str
 
     @field_validator("rows", "key", "value")
+    @classmethod
+    def _css(cls, v: str) -> str:
+        return check_css(v)
+
+
+class ValueRule(_Strict):
+    """One value read from a variant row: the row's own text or attribute, or a descendant's (css)."""
+    css: str | None = None  # None: the row element itself
+    attr: str | list[str] | None = None  # first non-empty attribute wins; None: the text
+    regex: str | None = None  # group 1, or the whole match
+
+    @field_validator("css")
+    @classmethod
+    def _css(cls, v: str | None) -> str | None:
+        return check_css(v) if v is not None else v
+
+    @field_validator("regex")
+    @classmethod
+    def _compiles(cls, v: str | None) -> str | None:
+        return check_regex(v)
+
+
+class VariantsRule(_Strict):
+    """Product page color variants -> flags["variants"] = [{"code", "color", "in_stock"}]. The code is the store's
+    own commercial code (Palier 3, kept verbatim); the color is the store's own name for it, which the tagger maps
+    to a family. Nothing is decoded from the code itself."""
+    rows: str  # one element per variant, e.g. a color swatch input
+    code: ValueRule
+    label: ValueRule | None = None
+    available: ValueRule | None = None  # "true" / "false"
+
+    @field_validator("rows")
     @classmethod
     def _css(cls, v: str) -> str:
         return check_css(v)
@@ -95,21 +131,50 @@ class Pagination(_Strict):
         return self
 
 
+class ListingUrl(_Strict):
+    url: str  # relative to base_url, or absolute
+    categories: str | None = None  # flags["categories"] of every product listed here, e.g. "Solaire"
+
+
+class Facet(_Strict):
+    """A store's own listing filter, read one value at a time: every product listed under a value gets
+    raw_specs[name] = that value's label. Values and labels are read from the listing's first page, so no
+    store id is hard-coded. One filter per request: filters are never combined (robots.txt often forbids it)."""
+    name: str  # the raw_specs key the tagger reads, e.g. "Forme"
+    param: str  # the query parameter, e.g. "filter.p.m.custom.shape"
+
+    @field_validator("param")
+    @classmethod
+    def _plain(cls, v: str) -> str:
+        if not re.fullmatch(r"[\w.\-]+", v):
+            raise ValueError(f"not a query parameter name: {v!r}")
+        return v
+
+
 class ListingRule(_Strict):
-    urls: list[str] = Field(min_length=1)  # relative to base_url, or absolute
+    urls: list[str | ListingUrl] = Field(min_length=1)  # relative to base_url, or absolute
     pagination: Pagination | None = None
     product: str  # one element per product card
     link: str  # the product page link inside a card (href)
+    url_regex: str | None = None  # keep group 1 of each (absolute) product link, e.g. drop a collection prefix and ?variant=
+    facets: list[Facet] = []
 
     @field_validator("product", "link")
     @classmethod
     def _css(cls, v: str) -> str:
         return check_css(v)
 
+    @field_validator("url_regex")
+    @classmethod
+    def _compiles(cls, v: str | None) -> str | None:
+        if v is not None and re.compile(check_regex(v)).groups < 1:
+            raise ValueError(f"url_regex needs a capture group: {v!r}")
+        return v
+
 
 class ProductPages(_Strict):
     enabled: bool = False
-    max_products: int = Field(60, ge=1, le=500)
+    max_products: int = Field(60, ge=1, le=1000)
 
 
 class ScraperConfig(_Strict):
@@ -125,6 +190,7 @@ class ScraperConfig(_Strict):
     fields: dict[FIELD_NAMES, FieldRule] = {}
     flags: dict[str, FlagRule] = {}
     specs: SpecsRule | None = None  # product page table -> flags["raw_specs"]
+    variants: VariantsRule | None = None  # product page color variants -> flags["variants"]
     description_specs: bool = False  # also read "Label : value" pairs from the JSON-LD description
     delay_s: float = Field(1.5, ge=0.5)  # politeness floor between requests
 

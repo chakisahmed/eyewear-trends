@@ -9,15 +9,19 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import AsyncIterator
+from contextlib import aclosing
 from typing import Any
 from urllib import robotparser
-from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
 
 import httpx
 from pydantic import ValidationError
 
-from app.collectors.stores.config import ScraperConfig
-from app.collectors.stores.parser import ListingItem, merge, next_page_url, parse_listing, parse_product_page
+from app.collectors.stores.config import Facet, ListingUrl, ScraperConfig
+from app.collectors.stores.parser import (
+    ListingItem, facet_values, merge, next_page_url, parse_listing, parse_product_page,
+)
 from app.collectors.stores.schemas import ScrapedProduct
 from app.config import settings
 
@@ -25,9 +29,19 @@ log = logging.getLogger(__name__)
 
 
 def with_query(url: str, **params: Any) -> str:
+    """url with params set. Spaces become %20, never "+": robots.txt files forbid "+" in collection URLs (Shopify)."""
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query)) | {k: str(v) for k, v in params.items()}
-    return urlunsplit(parts._replace(query=urlencode(query)))
+    return urlunsplit(parts._replace(query=urlencode(query, quote_via=quote)))
+
+
+def add_label(target: dict[str, Any], key: str, label: str) -> None:
+    """target[key] = label, or ", "-joined onto the labels already there ("Man, Woman"), without repeats."""
+    have = target.get(key)
+    if not have:
+        target[key] = label
+    elif label not in have.split(", "):
+        target[key] = f"{have}, {label}"
 
 
 class BaseStoreCrawler:
@@ -95,34 +109,66 @@ class BaseStoreCrawler:
 
     # --- crawl ---------------------------------------------------------------------------------------
 
-    async def listing_items(self) -> list[ListingItem]:
-        cfg, items, seen = self.config, [], set()
-        pagination = cfg.listing.pagination
+    async def listing_pages(self, first_url: str) -> AsyncIterator[tuple[int, str, str | None]]:
+        """(page number, url, html or None if blocked / failed) for each listing page, following the pagination."""
+        pagination = self.config.listing.pagination
         max_pages = pagination.max_pages if pagination else 1
-        for start in cfg.listing.urls:
-            url: str | None = urljoin(str(cfg.base_url), start)
-            first_url = url
-            for page in range(1, max_pages + 1):
-                html = await self.fetch(url)
-                if html is not None:
-                    found = parse_listing(html, url, cfg, start_rank=len(items) + 1)
-                    if not found and page > 1:
-                        break  # past the last page
-                    for item in found:
-                        if item.url not in seen:
-                            seen.add(item.url)
-                            item.rank = len(items) + 1
-                            items.append(item)
-                log.info("%s: listing %s page %d (max %d), %d products so far", cfg.name, start, page, max_pages, len(items))
-                if not pagination or page == max_pages:
-                    break
-                if pagination.param:
-                    url = with_query(first_url, **{pagination.param: page + 1})
-                else:
-                    url = next_page_url(html, url, pagination.next) if html is not None else None
-                    if url is None:
-                        break
+        url = first_url
+        for page in range(1, max_pages + 1):
+            html = await self.fetch(url)
+            yield page, url, html
+            if not pagination or page == max_pages:
+                return
+            if pagination.param:
+                url = with_query(first_url, **{pagination.param: page + 1})
+            else:
+                url = next_page_url(html, url, pagination.next) if html is not None else None
+                if url is None:
+                    return
+
+    async def listing_items(self) -> list[ListingItem]:
+        cfg, items = self.config, []
+        by_url: dict[str, ListingItem] = {}
+        max_pages = cfg.listing.pagination.max_pages if cfg.listing.pagination else 1
+        for entry in cfg.listing.urls:
+            start, category = (entry.url, entry.categories) if isinstance(entry, ListingUrl) else (entry, None)
+            first_url, first_html = urljoin(str(cfg.base_url), start), None
+            async with aclosing(self.listing_pages(first_url)) as pages:
+                async for page, url, html in pages:
+                    if html is not None:
+                        first_html = first_html or (html if page == 1 else None)
+                        found = parse_listing(html, url, cfg, start_rank=len(items) + 1)
+                        if not found and page > 1:
+                            break  # past the last page
+                        for item in found:
+                            if item.url not in by_url:
+                                by_url[item.url] = item
+                                item.rank = len(items) + 1
+                                items.append(item)
+                            if category:
+                                add_label(by_url[item.url].flags, "categories", category)
+                    log.info("%s: listing %s page %d (max %d), %d products so far", cfg.name, start, page, max_pages, len(items))
+            for facet in cfg.listing.facets if first_html is not None else ():
+                await self.facet_pass(facet, first_url, first_html, by_url)
         return items
+
+    async def facet_pass(self, facet: Facet, first_url: str, first_html: str, by_url: dict[str, ListingItem]) -> None:
+        """List the collection once per value of one store filter and record the value's label in the raw_specs of
+        every product listed under it. One filter per request, never combined. Products the plain listing did not
+        return are ignored: the listing stays the only source of products."""
+        cfg = self.config
+        for value, label in facet_values(first_html, facet.param):
+            matched = 0
+            async with aclosing(self.listing_pages(with_query(first_url, **{facet.param: value}))) as pages:
+                async for page, url, html in pages:
+                    found = parse_listing(html, url, cfg) if html is not None else []
+                    if not found and page > 1:
+                        break
+                    for item in found:
+                        if item.url in by_url:
+                            matched += 1
+                            add_label(by_url[item.url].flags.setdefault("raw_specs", {}), facet.name, label)
+            log.info("%s: facet %s = %s, %d products", cfg.name, facet.name, label, matched)
 
     def postprocess(self, fields: dict[str, Any]) -> dict[str, Any]:
         """Hook for the rare store that needs a code tweak; the default does nothing."""
@@ -148,6 +194,10 @@ class BaseStoreCrawler:
             layers = [page.json_ld, item.json_ld, page.css, item.css] if page else [item.json_ld, item.css]
             fields = merge(*layers, default_currency=cfg.default_currency, default_brand=cfg.default_brand)
             flags = item.flags | (page.flags if page else {})
+            # raw_specs from the listing (facets) and from the product page are merged, the page winning per label
+            specs = item.flags.get("raw_specs", {}) | (page.flags.get("raw_specs", {}) if page else {})
+            if specs:
+                flags["raw_specs"] = specs
             fields = self.postprocess({**fields, "url": item.url, "rank": item.rank, "flags": flags or None})
             try:
                 products.append(ScrapedProduct(**fields))
