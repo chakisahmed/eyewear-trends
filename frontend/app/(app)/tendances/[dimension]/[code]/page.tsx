@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ChartCard } from "@/components/charts/ChartCard";
 import { LineChart, SeriesTable, type Series } from "@/components/charts/LineChart";
+import { FrequentPairings } from "@/components/FrequentPairings";
 import { Glyph } from "@/components/Glyph";
 import { Icon } from "@/components/icons";
 import { RetailPresence } from "@/components/RetailPresence";
@@ -149,6 +150,7 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
         </section>
 
         <RetailPresence d={d} />
+        <FrequentPairings d={d} />
 
         <section aria-labelledby="evidenceTitle">
           <div className="section-head">

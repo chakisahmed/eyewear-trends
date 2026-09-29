@@ -202,3 +202,45 @@ def shelf_gaps_by_type(session: Session, week: date) -> dict:
         "types": types,
         "shelves": shelves,
     }
+
+
+PAIRING_LIMIT = 8  # partner colours shown per colour
+
+
+def color_pairings(session: Session, code: str) -> dict | None:
+    """Frequent pairings of a colour family in acetate laminations (the `lamination` tags, e.g. "blue+tortoiseshell").
+
+    Counts frames (distinct active products), never variants: a frame with three blue/tortoiseshell codes counts once
+    per partner. A frame with a three-layer lamination counts once for each of the other two layers. `bestsellers`
+    are the frames the store itself flags (frame-level flag, never guessed). None when no active frame carries this
+    colour in a lamination."""
+    active = {p.id: (p, store) for p, store in active_products(session)}
+    known = load_taxonomy().codes("color")
+    partners: dict[str, set[int]] = defaultdict(set)
+    frames: set[int] = set()
+    for product_id, lamination in session.execute(
+            select(ProductTag.product_id, ProductTag.code).where(ProductTag.dimension == "lamination")):
+        layers = lamination.split("+")
+        if product_id not in active or code not in layers:
+            continue
+        frames.add(product_id)
+        for layer in layers:
+            if layer != code and layer in known:
+                partners[layer].add(product_id)
+    if not frames:
+        return None
+
+    def bestseller(pid: int) -> bool:
+        return bool((active[pid][0].flags or {}).get("is_bestseller"))
+
+    def entry(ids: set[int]) -> dict:
+        best = sorted((active[i][0] for i in ids if bestseller(i)), key=lambda p: (p.rank or 10**9, p.name))
+        return {"frames": len(ids), "bestsellers": len(best),
+                "examples": [{"name": p.name, "url": p.url, "store": active[p.id][1]} for p in best[:2]]}
+
+    ranked = sorted(partners.items(), key=lambda kv: (-len(kv[1]), -sum(bestseller(i) for i in kv[1]), kv[0]))
+    return {
+        **entry(frames),
+        "stores": sorted({active[i][1] for i in frames}),
+        "partners": [{"code": partner, **entry(ids)} for partner, ids in ranked[:PAIRING_LIMIT]],
+    }

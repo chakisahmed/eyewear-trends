@@ -317,6 +317,14 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     }
 
 
+def _pairings(db: Session, dimension: str, code: str) -> dict | None:
+    """"Associations fréquentes": what a colour is laminated with (colour pages only; None when no frame shows it)."""
+    data = retail.color_pairings(db, code) if dimension == "color" else None
+    if data is None:
+        return None
+    return {**data, "partners": [{**p, **_item("color", p["code"])} for p in data["partners"]]}
+
+
 @app.get("/api/trends/{dimension}/{code}")
 def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, weeks: int = Query(12, ge=4, le=52)) -> dict:
     _check_dimension(dimension)
@@ -325,7 +333,7 @@ def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, we
         raise HTTPException(404, f"Attribut inconnu : '{code}'")
     end = _resolve_week(db, week)
     base = {**_item(dimension, code), "dimension": dimension, "dimension_label": tax.dimension_labels[dimension]}
-    retail = _retail_presence(db, dimension, code)
+    retail = {**_retail_presence(db, dimension, code), "pairings": _pairings(db, dimension, code)}
     if end is None:
         return {**base, "week": None, **retail}
 

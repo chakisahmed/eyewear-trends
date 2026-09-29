@@ -92,6 +92,27 @@ export interface TrendDetail extends Attribute, Tone {
   retail_sample?: RetailProduct[];
   retail_updated_at?: string | null;
   retail_markdown?: Markdown | null;
+  /** Colour pages only: what this colour is laminated with in the tracked catalogs; null when no frame shows it. */
+  pairings?: Pairings | null;
+}
+
+export interface PairingExample {
+  name: string;
+  url: string;
+  store: string;
+}
+
+/** Frames = distinct catalog models (a frame with several colourways counts once). Best-sellers are the store's own flag. */
+export interface PairingCounts {
+  frames: number;
+  bestsellers: number;
+  /** Up to two best-selling frames, by the store's listing order. */
+  examples: PairingExample[];
+}
+
+export interface Pairings extends PairingCounts {
+  stores: string[];
+  partners: (PairingCounts & Attribute)[];
 }
 
 /** Discount signal: markdown vs each store's usual sale (stores without list prices are excluded). */

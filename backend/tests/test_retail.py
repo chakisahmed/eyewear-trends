@@ -260,3 +260,50 @@ def test_latest_week_falls_back_to_the_current_week_when_it_is_the_only_one(s):
     s.add(TrendSnapshot(dimension="shape", code="round", week=date(2026, 9, 28), mentions=1, momentum=0, status="faible"))
     s.commit()
     assert latest_week(s, today=date(2026, 9, 30)) == date(2026, 9, 28)
+
+
+# --- frequent pairings (laminations) -------------------------------------------------------------
+
+def add_laminated(s, src, slug: str, laminations: list[tuple[str, str]], *, flags=None, seen=NOW, rank=1):
+    """A frame whose variants are laminations: (combination code, supplier code) each."""
+    p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), rank=rank, seen_at=seen, flags=flags)
+    p.tags = [ProductTag(dimension="lamination", code=code, field="variant-layers", term=code, rules_version=10, supplier_code=sup)
+              for code, sup in laminations]
+    s.add(p)
+
+
+def test_pairings_count_frames_per_partner_colour_and_flag_best_sellers(s):
+    etnia = Source(name="Etnia", kind="store", url="https://etnia.test", lang="en", country="ES")
+    s.add(etnia)
+    s.flush()
+    add_laminated(s, etnia, "f1", [("blue+tortoiseshell", "HV/BL"), ("blue+tortoiseshell", "HV/BL2")],  # two codes, one frame
+                  flags={"is_bestseller": True}, rank=2)
+    add_laminated(s, etnia, "f2", [("blue+tortoiseshell", "BL/HV")], flags={"is_bestseller": False}, rank=1)
+    add_laminated(s, etnia, "f3", [("black+blue", "BK/BL")], flags={"is_bestseller": True})
+    add_laminated(s, etnia, "f4", [("beige+blue+pink", "CR/BL/PK")])                                   # three layers: two partners
+    add_laminated(s, etnia, "f5", [("blue+red", "BL/RD")], seen=NOW - timedelta(days=60))            # stale: not on the shelf
+    add_laminated(s, etnia, "f6", [("black+tortoiseshell", "BK/HV")])                                # no blue
+    s.commit()
+
+    data = retail.color_pairings(s, "blue")
+    assert (data["frames"], data["bestsellers"], data["stores"]) == (4, 2, ["Etnia"])
+    got = [(p["code"], p["frames"], p["bestsellers"]) for p in data["partners"]]
+    # most frames first, then best-sellers, then alphabetical; the colour itself is never its own partner
+    assert got == [("tortoiseshell", 2, 1), ("black", 1, 1), ("beige", 1, 0), ("pink", 1, 0)]
+    assert [e["name"] for e in data["partners"][0]["examples"]] == ["F1"]          # only best-sellers are named
+    assert data["partners"][2]["examples"] == []
+
+    assert retail.color_pairings(s, "red") is None                                # only a stale frame
+    assert retail.color_pairings(s, "green") is None and retail.color_pairings(s, "two_tone") is None
+
+
+def test_pairings_are_limited_to_the_top_partners(s):
+    etnia = Source(name="Etnia", kind="store", url="https://etnia.test", lang="en", country="ES")
+    s.add(etnia)
+    s.flush()
+    partners = ["beige", "black", "blue", "brown", "gold", "green", "grey", "orange", "pink", "red"]
+    for i, partner in enumerate(partners):
+        add_laminated(s, etnia, f"p{i}", [("+".join(sorted(["white", partner])), f"W{i}")])
+    s.commit()
+    data = retail.color_pairings(s, "white")
+    assert data["frames"] == 10 and len(data["partners"]) == retail.PAIRING_LIMIT

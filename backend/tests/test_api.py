@@ -288,6 +288,34 @@ def test_retail_presence_counts_and_favours_best_sellers(client):
         ("C2", True), ("C1", False), ("C3", False), ("C4", True)]
 
 
+def test_color_detail_lists_frequent_pairings_with_best_sellers(client):
+    from app.models import Product, ProductTag, Source
+    now = datetime.now(timezone.utc)
+    with SessionLocal() as s:
+        brand = Source(name="Brand D", kind="store", url="https://d.brand.test", lang="en", country="ES")
+        s.add(brand)
+        s.flush()
+        for slug, combo, flags in (("d1", "silver+tortoiseshell", {"is_bestseller": True}), ("d2", "silver+tortoiseshell", None),
+                                   ("d3", "black+silver", {"is_bestseller": False})):
+            p = Product(source_id=brand.id, url=f"{brand.url}/{slug}", name=slug.upper(), rank=1, seen_at=now, flags=flags)
+            p.tags = [ProductTag(dimension="lamination", code=combo, field="variant-layers", term=combo, rules_version=10,
+                                 supplier_code=slug.upper())]
+            s.add(p)
+        s.commit()
+
+    body = client.get("/api/trends/color/silver").json()
+    pairings = body["pairings"]
+    assert (pairings["frames"], pairings["bestsellers"], pairings["stores"]) == (3, 1, ["Brand D"])
+    top = pairings["partners"][0]
+    assert (top["code"], top["label"], top["hex"]) == ("tortoiseshell", "Écaille", "#8b5a2b")
+    assert (top["frames"], top["bestsellers"]) == (2, 1)
+    assert top["examples"] == [{"name": "D1", "url": "https://d.brand.test/d1", "store": "Brand D"}]
+    assert [(p["code"], p["bestsellers"]) for p in pairings["partners"]] == [("tortoiseshell", 1), ("black", 0)]
+
+    assert client.get("/api/trends/color/purple").json()["pairings"] is None     # no lamination shows it
+    assert client.get("/api/trends/shape/round").json()["pairings"] is None      # colour pages only
+
+
 def test_retail_overview_shape(client):
     body = client.get("/api/retail/overview").json()
     assert set(body) == {"week", "stores", "types", "opportunities", "risks", "skipped_dimensions", "thresholds"}
