@@ -109,6 +109,8 @@ def test_shipped_config_has_the_five_stores():
     assert [c.country for c in configs.values()] == ["TN", "TN", "TN", "ES", "FR"]  # brand catalogs are not a Tunisian shelf
     outika = configs["outika-eyewear.tn"]
     assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
+    assert configs["mykenza.tn"].listing.pagination.max_pages == 20         # 10 cut both categories (first live crawl)
+    assert all(c.crawl_every_days == 7 for c in configs.values())
 
 
 def test_default_brand_applies_only_when_no_source_has_one():
@@ -352,6 +354,86 @@ def test_db_url_of_is_the_stored_form_of_a_product_url():
     assert db_url_of("https://shop.test/" + "a" * 1000) is None and db_url_of("not a url") is None
 
 
+# --- retries ------------------------------------------------------------------------------------------
+
+async def fetch_page(responses: list, *, robots: str = "", sleeps: list | None = None, monkeypatch=None, cfg=None):
+    """crawler.fetch("/p/a") against a shop answering `responses` in order (an int status, a text, or an exception)."""
+    requests: list[str] = []
+    queue = list(responses)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text=robots)
+        requests.append(request.url.path)
+        answer = queue.pop(0) if queue else 200
+        if isinstance(answer, Exception):
+            raise answer
+        if isinstance(answer, tuple):
+            return httpx.Response(answer[0], headers=answer[1])
+        return httpx.Response(answer, text="<html>ok</html>") if isinstance(answer, int) else httpx.Response(200, text=answer)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        if sleeps is not None:
+            async def record(seconds):
+                sleeps.append(seconds)
+            monkeypatch.setattr("app.collectors.stores.base.asyncio.sleep", record)
+        return await crawler.fetch(f"{BASE}/p/a"), requests
+
+
+@pytest.mark.anyio
+async def test_a_transient_failure_is_retried_and_a_page_that_recovers_is_returned(cfg):
+    html, requests = await fetch_page([503, 200], cfg=cfg)
+    assert html == "<html>ok</html>" and requests == ["/p/a", "/p/a"]
+    html, requests = await fetch_page([httpx.ReadTimeout("slow"), httpx.ConnectError("reset"), 200], cfg=cfg)
+    assert html == "<html>ok</html>" and len(requests) == 3                  # timeouts and connection errors count too
+    for status in (429, 500, 502, 504):
+        assert (await fetch_page([status, 200], cfg=cfg))[0] == "<html>ok</html>", status
+
+
+@pytest.mark.anyio
+async def test_retries_stop_after_two_and_the_page_is_reported_missing(cfg):
+    html, requests = await fetch_page([503, 503, 503, 200], cfg=cfg)
+    assert html is None and len(requests) == 3                                # the first try and two retries, no more
+
+
+@pytest.mark.anyio
+async def test_a_real_answer_is_never_retried(cfg):
+    for status in (404, 403, 401, 410):
+        html, requests = await fetch_page([status, 200], cfg=cfg)
+        assert html is None and len(requests) == 1, status
+    html, requests = await fetch_page([200], robots="User-agent: *\nDisallow: /p/\n", cfg=cfg)
+    assert html is None and requests == []                                     # robots.txt: not even a first request
+
+
+@pytest.mark.anyio
+async def test_waits_follow_the_delays_and_a_retry_after_header_wins_but_is_capped(cfg, monkeypatch):
+    monkeypatch.setattr(BaseStoreCrawler, "RETRY_DELAYS", (5.0, 15.0))
+    sleeps: list[float] = []
+    await fetch_page([503, 503, 200], sleeps=sleeps, monkeypatch=monkeypatch, cfg=cfg)
+    assert sleeps == [5.0, 15.0]
+    sleeps.clear()
+    await fetch_page([(429, {"Retry-After": "2"}), 200], sleeps=sleeps, monkeypatch=monkeypatch, cfg=cfg)
+    assert sleeps == [2.0]
+    sleeps.clear()
+    await fetch_page([(503, {"Retry-After": "500"}), 200], sleeps=sleeps, monkeypatch=monkeypatch, cfg=cfg)
+    assert sleeps == [60.0]                                                    # never asked to wait more than a minute
+    sleeps.clear()
+    await fetch_page([(503, {"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}), 200], sleeps=sleeps, monkeypatch=monkeypatch, cfg=cfg)
+    assert sleeps == [5.0]                                                     # a date we do not parse: the normal delay
+
+
+@pytest.mark.anyio
+async def test_the_failure_log_names_the_exception_even_when_it_has_no_message(cfg, caplog):
+    import logging
+    with caplog.at_level(logging.INFO, logger="app.collectors.stores.base"):
+        await fetch_page([httpx.ReadTimeout(""), httpx.ReadTimeout(""), httpx.ReadTimeout("")], cfg=cfg)
+    text = caplog.text
+    assert "ReadTimeout; retry 1/2" in text and "ReadTimeout; retry 2/2" in text
+    assert "Fetch failed https://www.shop.test/p/a: ReadTimeout" in text and "Fetch failed https://www.shop.test/p/a: " + "\n" not in text
+
+
 # --- sync service ----------------------------------------------------------------------------------
 
 def test_sync_inserts_updates_and_refuses_cross_source(cfg):
@@ -363,12 +445,12 @@ def test_sync_inserts_updates_and_refuses_cross_source(cfg):
         assert source.kind == "store" and source.country == "TN"
         first = [ScrapedProduct(url=f"{BASE}/p/x", name="X", price=100, currency="TND", rank=1, seen_at=now),
                  ScrapedProduct(url=f"{BASE}/p/y", name="Y", rank=2, seen_at=now)]
-        assert vars(service.sync(source.id, first)) == {"inserted": 2, "updated": 0, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None}
+        assert vars(service.sync(source.id, first)) == {"inserted": 2, "updated": 0, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None, "carried": 0}
 
         later = now + timedelta(days=1)
         second = [ScrapedProduct(url=f"{BASE}/p/x", name="X", price=90, currency="TND", rank=1, seen_at=later),
                   ScrapedProduct(url=f"{BASE}/p/x", name="X v2", price=80, currency="TND", rank=1, seen_at=later)]
-        assert vars(service.sync(source.id, second)) == {"inserted": 0, "updated": 1, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None}  # in-batch dup: last wins
+        assert vars(service.sync(source.id, second)) == {"inserted": 0, "updated": 1, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None, "carried": 0}  # in-batch dup: last wins
         x = s.scalar(select(Product).where(Product.url == f"{BASE}/p/x"))
         assert (x.name, x.price) == ("X v2", 80)
         assert x.seen_at.replace(tzinfo=timezone.utc) == later  # SQLite returns naive UTC
@@ -377,7 +459,7 @@ def test_sync_inserts_updates_and_refuses_cross_source(cfg):
         s.add(other)
         s.flush()
         stolen = [ScrapedProduct(url=f"{BASE}/p/y", name="Hijack", seen_at=later)]
-        assert vars(service.sync(other.id, stolen)) == {"inserted": 0, "updated": 0, "conflicts": 1, "reactivated": 0, "dropped": 0, "drop_skipped": None}
+        assert vars(service.sync(other.id, stolen)) == {"inserted": 0, "updated": 0, "conflicts": 1, "reactivated": 0, "dropped": 0, "drop_skipped": None, "carried": 0}
         y = s.scalar(select(Product).where(Product.url == f"{BASE}/p/y"))
         assert (y.name, y.source_id) == ("Y", source.id)
 

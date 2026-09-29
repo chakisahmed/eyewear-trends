@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, field_validator, model_validator
 
@@ -35,6 +36,22 @@ def db_url_of(url: str) -> str | None:
     return stored if len(stored) <= MAX_URL else None
 
 
+@dataclass(frozen=True)
+class FacetGap:
+    """A facet value (e.g. Materials = Metal) whose listing had a page that could not be fetched: the products under it
+    are missing that label this crawl. Only enrichment is affected, never which products exist."""
+
+    facet: str  # the facet's name, the raw_specs key (or the flag's facet name)
+    label: str
+    flag: str | None = None  # the flag it sets (e.g. is_bestseller), when it is a flag facet
+    per_variant: bool = False  # it also colours variants (a variant-level filter)
+    url: str = ""
+
+    @property
+    def note(self) -> str:
+        return f"facet {self.facet} = {self.label} ({urlsplit(self.url).path or self.url}): not fetched"
+
+
 @dataclass
 class CrawlReport:
     """What a crawl saw of the store's catalog, beside the products it managed to build.
@@ -42,10 +59,12 @@ class CrawlReport:
     `listed` is every product URL the listings returned, in stored form, including cards that validation later drops
     (still on the shelf). `problems` says why the listing may be incomplete (a page that failed or was refused, a
     stop at max_pages...); an incomplete crawl never marks anything as dropped. Facet passes only enrich products and
-    never decide presence, so their failures are not problems."""
+    never decide presence, so their failures are not problems: they are `gaps`, which make the crawl incomplete (retried
+    the next day) and let the sync keep the values it already had instead of erasing them."""
 
     listed: set[str] = field(default_factory=set)
     problems: list[str] = field(default_factory=list)
+    gaps: list[FacetGap] = field(default_factory=list)
 
     @property
     def complete(self) -> bool:

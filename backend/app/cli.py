@@ -124,12 +124,15 @@ def echo_outcome(outcome: StoreOutcome) -> None:
         return
     click.echo(f"{cfg.name}: {outcome.crawled} products crawled — inserted {result.inserted}, "
                f"updated {result.updated}, conflicts {result.conflicts}, reactivated {result.reactivated}, "
-               f"dropped {result.dropped}")
+               f"dropped {result.dropped}" + (f", kept previous values for {result.carried}" if result.carried else ""))
     if result.drop_skipped:
         click.echo(f"  drops skipped: {result.drop_skipped}")
+    if result.drop_skipped or outcome.status == "incomplete":
+        if outcome.status == "incomplete" and not result.drop_skipped:
+            click.echo("  incomplete: some pages could not be fetched (retried the next day):")
         for problem in (outcome.problems or [])[:10]:
             click.echo(f"  - {problem}")
-        if outcome.status == "ok":
+        if outcome.status == "ok" and result.drop_skipped:
             click.echo("  (re-run crawl-store with --accept-drops if the catalog really shrank)")
 
 

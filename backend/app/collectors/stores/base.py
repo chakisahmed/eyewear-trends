@@ -23,7 +23,7 @@ from app.collectors.stores.config import Facet, ListingUrl, ScraperConfig
 from app.collectors.stores.parser import (
     ListingItem, facet_values, merge, next_page_url, parse_listing, parse_product_page,
 )
-from app.collectors.stores.schemas import CrawlReport, ScrapedProduct, db_url_of
+from app.collectors.stores.schemas import CrawlReport, FacetGap, ScrapedProduct, db_url_of
 from app.config import settings
 
 log = logging.getLogger(__name__)
@@ -51,7 +51,16 @@ class BaseStoreCrawler:
     Use as `async with BaseStoreCrawler(cfg) as crawler: products = await crawler.crawl()`. An injected
     client (tests, shared pools) is used as-is and not closed; the default one is created with the
     project User-Agent and timeout and closed on exit.
+
+    A page that fails for a transient reason (a timeout or connection error, HTTP 429, 500, 502, 503, 504) is retried
+    RETRIES times after RETRY_DELAYS seconds (a Retry-After header wins, capped): stores have slow moments. A real
+    answer (404, 403, a robots.txt refusal) is never retried.
     """
+
+    RETRIES = 2
+    RETRY_DELAYS = (5.0, 15.0)
+    RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+    MAX_RETRY_AFTER = 60.0
 
     def __init__(self, config: ScraperConfig, client: httpx.AsyncClient | None = None):
         self.config = config
@@ -93,21 +102,43 @@ class BaseStoreCrawler:
         rp = self._robots[origin]
         return rp is None or rp.can_fetch(self.client.headers.get("User-Agent", settings.user_agent), url)
 
+    def _retry_wait(self, e: httpx.HTTPError, attempt: int) -> float | None:
+        """Seconds to wait before retrying after `e`, or None when it is not worth retrying (or retries are used up)."""
+        if attempt >= self.RETRIES:
+            return None
+        delay = self.RETRY_DELAYS[min(attempt, len(self.RETRY_DELAYS) - 1)] if self.RETRY_DELAYS else 0.0
+        if isinstance(e, httpx.TransportError):
+            return delay
+        if isinstance(e, httpx.HTTPStatusError) and e.response.status_code in self.RETRY_STATUSES:
+            try:  # a store that says how long to wait is asked politely
+                return min(float(e.response.headers["Retry-After"]), self.MAX_RETRY_AFTER)
+            except (KeyError, ValueError):
+                return delay
+        return None
+
     async def fetch(self, url: str) -> str | None:
-        """GET a page if robots.txt allows it. None if blocked or failed (logged, never raised)."""
+        """GET a page if robots.txt allows it. None if blocked or failed for good (logged, never raised)."""
         if not await self.allowed(url):
             log.info("robots.txt disallows %s", url)
             return None
         if self._requests and self.delay_s:
             await asyncio.sleep(self.delay_s)
         self._requests += 1
-        try:
-            r = await self.client.get(url)
-            r.raise_for_status()
-        except httpx.HTTPError as e:
-            log.info("Fetch failed %s: %s", url, e)
-            return None
-        return r.text
+        attempt = 0
+        while True:
+            try:
+                r = await self.client.get(url)
+                r.raise_for_status()
+                return r.text
+            except httpx.HTTPError as e:
+                what = f"{type(e).__name__}: {e}" if str(e) else type(e).__name__  # httpx timeouts have no message
+                wait = self._retry_wait(e, attempt)
+                if wait is None:
+                    log.info("Fetch failed %s: %s", url, what)
+                    return None
+                attempt += 1
+                log.info("Fetch failed %s: %s; retry %d/%d in %.0f s", url, what, attempt, self.RETRIES, wait)
+                await asyncio.sleep(wait)
 
     # --- crawl ---------------------------------------------------------------------------------------
 
@@ -183,11 +214,12 @@ class BaseStoreCrawler:
         for value, label in facet_values(first_html, facet.param):
             if facet.only is not None and label not in facet.only:
                 continue  # never requested
-            matched = 0
+            matched, failed_url = 0, None
             async with aclosing(self.listing_pages(with_query(first_url, **{facet.param: value}))) as pages:
                 async for page, url, html in pages:
                     if html is None:
                         complete = False  # blocked or failed: products not listed here are unknown, not "no"
+                        failed_url = failed_url or url
                     found = parse_listing(html, url, cfg) if html is not None else []
                     if not found and page > 1:
                         break
@@ -202,6 +234,8 @@ class BaseStoreCrawler:
                             add_label(by_url[item.url].flags.setdefault("raw_specs", {}), facet.name, label)
                         if facet.per_variant and item.variant_id:  # the variant this label matched
                             by_url[item.url].flags.setdefault("variant_colors", {}).setdefault(item.variant_id, label)
+            if failed_url:  # the crawl is incomplete for this label: the sync keeps what it knew, the run is retried
+                self.report.gaps.append(FacetGap(facet.name, label, facet.flag, facet.per_variant, failed_url))
             log.info("%s: facet %s = %s, %d products", cfg.name, facet.name, label, matched)
         if facet.flag and complete:
             for url in listed - flagged:

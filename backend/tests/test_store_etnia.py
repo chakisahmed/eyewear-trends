@@ -393,3 +393,21 @@ async def test_etnia_crawl_report_is_complete_and_survives_a_failing_filter_page
     # a main listing page that fails does not: the catalog may be longer than what was read
     _, _, report = await crawl_etnia_report(without=("/collections/optical?page=2",))
     assert not report.complete and "not fetched" in report.problems[0]
+
+
+@pytest.mark.anyio
+async def test_etnia_a_failing_facet_page_is_a_gap_naming_the_label_and_the_flag():
+    from app.collectors.stores.schemas import FacetGap
+    _, _, clean = await crawl_etnia_report()
+    known = {(g.facet, g.label, g.url) for g in clean.gaps}                    # the fixture has no sun best-seller page
+    assert [g.facet for g in clean.gaps] == ["Best-seller"] and "/collections/sun" in clean.gaps[0].url
+    best = next(k for k in site() if BEST in k and "page=2" not in k and "/optical" in k)
+    _, _, report = await crawl_etnia_report(without=(best,))
+    (gap,) = [g for g in report.gaps if (g.facet, g.label, g.url) not in known]
+    assert (gap.facet, gap.label, gap.flag, gap.per_variant) == ("Best-seller", "Yes", "is_bestseller", False)
+    assert gap.url.endswith(best) and report.complete                          # the listing itself is whole: drops stay possible
+    assert gap.note == f"facet Best-seller = Yes ({best.split('?')[0]}): not fetched"
+    shape = next(k for k in site() if SHAPE in k and "page=2" not in k)
+    _, _, report = await crawl_etnia_report(without=(shape,))
+    added = [g for g in report.gaps if (g.facet, g.label, g.url) not in known]
+    assert [(g.facet, g.flag) for g in added] == [("Forme", None)] and isinstance(added[0], FacetGap)

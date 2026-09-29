@@ -210,3 +210,12 @@ def test_shopify_variant_titles_reads_ids_and_titles_only_and_tolerates_bad_bloc
                                                    "64359734378873": "RP01 AGATHE 1"}
     assert shopify_variant_titles(_tree("<script>var meta = {broken;</script>")) == {}
     assert shopify_variant_titles(_tree("<p>no meta</p>")) == {}
+
+
+@pytest.mark.anyio
+async def test_morel_a_failing_colour_filter_page_is_a_per_variant_gap():
+    _, _, report = await crawl_morel_report(without=(filter_url("optical", COLOR, "Red"),))
+    (gap,) = report.gaps
+    assert (gap.facet, gap.label, gap.flag, gap.per_variant) == ("Couleur", "Red", None, True) and report.complete
+    _, _, report = await crawl_morel_report()
+    assert report.gaps == []

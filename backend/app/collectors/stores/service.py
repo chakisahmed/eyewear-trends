@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.collectors.base import get_or_create_source
 from app.collectors.stores.config import ScraperConfig
-from app.collectors.stores.schemas import CrawlReport, ScrapedProduct, utcnow
+from app.collectors.stores.schemas import CrawlReport, FacetGap, ScrapedProduct, utcnow
 from app.collectors.stores.tagger import RULES_VERSION, tag_product
 from app.models import Product, ProductTag, Source
 
@@ -38,6 +38,46 @@ class SyncResult:
     reactivated: int = 0  # dropped products that are back on the shelf
     dropped: int = 0  # active products the listings no longer return
     drop_skipped: str | None = None  # why nothing was dropped although a report was given (incomplete, shrunk)
+    carried: int = 0  # products that kept a previous value because a facet page could not be fetched this time
+
+
+def _labels(value) -> list[str]:
+    return str(value).split(", ") if value else []
+
+
+def carry_over(old: dict | None, new: dict | None, gaps: list[FacetGap]) -> dict | None:
+    """The flags to store: `new`, plus what a failed facet page kept us from re-reading.
+
+    A crawl replaces a product's flags wholesale, so a facet page that could not be fetched would silently erase values
+    we already had (Materials = Metal, is_bestseller, a variant's colour). For each gap the previous value is kept, and
+    only when this crawl has none from that slice and the old one really had it: a label that was never there is not
+    invented, and unrelated old values are not carried. Returns `new` itself when nothing was kept; never mutates."""
+    if not gaps or not old:
+        return new
+    out, raw, variants, changed = dict(new or {}), dict((new or {}).get("raw_specs") or {}), None, False
+    old_variants = {v.get("code"): v for v in old.get("variants") or [] if isinstance(v, dict)}
+    for gap in gaps:
+        if gap.flag:
+            if gap.flag not in out and gap.flag in old:
+                out[gap.flag], changed = old[gap.flag], True
+            continue
+        have = _labels(raw.get(gap.facet))
+        if gap.label in _labels((old.get("raw_specs") or {}).get(gap.facet)) and gap.label not in have:
+            raw[gap.facet], changed = ", ".join([*have, gap.label]), True
+        if gap.per_variant:
+            if variants is None:
+                variants = [dict(v) if isinstance(v, dict) else v for v in out.get("variants") or []]
+            for v in variants:
+                previous = old_variants.get(v.get("code")) if isinstance(v, dict) else None
+                if previous and not v.get("color") and previous.get("color") == gap.label:
+                    v["color"], changed = gap.label, True
+    if not changed:
+        return new
+    if raw:
+        out["raw_specs"] = raw
+    if variants is not None:
+        out["variants"] = variants
+    return out
 
 
 class StoreSyncService:
@@ -66,11 +106,16 @@ class StoreSyncService:
             existing |= {row.url: row for row in self.session.scalars(select(Product).where(Product.url.in_(urls[i : i + CHUNK])))}
 
         result = SyncResult()
+        gaps = report.gaps if report else []
         for url, p in latest.items():
+            row = existing.get(url)
+            flags = p.flags
+            if gaps and row is not None and row.source_id == source_id:  # keep what a failed facet page kept us from re-reading
+                flags = carry_over(row.flags, p.flags, gaps)
+                result.carried += flags is not p.flags
             # null(): SQL NULL for no flags; a plain None would be stored as the JSON text 'null'
             values = dict(name=p.name, brand=p.brand, price=p.price, list_price=p.list_price, currency=p.currency, rank=p.rank,
-                          flags=p.flags or null(), image_url=p.db_image_url(), seen_at=p.seen_at)
-            row = existing.get(url)
+                          flags=flags or null(), image_url=p.db_image_url(), seen_at=p.seen_at)
             if row is None:
                 row = Product(source_id=source_id, url=url, first_seen_at=p.seen_at, **values)
                 self.session.add(row)
@@ -86,7 +131,7 @@ class StoreSyncService:
                 log.warning("Product %s belongs to source %s, not %s: skipped", url, row.source_id, source_id)
                 result.conflicts += 1
                 continue
-            self._apply_tags(row, p.name, p.flags)
+            self._apply_tags(row, p.name, flags)
         if report is not None:
             self._drop_missing(result, active_before, set(latest) | report.listed, report, accept_drops,
                                when=max((p.seen_at for p in products), default=None) or utcnow())

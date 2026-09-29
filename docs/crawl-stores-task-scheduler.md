@@ -7,6 +7,9 @@ in the app schedules it; you register it once, as below.
 
 ## What it does, and what it never does
 - Stores are crawled **one after another**, each on its own polite delay. One store failing does not stop the others.
+- A page that fails for a transient reason (a timeout, HTTP 429 or 5xx) is retried twice after 5 and 15 seconds; a facet
+  (filter) page that still cannot be read never erases what was known: the previous value is kept, and the crawl is
+  marked incomplete so it is retried the next day.
 - A product is marked dropped only after a **complete** crawl whose listing did not shrink below 70 % of the store's
   active products. An incomplete or failed crawl is retried after 20 hours, not after a week.
 - One crawl process at a time: an overlapping run (a second trigger, or a manual `crawl-store` during a scheduled run)

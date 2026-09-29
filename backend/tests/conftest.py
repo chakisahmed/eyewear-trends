@@ -21,3 +21,10 @@ def crawl_lock_in_tmp(monkeypatch, tmp_path):
     """Crawl commands take a file lock: keep it out of the real data/ folder, where a real crawl may be running."""
     import app.collectors.stores.runner as runner
     monkeypatch.setattr(runner, "LOCK_PATH", tmp_path / "crawl-stores.lock")
+
+
+@pytest.fixture(autouse=True)
+def no_retry_waits(monkeypatch):
+    """Store crawls retry a failed page after a few seconds: tests count the retries but never wait for them."""
+    from app.collectors.stores.base import BaseStoreCrawler
+    monkeypatch.setattr(BaseStoreCrawler, "RETRY_DELAYS", (0.0, 0.0))

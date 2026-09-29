@@ -209,15 +209,18 @@ def run_store(cfg: ScraperConfig, trigger: str, accept_drops: bool = False) -> S
             row.status, row.error, row.finished_at = "failed", error, datetime.now(timezone.utc)
             s.commit()
             return StoreOutcome(cfg, "failed", error=error, seconds=time.monotonic() - started)
-        status = "ok" if report.complete else "incomplete"
+        # a facet page that could not be fetched leaves the listing (and so the drops) sound but the data stale: the crawl is
+        # incomplete, so it shows on the panel and is retried the next day
+        status = "ok" if report.complete and not report.gaps else "incomplete"
+        problems = [*report.problems, *(g.note for g in report.gaps)]
         row = s.get(StoreCrawl, row_id)
         row.status, row.finished_at = status, datetime.now(timezone.utc)
         row.listed, row.crawled = len(report.listed), len(products)
         row.inserted, row.updated, row.reactivated, row.dropped = result.inserted, result.updated, result.reactivated, result.dropped
-        row.drop_skipped, row.problems = result.drop_skipped, report.problems or None
+        row.drop_skipped, row.problems = result.drop_skipped, problems or None
         s.commit()
     return StoreOutcome(cfg, status, crawled=len(products), listed=len(report.listed), result=result,
-                        problems=list(report.problems), seconds=time.monotonic() - started)
+                        problems=problems, seconds=time.monotonic() - started)
 
 
 def run_single(cfg: ScraperConfig, accept_drops: bool = False) -> StoreOutcome:

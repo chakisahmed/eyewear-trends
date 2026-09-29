@@ -56,7 +56,7 @@ stores:
     listing:
       urls: ["/categorie-produit/lunettes-cadres/lunettes/lunettes-homme/",
              "/categorie-produit/lunettes-cadres/lunettes/lunettes-femme/"]
-      pagination: { next: "a.next.page-numbers", max_pages: 10 }
+      pagination: { next: "a.next.page-numbers", max_pages: 20 }   # men ~12 pages, women ~14 (they overlap: ~190 unique); 10 cut both
       product: "li.product.type-product"  # excludes the subcategory tiles (li.product-category)
       link: "a.woocommerce-LoopProduct-link"
     product_pages:
