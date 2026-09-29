@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 
 from sqlalchemy import func, select
@@ -15,7 +16,9 @@ from app.scoring.retail import (
     MIN_TAGGED, PRODUCT_TYPES, TYPE_LABELS, comparable, shelf_by_attribute, shelf_gaps_by_type, unmapped_share,
 )
 from app.scoring.trends import week_start
-from app.taxonomy import load_taxonomy
+from app.taxonomy import fold, load_taxonomy
+
+log = logging.getLogger(__name__)
 
 
 def latest_week(session: Session, today: date | None = None) -> date | None:
@@ -27,13 +30,31 @@ def latest_week(session: Session, today: date | None = None) -> date | None:
             or session.scalar(select(func.max(TrendSnapshot.week))))
 
 
+def volume_over_4_weeks(session: Session, week: date) -> dict[tuple[str, str], float]:
+    """Sample size behind each score: weighted mentions over the 4 weeks ending with `week`."""
+    volume: dict[tuple[str, str], float] = {}
+    for s in session.scalars(select(TrendSnapshot).where(TrendSnapshot.week > week - timedelta(weeks=4), TrendSnapshot.week <= week)):
+        volume[(s.dimension, s.code)] = volume.get((s.dimension, s.code), 0.0) + s.mentions
+    return volume
+
+
+MUST_CITE_COLOR_MIN = 10  # mentions over 4 weeks: the same volume floor as "forte hausse" in the summary prompt
+MUST_CITE_COLOR_STATUSES = ("en_hausse", "au_pic")
+
+
+def must_cite_colors(snaps: list[TrendSnapshot], volume_4w: dict[tuple[str, str], float]) -> list[TrendSnapshot]:
+    """Color families the weekly summary must give a bullet (prompt v3): rising or peaking with at least
+    MUST_CITE_COLOR_MIN mentions over 4 weeks, strongest momentum first. Color is a stakeholder focus
+    ("Studio de Coloration"), so it may not lose every bullet to shapes."""
+    eligible = [s for s in snaps if s.dimension == "color" and s.status in MUST_CITE_COLOR_STATUSES
+                and volume_4w.get((s.dimension, s.code), 0.0) >= MUST_CITE_COLOR_MIN]
+    return sorted(eligible, key=lambda s: -s.momentum)
+
+
 def build_brief(session: Session, week: date) -> str:
     tax = load_taxonomy()
     snaps = session.scalars(select(TrendSnapshot).where(TrendSnapshot.week == week)).all()
-    # Sample size behind each score: weighted mentions over the last 4 weeks.
-    volume_4w: dict[tuple[str, str], float] = {}
-    for s in session.scalars(select(TrendSnapshot).where(TrendSnapshot.week > week - timedelta(weeks=4), TrendSnapshot.week <= week)):
-        volume_4w[(s.dimension, s.code)] = volume_4w.get((s.dimension, s.code), 0.0) + s.mentions
+    volume_4w = volume_over_4_weeks(session, week)
 
     def line(s: TrendSnapshot) -> str:
         fading = f"{s.decline_share:.0%}" if s.decline_share is not None else "n/d"
@@ -46,6 +67,10 @@ def build_brief(session: Session, week: date) -> str:
         "Scores (dimension | attribut | mentions pondérées cette semaine | mentions sur 4 sem. | momentum du volume | statut | part des avis « en recul » sur 4 sem.):",
         *[line(s) for s in ranked if s.status != "faible"],
     ]
+    colors = must_cite_colors(snaps, volume_4w)
+    if colors:
+        lines += ["", f"Couleurs à citer obligatoirement (≥ {MUST_CITE_COLOR_MIN} mentions sur 4 sem., en hausse ou au pic ; "
+                      "au moins une puce dédiée, famille nommée telle quelle) :", *[line(s) for s in colors]]
     weak = [line(s) for s in ranked if s.status == "faible"]
     if weak:
         lines += ["", "Signaux faibles (trop peu de mentions pour conclure, à citer seulement comme « à surveiller ») :", *weak]
@@ -114,11 +139,25 @@ def shelf_brief(session: Session, week: date) -> list[str]:
     return lines
 
 
+def cited_color_missing(session: Session, week: date, text: str) -> list[str]:
+    """The mandatory color families' labels when the summary names none of them (checked on the label or any of
+    its parts, "Vert" in "Vert / Kaki"); [] when one is named or none was mandatory."""
+    tax = load_taxonomy()
+    snaps = session.scalars(select(TrendSnapshot).where(TrendSnapshot.week == week)).all()
+    labels = [tax.label("color", s.code) for s in must_cite_colors(snaps, volume_over_4_weeks(session, week))]
+    folded = fold(text)
+    named = any(f" {fold(part)} " in f" {folded} " for label in labels for part in (label, *label.split("/")) if fold(part))
+    return [] if not labels or named else labels
+
+
 def generate_weekly_summary(session: Session, provider: LLMProvider, week: date | None = None) -> WeeklySummary | None:
     week = week or latest_week(session)
     if week is None:
         return None
-    text = provider.write(load_prompt("summary_fr"), build_brief(session, week))
+    text = provider.write(load_prompt("summary_fr", settings.summary_prompt_version), build_brief(session, week))
+    missing_color = cited_color_missing(session, week, text)
+    if missing_color:
+        log.warning("Weekly summary %s names none of the mandatory color families: %s", week, ", ".join(missing_color))
     row = session.scalar(select(WeeklySummary).where(WeeklySummary.week == week))
     if row is None:
         row = WeeklySummary(week=week, text_fr=text, model=settings.summary_model)

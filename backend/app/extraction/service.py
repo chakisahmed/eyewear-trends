@@ -29,8 +29,9 @@ EYEWEAR_RE = re.compile(
 
 
 @lru_cache
-def load_prompt(name: str) -> str:
-    return (PROMPTS_DIR / f"{name}_{settings.prompt_version}.md").read_text(encoding="utf-8")
+def load_prompt(name: str, version: str | None = None) -> str:
+    """prompts/<name>_<version>.md; the extraction prompt version unless another is given."""
+    return (PROMPTS_DIR / f"{name}_{version or settings.prompt_version}.md").read_text(encoding="utf-8")
 
 
 def extraction_system_prompt() -> str:
