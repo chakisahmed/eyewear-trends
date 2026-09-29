@@ -19,7 +19,8 @@ from app.config import settings
 from app.db import SessionLocal, get_session, init_db
 from app.jobs.pipeline import ALL_STEPS, active_run, execute_run, interrupt_orphaned_runs, start_run
 from app.models import Document, JobRun, Mention, Product, ProductTag, SearchInterest, Source, TrendSnapshot, WeeklySummary
-from app.scoring import retail
+from app.collectors.stores.config import load_store_configs
+from app.scoring import catalog, retail
 from app.scoring.summary import latest_week
 from app.demo import clear_demo, seed_demo
 from app.scoring.trends import FALLING, compute_snapshots, week_start
@@ -260,6 +261,7 @@ def trends(dimension: str, db: DB, week: date | None = None, weeks: int = Query(
 
 
 RETAIL_SAMPLE_SIZE = 5
+RETAIL_NEW_SLOTS = 2  # sample slots kept for in-stock new arrivals
 
 
 def _retail_presence(db: Session, dimension: str, code: str) -> dict:
@@ -283,10 +285,18 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     def bestseller(p: Product) -> bool:  # the store's own best-seller flag (frame level), when it publishes one
         return bool((p.flags or {}).get("is_bestseller"))
 
-    # In stock first, then the store's best-sellers, then its own listing order; round-robin so one store cannot
-    # fill the sample.
+    now = datetime.now(timezone.utc)
+    base = catalog.baselines(db)  # where each store's catalog history starts (its first complete crawl)
+
+    def fresh(p: Product) -> bool:  # first seen after the store's baseline, within the last 30 days
+        return catalog.is_new(p, base, now)
+
+    # In stock first, then the store's best-sellers, then its new arrivals, then its own listing order; round-robin so
+    # one store cannot fill the sample.
+    ordered = sorted(rows, key=lambda r: (r[1], out_of_stock(r[0]), not bestseller(r[0]), not fresh(r[0]),
+                                          r[0].rank or 10**9, r[0].name))
     per_store: dict[str, list[Product]] = {}
-    for p, store in sorted(rows, key=lambda r: (r[1], out_of_stock(r[0]), not bestseller(r[0]), r[0].rank or 10**9, r[0].name)):
+    for p, store in ordered:
         per_store.setdefault(store, []).append(p)
     queues = [[(p, store) for p in items] for store, items in per_store.items()]
     sample = []
@@ -294,12 +304,24 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
         for q in queues:
             if q and len(sample) < RETAIL_SAMPLE_SIZE:
                 sample.append(q.pop(0))
+    # A store with many best-sellers would fill every slot and hide its new arrivals, the leading signal: keep room for
+    # up to RETAIL_NEW_SLOTS in-stock new frames, in the last slots.
+    missing = RETAIL_NEW_SLOTS - sum(1 for p, _ in sample if fresh(p))
+    if missing > 0:
+        shown = {p.id for p, _ in sample}
+        extra = [r for r in ordered if fresh(r[0]) and not out_of_stock(r[0]) and r[0].id not in shown][:missing]
+        if extra:
+            sample = sample[:RETAIL_SAMPLE_SIZE - len(extra)] + extra
 
     updated = max((p.seen_at for p, _ in rows), default=None)
     return {
         "retail_sku_count": len(rows),
         "retail_store_count": len(per_store),
         "retail_bestseller_count": sum(1 for p, _ in rows if bestseller(p)),
+        # catalog history (30 days): frames that arrived after the store's first complete crawl, and frames a complete
+        # crawl no longer found (0 for stores without a baseline yet)
+        "retail_new_count": sum(1 for p, _ in rows if fresh(p)),
+        "retail_retired_count": sum(1 for p, _ in catalog.retired_products(db, now, base) if p.id in tagged),
         "retail_countries": countries,  # ISO codes of the stores counted, e.g. ["ES", "TN"]
         "retail_avg_price": [
             {"currency": cur, "avg": round(mean(v), 2), "min": min(v), "max": max(v), "priced": len(v)}
@@ -308,7 +330,8 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
         "retail_by_type": {k: types[k] for k in ("optical", "sun") if types.get(k)},
         "retail_sample": [
             {"name": p.name, "brand": p.brand, "price": p.price, "currency": p.currency, "image_url": p.image_url,
-             "url": p.url, "store": store, "out_of_stock": out_of_stock(p), "is_bestseller": bestseller(p)}
+             "url": p.url, "store": store, "out_of_stock": out_of_stock(p), "is_bestseller": bestseller(p),
+             "is_new": fresh(p)}
             for p, store in sample
         ],
         "retail_updated_at": (updated if updated.tzinfo else updated.replace(tzinfo=timezone.utc)).isoformat() if updated else None,
@@ -398,6 +421,26 @@ def trend_detail(dimension: str, code: str, db: DB, week: date | None = None, we
         "brands": [{"name": b, "count": n} for b, n in brand_counts.most_common(10)],
         "evidence": [_mention_row(m, d, s) for m, d, s in evidence],
         **retail,
+    }
+
+
+@app.get("/api/catalogs")
+def catalogs(db: DB) -> dict:
+    """Can the store data be trusted, and what changed in it: one entry per configured store (status of its crawls,
+    products, new and retired in the last 30 days) and what creator brands added, by attribute."""
+    now = datetime.now(timezone.utc)
+    stores = catalog.store_status(db, load_store_configs(), now)
+    added = catalog.new_by_attribute(db, now)
+    return {
+        "since_days": catalog.NEW_DAYS,
+        "min_for_shares": catalog.MIN_NEW_FOR_SHARES,
+        "has_history": any(st["has_history"] for st in stores),
+        "stores": stores,
+        "new_total": added["new"],
+        "retired_total": added["retired"],
+        "top": [{**_item(i["dimension"], i["code"]), "dimension": i["dimension"], "new": i["new"],
+                 "share_new": i["share_new"], "share_catalog": i["share_catalog"]}
+                for i in added["items"][:catalog.TOP_ATTRIBUTES]],
     }
 
 

@@ -145,4 +145,7 @@ pipeline step are not built.
   natural end from a cut-off, so a `?page=` listing that fills `max_pages`, or whose page past the end returns 404,
   reports incomplete and never drops (no shipped store uses `?page=`; all follow `next` links).
 - Part 3, `crawl-stores` runner, `store_crawls` log, Task Scheduler wrapper and docs: done (see `docs/build-plan.md`, Step 14, and `docs/crawl-stores-task-scheduler.md`).
-- Part 4, the read side (new / retired counts, "Nouveauté" pill, brief line): not started.
+- Part 4, the read side (new / retired counts, "Nouveauté" pill, Sources panel, brief section, prompt v4): done (see
+  `docs/build-plan.md`, Step 14). It differs from the sketch above in one place: "new" is measured against the first complete
+  crawl in `store_crawls`, not `MIN(first_seen_at) + 3 days`, so genuinely new frames found by a first `crawl-stores` run are
+  not swallowed by a grace window.

@@ -49,11 +49,15 @@ class FakeProvider:
         return self.text
 
 
-def test_the_summary_uses_prompt_v3_and_extraction_stays_on_v2():
-    assert settings.summary_prompt_version == "v3" and settings.prompt_version == "v2"  # re-read markers name v2
-    v3 = load_prompt("summary_fr", "v3")
+def test_the_summary_uses_prompt_v4_and_extraction_stays_on_v2():
+    assert settings.summary_prompt_version == "v4" and settings.prompt_version == "v2"  # re-read markers name v2
+    v3, v4 = load_prompt("summary_fr", "v3"), load_prompt("summary_fr", "v4")
     assert "Couleur obligatoire" in v3 and HEADING in v3 and "exactement comme elle est écrite" in v3
     assert "Couleur obligatoire" not in load_prompt("summary_fr", "v2")
+    # v4 = v3 plus guidance for the catalog section, and nothing taken away
+    assert all(line in v4 for line in v3.splitlines() if line.strip())
+    assert "Nouveautés des catalogues créateurs" in v4 and "Nouveautés des catalogues créateurs" not in v3
+    assert "Cette puce ne remplace jamais la puce couleur obligatoire" in v4 and "trop peu de nouveautés" in v4
     assert "{taxonomy}" in load_prompt("extract")                                   # default: the extraction version
 
 
@@ -96,3 +100,23 @@ def test_generation_sends_v3_and_warns_when_the_color_bullet_is_missing(s, caplo
     with caplog.at_level("WARNING", logger="app.scoring.summary"):
         generate_weekly_summary(s, FakeProvider("- **Vert / Kaki** : +159 %."), WEEK)
     assert "mandatory color" not in caplog.text and s.query(WeeklySummary).count() == 1  # same week: updated in place
+
+
+def test_the_brief_carries_the_creator_catalog_section_only_with_history(s):
+    from datetime import datetime, timezone
+    from app.models import Product, ProductTag, Source, StoreCrawl
+    trend(s, "shape", "round", 5, "en_hausse", 0.4)
+    assert "Nouveautés des catalogues créateurs" not in build_brief(s, WEEK)      # no store history at all
+    now = datetime.now(timezone.utc)
+    src = Source(name="Etnia", kind="store", url="https://etnia.test/", lang="en", country="ES")
+    s.add(src)
+    s.flush()
+    s.add(StoreCrawl(source_id=src.id, status="ok", trigger="batch", started_at=now - timedelta(days=20, hours=1),
+                     finished_at=now - timedelta(days=20)))
+    p = Product(source_id=src.id, url="https://etnia.test/a", name="A", seen_at=now, first_seen_at=now - timedelta(days=2))
+    p.tags = [ProductTag(dimension="shape", code="round", field="spec:Forme", term="round", rules_version=10)]
+    s.add(p)
+    s.commit()
+    brief = build_brief(s, WEEK)
+    assert "Nouveautés des catalogues créateurs" in brief and "Etnia : 1 nouveauté(s)" in brief
+    assert "Trop peu de nouveautés (1)" in brief                                    # under the volume floor: do not conclude

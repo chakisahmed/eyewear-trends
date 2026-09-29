@@ -324,3 +324,96 @@ def test_retail_overview_shape(client):
     for gap in body["opportunities"] + body["risks"]:
         assert {"dimension", "code", "label", "status", "momentum", "sku", "share", "avg_price", "product_type"} <= set(gap)
     assert all({"name", "products", "updated"} <= set(st) for st in body["stores"])
+
+
+def _history_store(name: str = "Brand H"):
+    """A creator-brand store whose first complete crawl was 20 days ago, in the shared test database."""
+    from app.models import Source, StoreCrawl
+    now = datetime.now(timezone.utc)
+    host = name.lower().replace(" ", "-")
+    with SessionLocal() as s:
+        src = Source(name=name, kind="store", url=f"https://{host}.brand.test/", lang="en", country="ES")
+        s.add(src)
+        s.flush()
+        s.add(StoreCrawl(source_id=src.id, status="ok", trigger="batch", started_at=now - timedelta(days=20, hours=1),
+                         finished_at=now - timedelta(days=20)))
+        s.commit()
+        return src.id, now
+
+
+def test_trend_detail_counts_new_and_retired_frames_and_flags_new_ones_in_the_sample(client):
+    from app.models import Product, ProductTag
+    before = client.get("/api/trends/material/titanium").json()
+    source_id, now = _history_store()
+    with SessionLocal() as s:
+        for slug, first_seen, active, dropped, rank in (("h-old", 40, True, None, 1), ("h-new", 5, True, None, 9),
+                                                        ("h-gone", 40, False, 2, 2)):
+            p = Product(source_id=source_id, url=f"https://h.brand.test/{slug}", name=slug.upper(), rank=rank, seen_at=now,
+                        first_seen_at=now - timedelta(days=first_seen), is_active=active,
+                        dropped_at=now - timedelta(days=dropped) if dropped else None)
+            p.tags = [ProductTag(dimension="material", code="titanium", field="spec:Materials", term="titanium", rules_version=10)]
+            s.add(p)
+        s.commit()
+
+    body = client.get("/api/trends/material/titanium").json()
+    assert body["retail_new_count"] == before["retail_new_count"] + 1                 # only h-new is after the baseline and recent
+    assert body["retail_retired_count"] == before["retail_retired_count"] + 1         # h-gone, dropped 2 days ago
+    assert body["retail_sku_count"] == before["retail_sku_count"] + 2                 # h-old and h-new: the retired one is off the shelf
+    new = next(p for p in body["retail_sample"] if p["name"] == "H-NEW")
+    assert new["is_new"] is True and all(p["is_new"] is False for p in body["retail_sample"] if p["name"] == "H-OLD")
+    names = [p["name"] for p in body["retail_sample"] if p["store"] == "Brand H"]
+    assert names == sorted(names, key=lambda n: n != "H-NEW")                          # new arrival before the older frame despite its rank
+
+
+def test_catalogs_endpoint_reports_each_configured_store_and_what_creators_added(client, monkeypatch):
+    from app.collectors.stores.config import parse_store_configs
+    from app.models import Product, ProductTag, Source, StoreCrawl
+    now = datetime.now(timezone.utc)
+    configs = parse_store_configs("stores:\n  cat.brand.test:\n    name: Cat Brand\n    base_url: https://cat.brand.test\n"
+                                  "    lang: en\n    country: ES\n    crawl_every_days: 7\n"
+                                  "    listing: {urls: ['/x'], product: 'li', link: 'a'}\n"
+                                  "  ghost.brand.test:\n    name: Ghost\n    base_url: https://ghost.brand.test\n    lang: en\n"
+                                  "    listing: {urls: ['/x'], product: 'li', link: 'a'}\n")
+    monkeypatch.setattr("app.api.main.load_store_configs", lambda: configs)
+    empty = client.get("/api/catalogs").json()
+    assert empty["since_days"] == 30 and [st["status"] for st in empty["stores"]] == ["never", "never"]
+    n0 = empty["new_total"]                                                      # other tests' stores share this database
+
+    with SessionLocal() as s:
+        src = Source(name="Cat Brand", kind="store", url=str(configs["cat.brand.test"].base_url), lang="en", country="ES")
+        s.add(src)
+        s.flush()
+        s.add(StoreCrawl(source_id=src.id, status="ok", trigger="batch", started_at=now - timedelta(days=11),
+                         finished_at=now - timedelta(days=10)))
+        p = Product(source_id=src.id, url="https://cat.brand.test/p/1", name="P1", seen_at=now, first_seen_at=now - timedelta(days=2))
+        p.tags = [ProductTag(dimension="shape", code="round", field="spec:Forme", term="round", rules_version=10)]
+        s.add(p)
+        s.commit()
+    body = client.get("/api/catalogs").json()
+    cat = next(st for st in body["stores"] if st["name"] == "Cat Brand")
+    assert (cat["status"], cat["status_label"], cat["new"], cat["retired"], cat["creator"], cat["has_history"]) == (
+        "ok", "À jour", 1, 0, True, True)
+    assert body["has_history"] is True and body["new_total"] == n0 + 1 and body["min_for_shares"] == 10
+    round_ = next(i for i in body["top"] if i["code"] == "round" and i["dimension"] == "shape")
+    assert round_["label"] and round_["new"] >= 1 and round_["share_new"] is None      # under 10 new frames: counts only
+
+
+def test_new_arrivals_keep_room_in_the_sample_when_best_sellers_would_fill_it(client):
+    from app.models import Product, ProductTag
+    source_id, now = _history_store("Brand Q")
+    with SessionLocal() as s:
+        for i in range(7):                                              # seven older best-sellers fill the five slots
+            p = Product(source_id=source_id, url=f"https://brand-q.brand.test/bs{i}", name=f"BS{i}", rank=i + 1, seen_at=now,
+                        first_seen_at=now - timedelta(days=60), flags={"is_bestseller": True})
+            p.tags = [ProductTag(dimension="material", code="recycled", field="spec:Materials", term="recycled", rules_version=10)]
+            s.add(p)
+        for slug, oos in (("fresh-a", False), ("fresh-b", False), ("fresh-sold-out", True)):
+            p = Product(source_id=source_id, url=f"https://brand-q.brand.test/{slug}", name=slug.upper(), rank=50, seen_at=now,
+                        first_seen_at=now - timedelta(days=3), flags={"out_of_stock": True} if oos else None)
+            p.tags = [ProductTag(dimension="material", code="recycled", field="spec:Materials", term="recycled", rules_version=10)]
+            s.add(p)
+        s.commit()
+    sample = client.get("/api/trends/material/recycled").json()["retail_sample"]
+    assert len(sample) == 5
+    assert [p["name"] for p in sample if p["is_new"]] == ["FRESH-A", "FRESH-B"]        # two slots, in stock only
+    assert [p["name"] for p in sample[:3]] == ["BS0", "BS1", "BS2"]                    # best-sellers keep the rest, in order

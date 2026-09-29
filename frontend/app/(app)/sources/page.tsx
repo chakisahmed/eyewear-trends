@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { CatalogStatus } from "@/components/CatalogStatus";
 import { Icon } from "@/components/icons";
 import { UrlSelect } from "@/components/shell/Filters";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -31,9 +32,10 @@ export default async function SourcesPage({ searchParams }: PageProps<"/sources"
   const days = PERIODS.some(p => p.value === one(q.days)) ? one(q.days)! : "30";
   const page = Math.max(1, Number(one(q.page)) || 1);
 
-  const [meta, taxonomy, result] = await Promise.all([
+  const [meta, taxonomy, catalogs, result] = await Promise.all([
     api.meta(),
     api.taxonomy(),
+    api.catalogs().catch(() => null),  // optional panel: the excerpts must not fail without it
     api.sources({ dimension: dim, code, lang, kind, days, limit: PER_PAGE, offset: (page - 1) * PER_PAGE }),
   ]);
   const pages = Math.max(1, Math.ceil(result.total / PER_PAGE));
@@ -50,6 +52,8 @@ export default async function SourcesPage({ searchParams }: PageProps<"/sources"
     <PageHeader meta={meta} week={null} showWeek={false} title="Sources"
                 subtitle="Les extraits de presse, d'actualités, de boutiques et de réseaux sociaux derrière chaque tendance">
       <div className="screen-sources">
+        {catalogs && catalogs.stores.length > 0 && <CatalogStatus data={catalogs} />}
+
         <section className="card filter-bar" aria-label="Filtres des sources">
           <Suspense fallback={null}>
             <div className="filter-grid">

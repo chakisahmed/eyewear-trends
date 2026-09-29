@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     prompt_version: str = "v2"  # v2: 8 more color families and color rules; `reread-colors` brings v1 colors up to it
     # The weekly summary prompt is versioned on its own: bumping it must not make every article's extraction look
     # outdated (reread markers such as "v1+color@v2" name the extraction version). v3: a mandatory color bullet.
-    summary_prompt_version: str = "v3"
+    summary_prompt_version: str = "v4"
 
     # Market: Google Trends / news geo. Retailer country is still an open decision.
     market_geo: str = "FR"

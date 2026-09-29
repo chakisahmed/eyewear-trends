@@ -535,6 +535,9 @@
   .retail-soldout { font-size: 11.5px; }
   /* the store's own best-seller flag: coral ring (brand accent), text stays --text-primary for AA contrast */
   .retail-bestseller { font-size: 11.5px; color: var(--text-primary); border-color: var(--brand-coral); }
+  /* a frame that arrived in the last 30 days: a soft coral wash, distinct from the best-seller ring, text stays --text-primary */
+  .retail-new { font-size: 11.5px; color: var(--text-primary); background: color-mix(in srgb, var(--brand-coral) 16%, var(--surface-subtle)); }
+  .retail-since { color: var(--text-muted); font-size: 12.5px; }
 
   /* Associations fréquentes (acetate laminations): partner colours by number of frames; a coral edge and the same
      best-seller pill mark the pairings that include best-selling frames. */
@@ -755,6 +758,23 @@
 
 /* ===== E. Sources ===== */
 .screen-sources {
+    /* ===== Écran Sources : santé des catalogues ===== */
+    .catalogs { padding: 18px 24px 20px; margin-bottom: 20px; }
+    .catalogs .section-head { margin-bottom: 10px; }
+    .catalogs .data-table { min-width: 640px; }
+    .catalogs .numcol { text-align: right; font-variant-numeric: tabular-nums; }
+    .cat-store { font-weight: 600; }
+    .cat-country { margin-left: 6px; font-weight: 500; font-size: 12px; color: var(--text-muted); }
+    .cat-detail { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-secondary); max-width: 46ch; }
+    .cat-state { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
+    .cat-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--status-stable); }
+    .cat-state[data-status="ok"] .cat-dot { background: var(--status-up); }
+    .cat-state[data-status="late"] .cat-dot, .cat-state[data-status="incomplete"] .cat-dot { background: var(--status-peak); }
+    .cat-state[data-status="failed"] .cat-dot { background: var(--status-down); }
+    .cat-new { margin: 14px 0 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .cat-new strong { color: var(--text-primary); }
+    .cat-empty { margin: 0 0 12px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+
     /* ===== Écran Sources : filtres ===== */
     .filter-bar { padding: 20px 24px; }
     .filter-grid {

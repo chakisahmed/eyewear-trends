@@ -85,6 +85,9 @@ export interface TrendDetail extends Attribute, Tone {
   retail_store_count?: number;
   /** Tagged products the store itself flags as best-sellers (frame level; stores that publish it, e.g. Etnia). */
   retail_bestseller_count?: number;
+  /** Catalog history, 30 days, over the stores counted: frames that arrived after a store's first complete crawl / were dropped by a complete crawl. */
+  retail_new_count?: number;
+  retail_retired_count?: number;
   /** ISO country codes of the stores counted (Tunisian retailers, a Spanish brand catalog…). */
   retail_countries?: string[];
   retail_avg_price?: RetailPrice[];
@@ -142,6 +145,42 @@ export interface RetailProduct {
   store: string;
   out_of_stock: boolean;
   is_bestseller?: boolean;
+  /** First seen after the store's first complete crawl, within the last 30 days. */
+  is_new?: boolean;
+}
+
+export type CatalogStatus = "ok" | "late" | "incomplete" | "failed" | "manual" | "never";
+
+export interface CatalogStore {
+  name: string;
+  domain: string;
+  country: string | null;
+  products: number;
+  new: number;
+  retired: number;
+  /** Creator brand (outside the Tunisian market lens): the design signal. */
+  creator: boolean;
+  status: CatalogStatus;
+  status_label: string;
+  /** First problem of an incomplete crawl, or the error of a failed one. */
+  detail: string | null;
+  /** Why a complete crawl skipped its drops (e.g. the listing shrank): worth a look. */
+  note: string | null;
+  cadence_days: number;
+  last_ok_at: string | null;
+  /** The store has a complete crawl in the log: new / retired counts mean something. */
+  has_history: boolean;
+}
+
+/** Store data health and what creator brands added (GET /api/catalogs). */
+export interface Catalogs {
+  since_days: number;
+  min_for_shares: number;
+  has_history: boolean;
+  stores: CatalogStore[];
+  new_total: number;
+  retired_total: number;
+  top: (Attribute & { dimension: Dimension; new: number; share_new: number | null; share_catalog: number | null })[];
 }
 
 export interface Demand {

@@ -12,6 +12,7 @@ from app.config import settings
 from app.extraction.llm import LLMProvider
 from app.extraction.service import load_prompt
 from app.models import Document, Mention, TrendSnapshot, WeeklySummary
+from app.scoring.catalog import catalog_brief
 from app.scoring.retail import (
     MIN_TAGGED, PRODUCT_TYPES, TYPE_LABELS, comparable, shelf_by_attribute, shelf_gaps_by_type, unmapped_share,
 )
@@ -84,6 +85,7 @@ def build_brief(session: Session, week: date) -> str:
     if extracts:
         lines += ["", "Extraits de sources:"] + [f"- {e}" for e in extracts]
     lines += shelf_brief(session, week)
+    lines += catalog_brief(session)
     return "\n".join(lines)
 
 

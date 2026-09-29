@@ -19,6 +19,8 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
   const count = d.retail_sku_count ?? 0;
   const stores = d.retail_store_count ?? 0;
   const bestsellers = d.retail_bestseller_count ?? 0;
+  const fresh = d.retail_new_count ?? 0;
+  const retired = d.retail_retired_count ?? 0;
   const types = d.retail_by_type ?? {};
   const sample = d.retail_sample ?? [];
   const label = d.label.toLowerCase();
@@ -53,6 +55,8 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
               <strong className="num">{num(count)}</strong> référence{count > 1 ? "s" : ""} en boutique
               · {num(stores)} enseigne{stores > 1 ? "s" : ""}
               {bestsellers > 0 && <> · dont <strong className="num">{num(bestsellers)}</strong> best-seller{bestsellers > 1 ? "s" : ""}</>}
+              {fresh > 0 && <> · <strong className="num">{num(fresh)}</strong> nouveauté{fresh > 1 ? "s" : ""} <span className="retail-since">(30 j)</span></>}
+              {retired > 0 && <> · {num(retired)} retirée{retired > 1 ? "s" : ""} <span className="retail-since">(30 j)</span></>}
             </p>
             {(d.retail_avg_price ?? []).map(p => <p key={p.currency} className="retail-price">{priceLine(p)}</p>)}
             {d.retail_markdown && (
@@ -87,6 +91,7 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
                   <span className="retail-row">
                     <span className="retail-amount num">{p.price != null ? money(p.price, p.currency) : "Prix non affiché"}</span>
                     {p.is_bestseller && <span className="pill retail-bestseller"><Icon name="up" />Best-seller</span>}
+                    {p.is_new && <span className="pill retail-new"><Icon name="sparkle" />Nouveauté</span>}
                     {p.out_of_stock && <span className="pill retail-soldout"><Icon name="alert" />Épuisé</span>}
                   </span>
                 </a>
