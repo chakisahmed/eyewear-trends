@@ -49,6 +49,28 @@ def filter_url(collection: str, param: str, label: str, page: int | None = None)
     return f"/collections/{collection}?{q}"
 
 
+BEST = "filter.v.m.custom.best_seller"
+
+
+def best_url(collection: str, value: str = "1", page: int | None = None) -> str:
+    return f"/collections/{collection}?{urlencode({BEST: value, **({'page': page} if page else {})})}"
+
+
+def best_form() -> str:
+    """The best-seller filter as the theme renders it: values 1 / 0, labels only in <label for>."""
+    return "".join(f'<input type="checkbox" name="{BEST}" value="{v}" id="Filter-best_seller-{v}-{layout}">'
+                   f'<label for="Filter-best_seller-{v}-{layout}">{label}</label>'
+                   for layout in ("horizontal-", "vertical-true") for v, label in (("1", "Yes"), ("0", "No")))
+
+
+def vto(name: str, labels: dict[str, str]) -> str:
+    """The try-on widget's JSON: one entry per variant, frameId ending with the swatch code without its slash."""
+    variants = [{"variantLabel": label, "variantThumbnailUrl": "https://x.test/t.jpg",
+                 "sizes": [{"sizeLabel": "Caliber 54 - L", "frameId": f"5 {name} 54O {code}"}]} for code, label in labels.items()]
+    return (f'<script type="application/json" data-vto-carousel>'
+            f'{json.dumps({"frames": [{"frameLabel": name, "variants": variants}]})}</script>')
+
+
 # --- markup ---------------------------------------------------------------------------------------
 
 def card(collection: str, slug: str, name: str, price: str, variant: int = 64506181484921) -> str:
@@ -85,7 +107,8 @@ def listing(cards: list[str], next_href: str | None = None, form: str = "") -> s
     return f'<html><head>{head}</head><body>{form}<ul class="product-grid">{"".join(cards)}</ul>{more}</body></html>'
 
 
-def product(slug: str, name: str, price: str, swatches: list[tuple[str, str, bool]], *, lenses: bool = False) -> str:
+def product(slug: str, name: str, price: str, swatches: list[tuple[str, str, bool]], *, lenses: bool = False,
+            layers: dict[str, str] | None = None) -> str:
     offers = [{"@type": "Offer", "price": price, "priceCurrency": "EUR", "sku": f"5 {name} 54O {code.replace('/', '')}",
                "url": f"{ETNIA}/products/{slug}?variant={640 + i}",
                "availability": f"https://schema.org/{'InStock' if ok else 'OutOfStock'}"}
@@ -105,12 +128,13 @@ def product(slug: str, name: str, price: str, swatches: list[tuple[str, str, boo
             'aria-label="Grey" data-option-available="true" data-option-display-label="Grey">') if lenses else ""
     return (f'<html><head><script type="application/ld+json">{json.dumps(ld)}</script></head><body>'
             f'<variant-picker><fieldset class="variant-option">{radios}</fieldset>'
-            f'<fieldset class="variant-option">{lens}</fieldset></variant-picker></body></html>')
+            f'<fieldset class="variant-option">{lens}</fieldset></variant-picker>'
+            f'{vto(name, layers) if layers else ""}</body></html>')
 
 
 def site() -> dict[str, str]:
     optical_form = facet_form({SHAPE: ["OVAL", "PANTOS SQUARE", "CAT-EYE/BUTTERFLY"], GENDER: ["Man", "Woman", "Unisex"],
-                               MATERIAL: ["Acetate", "Metal"]})
+                               MATERIAL: ["Acetate", "Metal"]}) + best_form()
     return {
         "/robots.txt": ROBOTS,
         "/collections/optical": listing(
@@ -131,15 +155,18 @@ def site() -> dict[str, str]:
         filter_url("optical", MATERIAL, "Acetate"): listing([card("optical", "kore", "KORE", "255,46"),
                                                              card("optical", "unlisted", "UNLISTED", "99,00")]),
         filter_url("optical", MATERIAL, "Metal"): listing([card("optical", "xylo", "XYLO", "199,00")]),
-        "/collections/sun": listing([card("sun", "izzi", "IZZI", "262,46")], form=facet_form({SHAPE: ["ROUND"]})),
+        # best-sellers: optical over 2 pages (the filter kept in the next link); sun's page fails -> unknown, not False
+        best_url("optical"): listing([card("optical", "mao", "MAO", "229,00")], best_url("optical", page=2)),
+        best_url("optical", page=2): listing([card("optical", "vreeland", "VREELAND", "239,00")]),
+        "/collections/sun": listing([card("sun", "izzi", "IZZI", "262,46")], form=facet_form({SHAPE: ["ROUND"]}) + best_form()),
         filter_url("sun", SHAPE, "ROUND"): listing([card("sun", "izzi", "IZZI", "262,46")]),
         "/products/kore": product("kore", "KORE", "255.46", [
             ("HV/BL", "Havana", True), ("BE", "Beige", False), ("BK", "Black", True), ("BL/HO", "Blue", True),
-            ("OG", "Orange", True)]),
+            ("OG", "Orange", True)], layers={"HVBL": "Havana/Blue", "BK": "Black", "BLHO": "Blue/Honey"}),  # BE, OG: no entry
         "/products/mao": product("mao", "MAO", "229.00", [("BK", "Black", True)]),
         "/products/vreeland": product("vreeland", "VREELAND", "239.00", [("GD", "Golden", True), ("GD/BK", "Golden", True)]),
         "/products/izzi": product("izzi", "IZZI", "262.46", [("BK/ZE", "Black", False), ("HV/CL", "Havana", False)],
-                                  lenses=True),
+                                  lenses=True, layers={"BKZE": "Black/Zebra", "HVCL": "Havana/Clear"}),
         # /products/xylo 404s: its listing card alone must still give a valid product
     }
 
@@ -203,19 +230,49 @@ async def test_etnia_variants_carry_codes_labels_and_stock():
     products, _ = await crawl_etnia()
     kore = products["kore"]
     assert kore.flags["variants"] == [
-        {"code": "HV/BL", "color": "Havana", "in_stock": True}, {"code": "BE", "color": "Beige", "in_stock": False},
-        {"code": "BK", "color": "Black", "in_stock": True}, {"code": "BL/HO", "color": "Blue", "in_stock": True},
+        {"code": "HV/BL", "color": "Havana", "in_stock": True, "layers": ["Havana", "Blue"]},
+        {"code": "BE", "color": "Beige", "in_stock": False},                         # no try-on entry: no layers
+        {"code": "BK", "color": "Black", "in_stock": True},                           # single colour: nothing to add
+        {"code": "BL/HO", "color": "Blue", "in_stock": True, "layers": ["Blue", "Honey"]},
         {"code": "OG", "color": "Orange", "in_stock": True}]                         # " - Notify me" never in a label
     assert kore.flags["out_of_stock"] is False
-    # Palier 1-3: the store's own color name decides the family (blue and orange since the v2 color families)
+    # Palier 1-3: the swatch label gives the main family; every acetate layer adds its own, with the same code
     assert {t for t in tags(kore) if t[0] == "color"} == {
-        ("color", "tortoiseshell", "HV/BL"), ("color", "beige", "BE"), ("color", "black", "BK"),
-        ("color", "blue", "BL/HO"), ("color", "orange", "OG")}
+        ("color", "tortoiseshell", "HV/BL"), ("color", "blue", "HV/BL"), ("color", "two_tone", "HV/BL"),
+        ("color", "beige", "BE"), ("color", "black", "BK"),
+        ("color", "blue", "BL/HO"), ("color", "brown", "BL/HO"), ("color", "two_tone", "BL/HO"),
+        ("color", "orange", "OG")}
     assert {t for t in tags(products["vreeland"]) if t[0] == "color"} == {("color", "gold", "GD"), ("color", "gold", "GD/BK")}
     izzi = products["izzi"]
     assert [v["code"] for v in izzi.flags["variants"]] == ["BK/ZE", "HV/CL"]           # LensName radios are not colors
     assert izzi.flags["out_of_stock"] is True                                           # every color sold out
     assert "variants" not in products["xylo"].flags
+
+
+@pytest.mark.anyio
+async def test_etnia_laminations_are_combinations_of_families_per_variant_code():
+    products, _ = await crawl_etnia()
+    laminations = lambda p: {(c, s) for d, c, s in tags(p) if d == "lamination"}
+    assert laminations(products["kore"]) == {("blue+tortoiseshell", "HV/BL"), ("blue+brown", "BL/HO")}
+    izzi = products["izzi"]
+    assert [v.get("layers") for v in izzi.flags["variants"]] == [["Black", "Zebra"], ["Havana", "Clear"]]
+    assert laminations(izzi) == {("clear+tortoiseshell", "HV/CL")}                     # Zebra has no family: not guessed
+    assert {t for t in tags(izzi) if t[0] == "color" and t[2] == "BK/ZE"} == {
+        ("color", "black", "BK/ZE"), ("color", "two_tone", "BK/ZE")}                    # still two layers: Bicolore
+    assert laminations(products["mao"]) == set()                                       # no try-on data at all
+
+
+@pytest.mark.anyio
+async def test_etnia_best_sellers_come_from_the_store_filter_one_value_only():
+    products, requested = await crawl_etnia()
+    flag = lambda slug: products[slug].flags.get("is_bestseller")
+    assert (flag("mao"), flag("vreeland")) == (True, True)                            # page 1 and page 2 of the filter
+    assert (flag("kore"), flag("xylo")) == (False, False)                             # complete optical pass: not best-sellers
+    assert flag("izzi") is None                                                        # sun's filter page failed: unknown
+    paths = [u.raw_path.decode() for u in requested]
+    assert best_url("optical", page=2) in paths
+    assert not any(p in paths for p in (best_url("optical", "0"), best_url("sun", "0")))  # "No" is never requested
+    assert all("Best-seller" not in (p.flags.get("raw_specs") or {}) for p in products.values())  # a flag, not a spec
 
 
 @pytest.mark.anyio
@@ -285,6 +342,9 @@ def test_add_label_joins_without_repeats():
     ("{enabled: true, max_products: 2}", "{enabled: true, max_products: 1001}"),
     ("    specs: {", '    variants: {rows: "input", code: {css: "//x"}}\n    specs: {'),          # XPath refused
     ("    specs: {", '    variants: {rows: "input", code: {attr: value, regex: "(x"}}\n    specs: {'),
+    ('      link: "a.card-link"', '      link: "a.card-link"\n      facets: [{name: B, param: b, flag: "is best"}]'),  # not an identifier
+    ('      link: "a.card-link"', '      link: "a.card-link"\n      facets: [{name: B, param: b, only: []}]'),        # lists nothing
+    ("    specs: {", '    variants: {rows: "input", code: {attr: value}, layers: json}\n    specs: {'),           # unknown reader
 ])
 def test_new_rules_are_validated_at_load_time(patch):
     old, new = patch

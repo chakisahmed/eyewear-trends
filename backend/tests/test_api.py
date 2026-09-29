@@ -261,6 +261,31 @@ def test_trend_detail_retail_presence(client):
     assert (empty["retail_sku_count"], empty["retail_avg_price"], empty["retail_sample"], empty["retail_by_type"]) == (0, [], [], {})
     assert empty["retail_updated_at"] is None
     assert empty["retail_markdown"] is None
+    assert body["retail_bestseller_count"] == 0 and not any(p["is_bestseller"] for p in body["retail_sample"])
+    assert body["retail_countries"] == ["FR", "TN"] and empty["retail_countries"] == []  # titles the section
+
+
+def test_retail_presence_counts_and_favours_best_sellers(client):
+    from app.models import Product, ProductTag, Source
+    now = datetime.now(timezone.utc)
+    with SessionLocal() as s:
+        brand = Source(name="Brand C", kind="store", url="https://c.brand.test", lang="en", country="ES")
+        s.add(brand)
+        s.flush()
+        for slug, rank, flags in (("c1", 1, None), ("c2", 2, {"is_bestseller": True}), ("c3", 3, {"is_bestseller": False}),
+                                  ("c4", 4, {"is_bestseller": True, "out_of_stock": True})):
+            p = Product(source_id=brand.id, url=f"{brand.url}/{slug}", name=slug.upper(), price=200, currency="EUR",
+                        rank=rank, seen_at=now, flags=flags)
+            p.tags = [ProductTag(dimension="material", code="tr90", field="spec:Materials", term="tr90", rules_version=8)]
+            s.add(p)
+        s.commit()
+
+    body = client.get("/api/trends/material/tr90").json()
+    assert body["retail_bestseller_count"] == 2                                   # sold-out best-sellers still count
+    assert body["retail_countries"] == ["ES"]                                     # a brand catalog, not a Tunisian shelf
+    # in stock first, then best-sellers, then the store's own order
+    assert [(p["name"], p["is_bestseller"]) for p in body["retail_sample"]] == [
+        ("C2", True), ("C1", False), ("C3", False), ("C4", True)]
 
 
 def test_retail_overview_shape(client):

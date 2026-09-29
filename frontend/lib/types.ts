@@ -83,6 +83,10 @@ export interface TrendDetail extends Attribute, Tone {
   // "Présence en boutique": store products tagged with this attribute (rule-based, no LLM)
   retail_sku_count?: number;
   retail_store_count?: number;
+  /** Tagged products the store itself flags as best-sellers (frame level; stores that publish it, e.g. Etnia). */
+  retail_bestseller_count?: number;
+  /** ISO country codes of the stores counted (Tunisian retailers, a Spanish brand catalog…). */
+  retail_countries?: string[];
   retail_avg_price?: RetailPrice[];
   retail_by_type?: Partial<Record<"optical" | "sun", number>>;
   retail_sample?: RetailProduct[];
@@ -116,6 +120,7 @@ export interface RetailProduct {
   url: string;
   store: string;
   out_of_stock: boolean;
+  is_bestseller?: boolean;
 }
 
 export interface Demand {

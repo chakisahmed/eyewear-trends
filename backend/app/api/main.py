@@ -268,6 +268,9 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     rows = [(p, store) for p, store in retail.active_products(db) if p.id in tagged]
     ids = [p.id for p, _ in rows]
     types = Counter(db.scalars(select(ProductTag.code).where(ProductTag.product_id.in_(ids), ProductTag.dimension == "product_type")))
+    # Which markets these products come from (Tunisian retailers, a Spanish brand catalog…): the UI titles the section
+    countries = sorted(set(db.scalars(select(Source.country).where(
+        Source.id.in_({p.source_id for p, _ in rows}), Source.country.is_not(None)))))
 
     prices: dict[str, list[float]] = {}
     for p, _ in rows:
@@ -277,9 +280,13 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     def out_of_stock(p: Product) -> bool:
         return bool((p.flags or {}).get("out_of_stock"))
 
-    # In stock first, then the store's own listing order; round-robin so one store cannot fill the sample.
+    def bestseller(p: Product) -> bool:  # the store's own best-seller flag (frame level), when it publishes one
+        return bool((p.flags or {}).get("is_bestseller"))
+
+    # In stock first, then the store's best-sellers, then its own listing order; round-robin so one store cannot
+    # fill the sample.
     per_store: dict[str, list[Product]] = {}
-    for p, store in sorted(rows, key=lambda r: (r[1], out_of_stock(r[0]), r[0].rank or 10**9, r[0].name)):
+    for p, store in sorted(rows, key=lambda r: (r[1], out_of_stock(r[0]), not bestseller(r[0]), r[0].rank or 10**9, r[0].name)):
         per_store.setdefault(store, []).append(p)
     queues = [[(p, store) for p in items] for store, items in per_store.items()]
     sample = []
@@ -292,6 +299,8 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
     return {
         "retail_sku_count": len(rows),
         "retail_store_count": len(per_store),
+        "retail_bestseller_count": sum(1 for p, _ in rows if bestseller(p)),
+        "retail_countries": countries,  # ISO codes of the stores counted, e.g. ["ES", "TN"]
         "retail_avg_price": [
             {"currency": cur, "avg": round(mean(v), 2), "min": min(v), "max": max(v), "priced": len(v)}
             for cur, v in sorted(prices.items(), key=lambda kv: -len(kv[1]))
@@ -299,7 +308,7 @@ def _retail_presence(db: Session, dimension: str, code: str) -> dict:
         "retail_by_type": {k: types[k] for k in ("optical", "sun") if types.get(k)},
         "retail_sample": [
             {"name": p.name, "brand": p.brand, "price": p.price, "currency": p.currency, "image_url": p.image_url,
-             "url": p.url, "store": store, "out_of_stock": out_of_stock(p)}
+             "url": p.url, "store": store, "out_of_stock": out_of_stock(p), "is_bestseller": bestseller(p)}
             for p, store in sample
         ],
         "retail_updated_at": (updated if updated.tzinfo else updated.replace(tzinfo=timezone.utc)).isoformat() if updated else None,

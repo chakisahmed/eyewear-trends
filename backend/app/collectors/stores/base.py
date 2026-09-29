@@ -132,7 +132,7 @@ class BaseStoreCrawler:
         max_pages = cfg.listing.pagination.max_pages if cfg.listing.pagination else 1
         for entry in cfg.listing.urls:
             start, category = (entry.url, entry.categories) if isinstance(entry, ListingUrl) else (entry, None)
-            first_url, first_html = urljoin(str(cfg.base_url), start), None
+            first_url, first_html, listed = urljoin(str(cfg.base_url), start), None, set()
             async with aclosing(self.listing_pages(first_url)) as pages:
                 async for page, url, html in pages:
                     if html is not None:
@@ -141,6 +141,7 @@ class BaseStoreCrawler:
                         if not found and page > 1:
                             break  # past the last page
                         for item in found:
+                            listed.add(item.url)
                             if item.url not in by_url:
                                 by_url[item.url] = item
                                 item.rank = len(items) + 1
@@ -149,26 +150,43 @@ class BaseStoreCrawler:
                                 add_label(by_url[item.url].flags, "categories", category)
                     log.info("%s: listing %s page %d (max %d), %d products so far", cfg.name, start, page, max_pages, len(items))
             for facet in cfg.listing.facets if first_html is not None else ():
-                await self.facet_pass(facet, first_url, first_html, by_url)
+                await self.facet_pass(facet, first_url, first_html, by_url, listed)
         return items
 
-    async def facet_pass(self, facet: Facet, first_url: str, first_html: str, by_url: dict[str, ListingItem]) -> None:
+    async def facet_pass(self, facet: Facet, first_url: str, first_html: str, by_url: dict[str, ListingItem],
+                         listed: set[str]) -> None:
         """List the collection once per value of one store filter and record the value's label in the raw_specs of
-        every product listed under it. One filter per request, never combined. Products the plain listing did not
-        return are ignored: the listing stays the only source of products."""
+        every product listed under it, or with `facet.flag` set that flag (e.g. is_bestseller). One filter per
+        request, never combined. Products the plain listing did not return are ignored: the listing stays the only
+        source of products. `listed`: this collection's products, the only ones a flag pass may mark False."""
         cfg = self.config
+        flagged, complete = set(), True
         for value, label in facet_values(first_html, facet.param):
+            if facet.only is not None and label not in facet.only:
+                continue  # never requested
             matched = 0
             async with aclosing(self.listing_pages(with_query(first_url, **{facet.param: value}))) as pages:
                 async for page, url, html in pages:
+                    if html is None:
+                        complete = False  # blocked or failed: products not listed here are unknown, not "no"
                     found = parse_listing(html, url, cfg) if html is not None else []
                     if not found and page > 1:
                         break
                     for item in found:
-                        if item.url in by_url:
-                            matched += 1
+                        if item.url not in by_url:
+                            continue
+                        matched += 1
+                        if facet.flag:
+                            by_url[item.url].flags[facet.flag] = True
+                            flagged.add(item.url)
+                        else:
                             add_label(by_url[item.url].flags.setdefault("raw_specs", {}), facet.name, label)
             log.info("%s: facet %s = %s, %d products", cfg.name, facet.name, label, matched)
+        if facet.flag and complete:
+            for url in listed - flagged:
+                by_url[url].flags.setdefault(facet.flag, False)
+        elif facet.flag:
+            log.info("%s: facet %s incomplete, %s left unset on unlisted products", cfg.name, facet.name, facet.flag)
 
     def postprocess(self, fields: dict[str, Any]) -> dict[str, Any]:
         """Hook for the rare store that needs a code tweak; the default does nothing."""

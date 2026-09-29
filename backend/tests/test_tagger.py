@@ -142,6 +142,37 @@ def test_color_words_that_are_also_names_only_count_in_specs():
     assert codes(tag_product("Monture bleue", None)) == {("color", "blue")}                   # unambiguous words still count
 
 
+# --- rules v8: acetate layers -> a color per layer, Bicolore, and a lamination combination -----------------
+
+def layered(*layers: str, code: str = "HV/BL", color: str | None = None) -> set[tuple]:
+    variant = {"code": code, "color": color or layers[0], "layers": list(layers)}
+    return {(t.dimension, t.code, t.supplier_code) for t in tag_product("X", {"variants": [variant]})}
+
+
+def test_rules_version_8_two_layers_give_both_colors_bicolore_and_a_combination():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 8
+    assert layered("Havana", "Blue") == {("color", "tortoiseshell", "HV/BL"), ("color", "blue", "HV/BL"),
+                                         ("color", "two_tone", "HV/BL"), ("lamination", "blue+tortoiseshell", "HV/BL")}
+    assert ("lamination", "blue+tortoiseshell", "BL/HV") in layered("Blue", "Havana", code="BL/HV")  # order-free code
+
+
+def test_a_layer_with_no_family_is_never_guessed_into_a_combination():
+    assert layered("Black", "Zebra", code="BK/ZE") == {("color", "black", "BK/ZE"), ("color", "two_tone", "BK/ZE")}
+
+
+def test_same_family_layers_are_neither_bicolore_nor_a_combination():
+    assert layered("Havana", "Tortoise") == {("color", "tortoiseshell", "HV/BL")}
+
+
+def test_three_layers_and_no_layers():
+    got = layered("Pink", "Red", "Cream", code="PK/RD/CR")                  # the cadrage's rose + rouge + crème
+    assert ("lamination", "beige+pink+red", "PK/RD/CR") in got and ("color", "two_tone", "PK/RD/CR") in got
+    plain = {(t.dimension, t.code, t.supplier_code) for t in tag_product("X", {"variants": [{"code": "BK", "color": "Black"}]})}
+    assert plain == {("color", "black", "BK")}                             # no layers: unchanged from v7
+    assert layered("Havana") == {("color", "tortoiseshell", "HV/BL")}       # one layer is not a lamination
+
+
 def test_face_shape_is_never_a_frame_shape():
     """LaMode lists VISAGE (recommended face shapes: Ovale, Rond...) next to Forme Lunette."""
     specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}

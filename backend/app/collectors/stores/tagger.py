@@ -6,7 +6,8 @@ A product's name, categories and raw_specs are matched against taxonomy.yaml syn
 - raw_specs are field-scoped: a "Materials" value is only matched against materials, and so on;
 - in free text (name, categories) a few ambiguous synonyms are ignored ("or" = gold in French, but
   also the English word); they still count inside a scoped spec ("Couleur: Or").
-Categories also give non-taxonomy tags: audience (men/women/unisex), product_type (optical/sun).
+Categories also give non-taxonomy tags: audience (men/women/unisex), product_type (optical/sun); multi-layer
+acetate variants give `lamination` tags (a combination of color families, e.g. "blue+tortoiseshell").
 
 Color tags carry the three-tier schema: family (Palier 1, the taxonomy code) and hex (Palier 2, the taxonomy's hex
 for it) are attached automatically. Palier 3, a commercial variant code such as "HV/BL", comes from the crawler as
@@ -21,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 7  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 8  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -34,6 +35,8 @@ RULES_VERSION = 7  # stored with each tag; bump when the rules below change, the
 #     store jargon Army / Petrol. Color words that are also model names or everyday words (Rose, Orange,
 #     Marine, Olive…) only count in specs and variants. Bronze, Copper and Zebra stay untagged: a metal tone or
 #     a pattern, not a hue.
+# v8: multi-layer acetate variants (flags["variants"][].layers, e.g. ["Havana", "Blue"]): a color tag per layer,
+#     Bicolore (two_tone), and a non-taxonomy `lamination` tag ("blue+tortoiseshell"), all with the variant code.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -115,6 +118,31 @@ def _match(text: str, index: Index, *, skip_ambiguous: bool) -> list[tuple[str, 
     return found
 
 
+MAX_LAMINATION_CODE = 40  # product_tags.code
+
+
+def _tag_layers(add, color_index: Index, code: str, layers: list[str]) -> None:
+    """A multi-layer acetate variant ("Havana/Blue", code HV/BL): a color tag per layer's family, Bicolore
+    (two_tone) unless every layer is the same known family, and a `lamination` tag when every layer has a family:
+    its code is the distinct families sorted and joined ("blue+tortoiseshell"), so Havana/Blue and Blue/Havana are
+    one combination (the store's layer order stays in flags). A layer with no family (Zebra) is never guessed."""
+    families: list[str] = []
+    complete = True
+    for layer in layers:
+        found = _match(layer, color_index, skip_ambiguous=False)
+        complete &= bool(found)
+        for family, term in found:
+            add("color", family, "variant-layer", term, code)
+            if family not in families:
+                families.append(family)
+    term = fold(" / ".join(layers))[:100]
+    if not (complete and len(families) == 1):
+        add("color", "two_tone", "variant-layers", term, code)
+    combination = "+".join(sorted(families))
+    if complete and len(families) >= 2 and len(combination) <= MAX_LAMINATION_CODE:
+        add("lamination", combination, "variant-layers", term, code)
+
+
 def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None) -> list[Tag]:
     """All tags for one product. The first source to find a (dimension, code) is kept as provenance,
     in order of reliability: scoped specs, then categories, then the name."""
@@ -132,7 +160,7 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
             tier = taxonomy.color_tier(code, supplier_code)
             tags[key] = Tag(dim, code, field, term, tier.family, tier.hex, tier.supplier_code)
         else:
-            tags[key] = Tag(dim, code, field, term)
+            tags[key] = Tag(dim, code, field, term, supplier_code=clean_supplier_code(supplier_code))
 
     specs = flags.get("raw_specs")
     for key, value in (specs.items() if isinstance(specs, dict) else ()):
@@ -163,6 +191,9 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
         if code and isinstance(label, str):
             for family, term in _match(label, idx["_spec_color"], skip_ambiguous=False):
                 add("color", family, "variant", term, code)
+        layers = [x for x in variant.get("layers") or () if isinstance(x, str)] if isinstance(variant.get("layers"), list) else []
+        if code and len(layers) >= 2:
+            _tag_layers(add, idx["_spec_color"], code, layers)
     coded = {(d, c) for d, c, s in tags if s}
     for key in [k for k in tags if k[2] is None and k[:2] in coded]:
         del tags[key]

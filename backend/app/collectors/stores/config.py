@@ -107,6 +107,9 @@ class VariantsRule(_Strict):
     code: ValueRule
     label: ValueRule | None = None
     available: ValueRule | None = None  # "true" / "false"
+    # Acetate layers of a multi-colour variant ("Havana/Blue") -> variant["layers"], from a named reader since the
+    # source is JSON in a script, not markup: "vto_carousel" = a virtual try-on widget's <script data-vto-carousel>.
+    layers: Literal["vto_carousel"] | None = None
 
     @field_validator("rows")
     @classmethod
@@ -142,6 +145,17 @@ class Facet(_Strict):
     store id is hard-coded. One filter per request: filters are never combined (robots.txt often forbids it)."""
     name: str  # the raw_specs key the tagger reads, e.g. "Forme"
     param: str  # the query parameter, e.g. "filter.p.m.custom.shape"
+    only: list[str] | None = Field(None, min_length=1)  # value labels to list, e.g. ["Yes"]; the others are never requested
+    # Set flags[flag] = True on the products listed (instead of raw_specs[name]), False on the rest of the listing
+    # when every page of the pass loaded; left unset when one failed (unknown, never a false False).
+    flag: str | None = None
+
+    @field_validator("flag")
+    @classmethod
+    def _identifier(cls, v: str | None) -> str | None:
+        if v is not None and not v.isidentifier():
+            raise ValueError(f"flag must be an identifier, e.g. is_bestseller: {v!r}")
+        return v
 
     @field_validator("param")
     @classmethod

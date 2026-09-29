@@ -300,7 +300,40 @@ def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
         if available is not None:
             variant["in_stock"] = available
         variants[code] = variant
+    if rule.layers == "vto_carousel":
+        by_code = vto_layers(tree)
+        for code, variant in variants.items():
+            if len(layers := by_code.get(_alnum(code), [])) >= 2:  # a single colour says nothing beyond its label
+                variant["layers"] = layers
     return list(variants.values())
+
+
+def _alnum(code: str) -> str:
+    return re.sub(r"[^0-9A-Za-z]", "", code).upper()
+
+
+def vto_layers(tree) -> dict[str, list[str]]:
+    """Acetate layers per variant code from a virtual try-on widget's JSON (<script data-vto-carousel>, Etnia):
+    frames[].variants[] = {variantLabel: "Havana/Blue", sizes: [{frameId: "5 KORE 54O HVBL"}]}. The frameId's last
+    token is the swatch code without its separator ("HVBL" = "HV/BL"), so the key is the code folded to
+    letters and digits. Malformed JSON or entries are skipped, never raised."""
+    out: dict[str, list[str]] = {}
+    for script in tree.cssselect("script[data-vto-carousel]"):
+        try:
+            frames = json.loads(script.text or "").get("frames") or []
+        except (json.JSONDecodeError, AttributeError):
+            continue
+        for frame in frames if isinstance(frames, list) else ():
+            for v in (frame.get("variants") or []) if isinstance(frame, dict) else ():
+                label = v.get("variantLabel") if isinstance(v, dict) else None
+                if not isinstance(label, str):
+                    continue
+                layers = [part.strip() for part in label.split("/") if part.strip()]
+                for size in v.get("sizes") or []:
+                    frame_id = size.get("frameId") if isinstance(size, dict) else None
+                    if isinstance(frame_id, str) and frame_id.split():
+                        out.setdefault(_alnum(frame_id.split()[-1]), layers)
+    return out
 
 
 def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int = 1) -> list[ListingItem]:

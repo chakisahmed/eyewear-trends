@@ -12,23 +12,32 @@ function priceLine(p: RetailPrice): string {
   return `prix moyen ${money(p.avg, p.currency)}${range} · ${p.priced} prix`;
 }
 
+const COUNTRY_NAMES: Record<string, string> = { TN: "Tunisie", ES: "Espagne", FR: "France", IT: "Italie", PT: "Portugal" };
+
 /** "Présence en boutique": what stores actually stock for this attribute (Shelf vs. Signal). */
 export function RetailPresence({ d }: { d: TrendDetail }) {
   const count = d.retail_sku_count ?? 0;
   const stores = d.retail_store_count ?? 0;
+  const bestsellers = d.retail_bestseller_count ?? 0;
   const types = d.retail_by_type ?? {};
   const sample = d.retail_sample ?? [];
   const label = d.label.toLowerCase();
+  // Titled from the stores actually counted: the Tunisian retailers alone keep the "Marché Tunisien" lens; once a
+  // brand catalog from elsewhere (Etnia Barcelona, Spain) is in the count, the title and note say so.
+  const countries = d.retail_countries ?? [];
+  const tunisianOnly = countries.every(c => c === "TN");
+  const named = countries.map(c => COUNTRY_NAMES[c] ?? c).join(", ");
 
   return (
     <section className="retail" aria-labelledby="retailTitle">
-      {/* All tracked stores are Tunisian today (store_configs.yaml); revisit this label if that changes. */}
       <div className="lens-head">
-        <h2 className="lens-title" id="retailTitle">Marché Tunisien (Boutiques)</h2>
+        <h2 className="lens-title" id="retailTitle">{tunisianOnly ? "Marché Tunisien (Boutiques)" : "Présence en boutique"}</h2>
         <span className="pill lens-tag">Indicateur retardé</span>
         {d.retail_updated_at && <span className="section-note lens-date">Relevé le {dayShort(d.retail_updated_at)}</span>}
         <p className="lens-note">
-          Disponibilité locale : références en rayon chez les enseignes tunisiennes suivies. Ce qui est déjà vendu ici.
+          {tunisianOnly
+            ? "Disponibilité locale : références en rayon chez les enseignes tunisiennes suivies. Ce qui est déjà vendu ici."
+            : `Références en rayon ou en catalogue chez les enseignes et marques suivies (${named}). Ce qui est déjà proposé à la vente.`}
         </p>
       </div>
 
@@ -43,6 +52,7 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
             <p>
               <strong className="num">{num(count)}</strong> référence{count > 1 ? "s" : ""} en boutique
               · {num(stores)} enseigne{stores > 1 ? "s" : ""}
+              {bestsellers > 0 && <> · dont <strong className="num">{num(bestsellers)}</strong> best-seller{bestsellers > 1 ? "s" : ""}</>}
             </p>
             {(d.retail_avg_price ?? []).map(p => <p key={p.currency} className="retail-price">{priceLine(p)}</p>)}
             {d.retail_markdown && (
@@ -76,6 +86,7 @@ export function RetailPresence({ d }: { d: TrendDetail }) {
                   <span className="retail-meta">{p.brand && p.brand !== p.store ? `${p.brand} · ${p.store}` : p.store}</span>
                   <span className="retail-row">
                     <span className="retail-amount num">{p.price != null ? money(p.price, p.currency) : "Prix non affiché"}</span>
+                    {p.is_bestseller && <span className="pill retail-bestseller"><Icon name="up" />Best-seller</span>}
                     {p.out_of_stock && <span className="pill retail-soldout"><Icon name="alert" />Épuisé</span>}
                   </span>
                 </a>

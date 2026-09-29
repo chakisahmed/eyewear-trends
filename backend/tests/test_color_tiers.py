@@ -108,6 +108,24 @@ def test_variant_codes_persist_and_a_resync_updates_them_without_duplicates(cfg)
         assert s.query(ProductTag).count() == before
 
 
+def test_one_layered_variant_code_persists_across_color_and_lamination_tags(cfg):  # noqa: F811
+    init_db()
+    url = f"{BASE}/p/havana-blue"
+    variants = [{"code": "HV/BL", "color": "Havana", "layers": ["Havana", "Blue"]}]
+    rows = lambda s: sorted((t.dimension, t.code, t.supplier_code, t.color_family) for t in s.scalar(
+        select(Product).where(Product.url == url)).tags)
+    with SessionLocal() as s:
+        service = StoreSyncService(s)
+        source = service.source_for(cfg)
+        service.sync(source.id, [ScrapedProduct(url=url, name="Monture", flags={"variants": variants})])
+        expected = [("color", "blue", "HV/BL", "blue"), ("color", "tortoiseshell", "HV/BL", "tortoiseshell"),
+                    ("color", "two_tone", "HV/BL", "two_tone"), ("lamination", "blue+tortoiseshell", "HV/BL", None)]
+        assert rows(s) == expected                                             # lamination tags carry no color tier
+        service.sync(source.id, [ScrapedProduct(url=url, name="Monture", flags={"variants": variants})])
+        service.retag_all(source.id)
+        assert rows(s) == expected                                             # re-sync and retag: no duplicates
+
+
 def test_a_plain_color_tag_gets_family_and_hex_and_no_supplier_code(cfg):  # noqa: F811
     init_db()
     url = f"{BASE}/p/plain-color"

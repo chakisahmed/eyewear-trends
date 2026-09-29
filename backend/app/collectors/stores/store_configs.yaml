@@ -136,6 +136,10 @@ stores:
         - { name: "Forme", param: "filter.p.m.custom.shape" }        # CAT-EYE/BUTTERFLY, OVAL, PANTOS, PILOT…
         - { name: "Gender", param: "filter.v.m.custom.gender" }      # Man, Woman, Unisex
         - { name: "Materials", param: "filter.p.m.custom.material" } # Acetate, Metal, Combination
+        # Best-sellers: a variant-level filter (Yes / No); only "Yes" is listed (25 of 315 optical, 2 pages).
+        # Frame-level flag: which colour sells cannot be read reliably (the filtered card links the default swatch).
+        # The product breadcrumb "Bestsellers" is not a signal: frames outside this filter show it too.
+        - { name: "Best-seller", param: "filter.v.m.custom.best_seller", only: ["Yes"], flag: is_bestseller }
     product_pages:
       enabled: true                    # prices and color variants live on the product page
       max_products: 800
@@ -147,6 +151,9 @@ stores:
       code: { attr: value }
       label: { attr: [data-option-display-label, aria-label], regex: '^(.*?)(?:\s+-\s+Notify me)?$' }
       available: { attr: data-option-available }
+      # The swatch names only the main colour ("Havana"); the try-on widget's JSON names every acetate layer
+      # ("Havana/Blue", frameId "5 KORE 54O HVBL" = code HV/BL) -> variant.layers, for laminations and Bicolore.
+      layers: vto_carousel
 
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
