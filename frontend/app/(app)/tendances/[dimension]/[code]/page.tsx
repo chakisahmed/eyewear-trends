@@ -51,10 +51,12 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
     ? `${d.dimension_label} · en hausse depuis ${d.rising_streak} semaines`
     : `${d.dimension_label} · ${status.label.toLowerCase()}`;
 
-  const mentionsSeries: Series[] = [{ id: "mentions", label: "Mentions", values: d.mentions, slot: 0 }];
+  // Color trends are drawn in their real hex; the two search series then share it (France solid, Monde dashed).
+  const hex = dimension === "color" ? d.hex : null;
+  const mentionsSeries: Series[] = [{ id: "mentions", label: "Mentions", values: d.mentions, slot: 0, hex }];
   const searchSeries: Series[] = [
-    { id: "fr", label: meta.market_geo === "FR" ? "France" : meta.market_geo, values: d.search.fr, slot: 0 },
-    { id: "world", label: "Monde", values: d.search.world, slot: 1 },
+    { id: "fr", label: meta.market_geo === "FR" ? "France" : meta.market_geo, values: d.search.fr, slot: 0, hex },
+    { id: "world", label: "Monde", values: d.search.world, slot: 1, hex, dash: !!hex },
   ];
   const hasSearch = searchSeries.some(s => s.values.some(v => v != null));
 

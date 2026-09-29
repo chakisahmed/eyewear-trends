@@ -149,6 +149,8 @@
   --series-4: #EDA100;
   --series-5: #E87BA4;
   --series-6: #008300;
+  --is-light: 1;
+  --is-dark: 0;
   --shadow-card: 0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05);
   --radius-control: 6px;
   --radius-card: 12px;

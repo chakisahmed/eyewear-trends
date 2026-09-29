@@ -48,7 +48,7 @@ export default async function DemandPage({ searchParams }: PageProps<"/demande">
             {cards.map(s => {
               const t = trendOf[s.code];
               return (
-                <MiniDemandCard key={s.code} label={s.label} geoLabel={geoLabel}
+                <MiniDemandCard key={s.code} label={s.label} geoLabel={geoLabel} hex={dim === "color" ? s.hex : null}
                                 weeks={demand.weeks.slice(from)} fr={s.fr.slice(from)} world={s.world.slice(from)}
                                 head={<>
                                   <Visual dimension={dim} attr={s} />

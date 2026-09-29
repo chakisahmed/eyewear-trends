@@ -2,6 +2,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { guardStyle, lineColor } from "@/lib/chroma";
 import { pct, NARROW_NBSP } from "@/lib/format";
 import { STATUS } from "@/lib/taxonomy";
 import type { Attribute, Dimension, Status, Tone } from "@/lib/types";
@@ -36,8 +37,10 @@ export function StatusBadge({ status, momentum, tone }: { status: Status; moment
 
 /** 8-week sparkline. Scale rule from the brief: range ≥ 60 % of the peak, centered, never below 0,
  *  so a stable 8, 8, 9, 8 looks flat while 3 → 14 fills the height. */
-export function Sparkline({ values, label, width = 72, height = 24, className = "spark" }: {
+export function Sparkline({ values, label, width = 72, height = 24, className = "spark", hex }: {
   values: number[]; label: string; width?: number; height?: number; className?: string;
+  /** Real frame color for the color dimension: the line inherits it (with a contrast halo where needed). */
+  hex?: string | null;
 }) {
   const pts = values.length > 1 ? values : [values[0] ?? 0, values[0] ?? 0];
   const p = 3, lo = Math.min(...pts), hi = Math.max(...pts);
@@ -46,11 +49,14 @@ export function Sparkline({ values, label, width = 72, height = 24, className = 
   const step = (width - 2 * p) / (pts.length - 1);
   const coords = pts.map((v, i) => [p + i * step, height - p - ((v - min) / span) * (height - 2 * p)]);
   const last = coords[coords.length - 1];
+  const line = coords.map(c => c.map(n => n.toFixed(2)).join(",")).join(" ");
+  const real = lineColor(hex);
+  const stroke = real ?? "var(--series-1)";
   return (
-    <svg className={className} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
-      <polyline points={coords.map(c => c.map(n => n.toFixed(2)).join(",")).join(" ")} fill="none"
-                stroke="var(--series-1)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r={2.5} fill="var(--series-1)" />
+    <svg className={className} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} style={guardStyle(real)}>
+      {real && <polyline className="halo" points={line} strokeWidth={4.5} />}
+      <polyline points={line} fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r={2.5} fill={stroke} className={real ? "halo-ring" : undefined} />
     </svg>
   );
 }
@@ -62,7 +68,8 @@ export function TrendRowLink({ href, dimension, row, spark, status, momentum, to
     <Link className="trend-row" href={href}>
       <Visual dimension={dimension} attr={row} />
       <span className="trend-label">{row.label}</span>
-      <Sparkline values={spark} label={`${row.label} : tendance sur ${spark.length} semaines, ${STATUS[status].label.toLowerCase()}`} />
+      <Sparkline values={spark} hex={dimension === "color" ? row.hex : null}
+                 label={`${row.label} : tendance sur ${spark.length} semaines, ${STATUS[status].label.toLowerCase()}`} />
       <StatusBadge status={status} momentum={momentum} tone={tone} />
     </Link>
   );

@@ -35,6 +35,8 @@
   --series-4: #EDA100;
   --series-5: #E87BA4;
   --series-6: #008300;
+  --is-light: 1;
+  --is-dark: 0;
 
   --shadow-card: 0 1px 3px rgba(20,23,28,.06), 0 4px 12px rgba(20,23,28,.05);
   --radius-control: 6px;
@@ -78,6 +80,8 @@
     --series-4: #C98500;
     --series-5: #D55181;
     --series-6: #008300;
+    --is-light: 0;
+    --is-dark: 1;
     --shadow-card: none;
   }
 }
@@ -113,6 +117,8 @@
   --series-4: #C98500;
   --series-5: #D55181;
   --series-6: #008300;
+  --is-light: 0;
+  --is-dark: 1;
   --shadow-card: none;
 }
 
@@ -727,3 +733,13 @@ button { font-family: inherit; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+
+/* Contrast guard for chart lines drawn in a real frame color (lib/chroma.ts). A line whose hex has under 3:1
+   contrast on the card in the current theme gets a soft halo in the text color; other lines stay untouched. */
+.halo, .halo-ring, .halo-dot {
+  --need: calc(var(--need-l, 0) * var(--is-light) + var(--need-d, 0) * var(--is-dark));
+}
+.halo { fill: none; stroke: var(--text-secondary); stroke-opacity: calc(var(--need) * .55); stroke-linecap: round; stroke-linejoin: round; }
+.halo-ring { stroke: var(--text-secondary); stroke-width: 1.5; stroke-opacity: calc(var(--need) * .75); }
+.halo-dot { box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-secondary) calc(var(--need) * 75%), transparent); }
