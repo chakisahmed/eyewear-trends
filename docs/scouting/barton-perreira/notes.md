@@ -40,6 +40,10 @@ Site: <https://bartonperreira.com>   Scouted by: Ahmed (answers) and the first p
   `Bridge Size - 21mm`, `Temple Length - 145mm`. The shape is in the title ("Bold Cateye Sunglasses") and in the filters.
 - Badges (best-seller, new, sold out): stock is per colourway (`InStock` / `OutOfStock` in the structured data); no best-seller flag seen
 
+## Status
+- **Crawler config written** (Step 15, `docs/phase2-step15-barton-perreira-plan.md`), tested offline. **Not yet crawled**: the first live crawl
+  (`python -m app.cli crawl-store bartonperreira.com`, about 20 minutes and 150 MB) is run from a terminal, then `retag-products`.
+
 ## Anything else
 - The description of the Euclid: "titanium temples encased in translucent acetate".
 - Sizes: the earlier page was `Banks (48)`, so a model may exist as one product per size (`Banks (48)`, `Banks (52)`?). To check before counting frames.

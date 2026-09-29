@@ -12,7 +12,7 @@ function priceLine(p: RetailPrice): string {
   return `prix moyen ${money(p.avg, p.currency)}${range} · ${p.priced} prix`;
 }
 
-const COUNTRY_NAMES: Record<string, string> = { TN: "Tunisie", ES: "Espagne", FR: "France", IT: "Italie", PT: "Portugal" };
+const COUNTRY_NAMES: Record<string, string> = { TN: "Tunisie", ES: "Espagne", FR: "France", IT: "Italie", PT: "Portugal", US: "États-Unis", GB: "Royaume-Uni" };
 
 /** "Présence en boutique": what stores actually stock for this attribute (Shelf vs. Signal). */
 export function RetailPresence({ d }: { d: TrendDetail }) {

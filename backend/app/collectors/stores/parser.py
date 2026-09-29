@@ -289,8 +289,51 @@ def facet_values(html: str, param: str) -> list[tuple[str, str]]:
     return list(out.items())
 
 
-def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
-    """[{"code": "HV/BL", "color": "Havana", "in_stock": True}, …] in page order, one entry per code."""
+def model_key(url: str, model_regex: str | None) -> str | None:
+    """A product's model key (group 1 of model_regex on its URL), or None when it has none: "…/products/norton-48" ->
+    "norton", so the sizes of one model share a key."""
+    m = re.search(model_regex, url) if model_regex else None
+    return m.group(1) if m else None
+
+
+def offer_variants(node: dict | None) -> list[dict[str, Any]]:
+    """Variants from a Product's JSON-LD offers: [{"code": sku, "color": name, "in_stock": bool}], one per sku, in
+    page order. Offers without a sku or a name are skipped; missing or malformed offers give []. Prices are not read."""
+    offers = (node or {}).get("offers")
+    out: dict[str, dict[str, Any]] = {}
+    for offer in offers if isinstance(offers, list) else [offers]:
+        if not isinstance(offer, dict):
+            continue
+        sku, name = offer.get("sku"), offer.get("name")
+        if not isinstance(sku, str) or not sku.strip() or not isinstance(name, str) or not name.strip():
+            continue
+        variant: dict[str, Any] = {"code": sku.strip(), "color": " ".join(name.split())}
+        availability = offer.get("availability")
+        if isinstance(availability, str):
+            variant["in_stock"] = availability.rsplit("/", 1)[-1].lower() not in ("outofstock", "soldout", "discontinued")
+        out.setdefault(variant["code"], variant)
+    return list(out.values())
+
+
+def split_color(variants: list[dict[str, Any]], split) -> None:
+    """Apply a ColorSplit in place: color = the frame's part; all parts kept when the name has several. A name without
+    the requested part loses its color rather than getting a wrong one."""
+    for variant in variants:
+        label = variant.get("color")
+        if not isinstance(label, str):
+            continue
+        parts = [p.strip() for p in label.split(split.sep)]
+        if len(parts) > 1:
+            variant["parts"] = parts
+        if split.color < len(parts) and parts[split.color]:
+            variant["color"] = parts[split.color]
+        else:
+            del variant["color"]
+
+
+def parse_variants(tree, rule: VariantsRule, node: dict | None = None) -> list[dict[str, Any]]:
+    """[{"code": "HV/BL", "color": "Havana", "in_stock": True}, …] in page order, one entry per code. `node`: the
+    page's raw JSON-LD Product, for a rule that reads offers."""
     def value(row, r: ValueRule | None) -> str | None:
         if r is None:
             return None
@@ -298,7 +341,9 @@ def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
         return _read(el, r) if el is not None else None
 
     variants: dict[str, dict[str, Any]] = {}
-    for row in tree.cssselect(rule.rows):
+    if rule.json_ld_offers:
+        variants = {v["code"]: v for v in offer_variants(node)}
+    for row in tree.cssselect(rule.rows) if rule.rows else ():
         code = value(row, rule.code)
         if not code or code in variants:
             continue
@@ -320,7 +365,10 @@ def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
             code = (m.group(1) if m.groups() else m.group(0)).strip() if m else title.strip()
             if code in variants:
                 variants[code].setdefault("id", variant_id)
-    return list(variants.values())
+    result = list(variants.values())
+    if rule.color_split:
+        split_color(result, rule.color_split)
+    return result
 
 
 SHOPIFY_META = re.compile(r"\bvar meta\s*=\s*(\{.*?\});", re.S)
@@ -422,7 +470,7 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
         specs = described | specs  # a table value wins over the description on the same label
     if specs:
         flags["raw_specs"] = specs
-    if cfg.variants and (variants := parse_variants(tree, cfg.variants)):
+    if cfg.variants and (variants := parse_variants(tree, cfg.variants, raw_nodes[i] if raw_nodes else None)):
         flags["variants"] = variants
         stock = [v["in_stock"] for v in variants if "in_stock" in v]
         if stock:  # sold out only when no variant is available; an explicit out_of_stock flag rule wins

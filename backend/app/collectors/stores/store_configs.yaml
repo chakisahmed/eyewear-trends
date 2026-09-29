@@ -198,6 +198,41 @@ stores:
       code: { regex: '^(\S+)' }        # BM02 (Palier 3); its colour comes from the colour filter pass
       ids: shopify_analytics
 
+  # Barton Perreira (USA, Shopify), scouted 2026-09-29 (docs/scouting/barton-perreira):
+  # - two collections of about 116 and 122 products, 54 per page, <link rel="next"> paging;
+  # - cards are <product-item> elements linking /products/<slug>;
+  # - facets shape and material (variant-level metafields, but the same for every colour), one per request; robots.txt
+  #   forbids sort_by, two filter parameters in one URL, and "+" in a path. "Cat Eye" and "Cateye" are two values;
+  # - the product page's JSON-LD has one Offer per colourway (name, sku, price, availability): that is the variants
+  #   source. The colour name is compound, front / lens / temples / finish: only the front is the frame's colour;
+  # - some models are one product per size (norton-46, norton-48): one product per model, the size out of the name;
+  # - weight: a filtered page is about 195 KB per product listed, so a crawl downloads roughly 150 MB.
+  bartonperreira.com:
+    name: "Barton Perreira"
+    base_url: "https://bartonperreira.com"
+    lang: en
+    country: US                        # a brand catalog, not the Tunisian market lens
+    default_brand: "Barton Perreira"
+    delay_s: 1.5
+    name_strip: '\s*\(\d{2}\)$'         # "Banks (48)" -> "Banks"
+    listing:
+      urls:
+        - { url: "/collections/optical-collection", categories: "Optique" }
+        - { url: "/collections/sunglass-collection", categories: "Solaire" }
+      pagination: { next: "link[rel=next]", max_pages: 20 }
+      product: "product-item"
+      link: "a[href^='/products/']"
+      model_regex: '^https://[^/]+/products/(.+?)(?:-\d{2})?$'   # norton-46, norton-48 -> "norton"
+      facets:
+        - { name: "Shape", param: "filter.v.m.filter.shape" }          # Aviator, Butterfly, Cat Eye, Cateye, Hexagonal, Rectangle, Round, Square
+        - { name: "Materials", param: "filter.v.m.filter.material" }   # Acetate, Mixed Materials, Titanium
+    product_pages:
+      enabled: true                    # JSON-LD: price, and one Offer per colourway
+      max_products: 400
+    variants:
+      json_ld_offers: true
+      color_split: { sep: " / ", color: 0 }   # "Absinthe / Clear / Chestnut / Antique Gold": the frame is Absinthe
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

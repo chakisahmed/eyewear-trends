@@ -186,3 +186,13 @@ def test_face_shape_is_never_a_frame_shape():
     specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}
     assert codes(tag_product("Lunettes de Vue Femme GUCCI GG1003OA", {"raw_specs": specs})) == {
         ("shape", "square"), ("audience", "women")}                         # no round, no oval from VISAGE
+
+
+def test_rules_version_11_barton_perreira_colour_names_in_variants_and_both_cat_eye_spellings():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 11
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Cateye"}})) == {("shape", "cat_eye")}
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Cat Eye"}})) == {("shape", "cat_eye")}
+    for label in ("Chestnut", "Espresso", "Hickory"):
+        assert codes(tag_product("X", {"variants": [{"code": "C", "color": label}]})) == {("color", "brown")}, label
+    assert codes(tag_product("Chestnut hickory espresso", None)) == set()                       # colour aliases: specs and variants only

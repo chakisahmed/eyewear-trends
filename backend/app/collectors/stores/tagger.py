@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 10  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 11  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -40,6 +40,10 @@ RULES_VERSION = 10  # stored with each tag; bump when the rules below change, th
 # v9: front / temple material spec labels (morel.com). Its "Type" (Rimmed / Semi-rimless / Rimless) is deliberately
 #     NOT a label: "semi-rimless" would match rimless.
 # v10: Morel vocabulary from its first crawl, specs and variants only: "Almond" -> oval, "Ruthenium" -> grey.
+# v11: Barton Perreira, variants only: the plain colour names "Chestnut", "Espresso" and "Hickory" -> brown ("Hickory
+#      Gradient" is also Bicolore: "gradient" is a taxonomy synonym). Its marketing colour names are not guessed: they
+#      are added from the crawl's report of front colours with no family. ("Cateye", its second shape spelling, is
+#      already a taxonomy synonym.)
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -62,7 +66,8 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal")),
     "color": (("carey", "tortoiseshell"),  # Hawkers' word for tortoiseshell
               ("army", "green"), ("petrol", "blue"),  # Etnia's color names
-              ("ruthenium", "grey")),  # Morel: a dark grey metal plating
+              ("ruthenium", "grey"),  # Morel: a dark grey metal plating
+              ("chestnut", "brown"), ("espresso", "brown"), ("hickory", "brown")),  # Barton Perreira
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
               ("almond", "oval")),  # Morel: a softly pointed oval

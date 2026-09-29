@@ -99,12 +99,24 @@ class ValueRule(_Strict):
         return check_regex(v)
 
 
+class ColorSplit(_Strict):
+    """A compound color name ("Absinthe / Clear / Chestnut / Antique Gold": front / lens / temples / finish): only the
+    part at `color` is the variant's color (the frame's); every part is kept as variant["parts"] for later."""
+    sep: str = Field(" / ", min_length=1)
+    color: int = Field(0, ge=0, le=5)
+
+
 class VariantsRule(_Strict):
     """Product page color variants -> flags["variants"] = [{"code", "color", "in_stock"}]. The code is the store's
     own commercial code (Palier 3, kept verbatim); the color is the store's own name for it, which the tagger maps
-    to a family. Nothing is decoded from the code itself."""
-    rows: str  # one element per variant, e.g. a color swatch input
-    code: ValueRule
+    to a family. Nothing is decoded from the code itself.
+
+    Two sources, exactly one per store: markup rows (`rows` + `code`), or the product's JSON-LD offers
+    (`json_ld_offers`: one Offer per color, sku = code, name = color, availability = stock)."""
+    rows: str | None = None  # one element per variant, e.g. a color swatch input
+    code: ValueRule | None = None
+    json_ld_offers: bool = False
+    color_split: ColorSplit | None = None
     label: ValueRule | None = None
     available: ValueRule | None = None  # "true" / "false"
     # Acetate layers of a multi-colour variant ("Havana/Blue") -> variant["layers"], from a named reader since the
@@ -117,8 +129,19 @@ class VariantsRule(_Strict):
 
     @field_validator("rows")
     @classmethod
-    def _css(cls, v: str) -> str:
-        return check_css(v)
+    def _css(cls, v: str | None) -> str | None:
+        return check_css(v) if v is not None else v
+
+    @model_validator(mode="after")
+    def _one_source(self) -> VariantsRule:
+        markup = self.rows is not None or self.code is not None
+        if markup and self.json_ld_offers:
+            raise ValueError("variants: use either 'rows' + 'code' or 'json_ld_offers', not both")
+        if not markup and not self.json_ld_offers:
+            raise ValueError("variants: needs 'rows' + 'code', or 'json_ld_offers: true'")
+        if markup and (self.rows is None or self.code is None):
+            raise ValueError("variants: 'rows' and 'code' go together")
+        return self
 
 
 class Pagination(_Strict):
@@ -178,6 +201,10 @@ class ListingRule(_Strict):
     product: str  # one element per product card
     link: str  # the product page link inside a card (href)
     url_regex: str | None = None  # keep group 1 of each (absolute) product link, e.g. drop a collection prefix and ?variant=
+    # Group 1 = a product's model key, for stores that sell one model as one product per size ("/products/norton-46",
+    # "/products/norton-48"): only the first product of each key is kept, so a model counts once. The others are
+    # still listed (on the shelf, never dropped) but not fetched or stored.
+    model_regex: str | None = None
     facets: list[Facet] = []
 
     @field_validator("product", "link")
@@ -185,11 +212,11 @@ class ListingRule(_Strict):
     def _css(cls, v: str) -> str:
         return check_css(v)
 
-    @field_validator("url_regex")
+    @field_validator("url_regex", "model_regex")
     @classmethod
     def _compiles(cls, v: str | None) -> str | None:
         if v is not None and re.compile(check_regex(v)).groups < 1:
-            raise ValueError(f"url_regex needs a capture group: {v!r}")
+            raise ValueError(f"regex needs a capture group: {v!r}")
         return v
 
 
@@ -213,8 +240,18 @@ class ScraperConfig(_Strict):
     specs: SpecsRule | None = None  # product page table -> flags["raw_specs"]
     variants: VariantsRule | None = None  # product page color variants -> flags["variants"]
     description_specs: bool = False  # also read "Label : value" pairs from the JSON-LD description
+    # A regex removed from the end of every product name, e.g. the size in "Banks (48)": with one product per model
+    # (ListingRule.model_regex) the size is not part of the frame's name.
+    name_strip: str | None = None
     delay_s: float = Field(1.5, ge=0.5)  # politeness floor between requests
     crawl_every_days: int = Field(7, ge=1, le=90)  # `crawl-stores` re-crawls the store once its last complete crawl is this old
+
+    @field_validator("name_strip")
+    @classmethod
+    def _strip_regex(cls, v: str | None) -> str | None:
+        if v is not None:
+            re.compile(check_regex(v))
+        return v
 
     @field_validator("default_currency")
     @classmethod

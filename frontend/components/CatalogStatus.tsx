@@ -4,7 +4,7 @@ import { ago, num, pct } from "@/lib/format";
 import { DIMENSION_TABS } from "@/lib/taxonomy";
 import type { Catalogs } from "@/lib/types";
 
-const COUNTRY_NAMES: Record<string, string> = { TN: "Tunisie", ES: "Espagne", FR: "France", IT: "Italie", PT: "Portugal" };
+const COUNTRY_NAMES: Record<string, string> = { TN: "Tunisie", ES: "Espagne", FR: "France", IT: "Italie", PT: "Portugal", US: "États-Unis", GB: "Royaume-Uni" };
 const DIM_SINGULAR: Record<string, string> = { shape: "Forme", color: "Couleur", material: "Matière", style: "Style" };
 
 /** "Catalogues et boutiques suivis": can the store data be trusted (state of each store's crawls), and what changed in it

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from collections.abc import AsyncIterator
 from contextlib import aclosing
 from typing import Any
@@ -21,7 +22,7 @@ from pydantic import ValidationError
 
 from app.collectors.stores.config import Facet, ListingUrl, ScraperConfig
 from app.collectors.stores.parser import (
-    ListingItem, facet_values, merge, next_page_url, parse_listing, parse_product_page,
+    ListingItem, facet_values, merge, model_key, next_page_url, parse_listing, parse_product_page,
 )
 from app.collectors.stores.schemas import CrawlReport, FacetGap, ScrapedProduct, db_url_of
 from app.config import settings
@@ -162,6 +163,7 @@ class BaseStoreCrawler:
     async def listing_items(self) -> list[ListingItem]:
         cfg, items, report = self.config, [], self.report
         by_url: dict[str, ListingItem] = {}
+        seen_models: set[str] = set()  # model keys kept so far (ListingRule.model_regex)
         pagination = cfg.listing.pagination
         max_pages = pagination.max_pages if pagination else 1
         via_next = pagination is not None and pagination.param is None  # pages are reached by following links
@@ -184,9 +186,14 @@ class BaseStoreCrawler:
                             report.problems.append(f"{start}: first page listed nothing")
                         last = (page, url, html, len(found))
                         for item in found:
-                            listed.add(item.url)
                             if stored := db_url_of(item.url):
-                                report.listed.add(stored)
+                                report.listed.add(stored)  # on the shelf, kept or not
+                            key = model_key(item.url, cfg.listing.model_regex)
+                            if key is not None and item.url not in by_url and key in seen_models:
+                                continue  # another size of a model already kept: not fetched, not stored, never dropped
+                            if key is not None:
+                                seen_models.add(key)
+                            listed.add(item.url)
                             if item.url not in by_url:
                                 by_url[item.url] = item
                                 item.rank = len(items) + 1
@@ -278,6 +285,8 @@ class BaseStoreCrawler:
                 flags["variants"] = [v | {"color": variant_colors[str(v["id"])]}
                                      if isinstance(v, dict) and "color" not in v and str(v.get("id")) in variant_colors else v
                                      for v in flags["variants"]]
+            if cfg.name_strip and fields.get("name"):
+                fields["name"] = re.sub(cfg.name_strip, "", fields["name"]).strip() or fields["name"]
             fields = self.postprocess({**fields, "url": item.url, "rank": item.rank, "flags": flags or None})
             try:
                 products.append(ScrapedProduct(**fields))
