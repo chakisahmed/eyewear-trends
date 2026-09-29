@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, text, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -54,6 +54,7 @@ class Product(Base):
     """A store product (Phase 2: store crawlers)."""
 
     __tablename__ = "products"
+    __table_args__ = (Index("ix_products_source_id_is_active", "source_id", "is_active"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
@@ -66,7 +67,12 @@ class Product(Base):
     rank: Mapped[int | None] = mapped_column(Integer)
     flags: Mapped[dict | None] = mapped_column(JSON)  # {"is_bestseller": True, "raw_specs": {...}}
     image_url: Mapped[str | None] = mapped_column(String(1000))
-    seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)  # last seen
+    # Catalog history: first_seen_at is set once, at insert; is_active means "in the store's latest complete crawl";
+    # dropped_at is when a crawl noticed the product gone (cleared if it returns).
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    is_active: Mapped[bool] = mapped_column(default=True, server_default=true())
+    dropped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     tags: Mapped[list["ProductTag"]] = relationship(back_populates="product", cascade="all, delete-orphan")
 
