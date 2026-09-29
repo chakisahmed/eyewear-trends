@@ -1,0 +1,3 @@
+User-Agent: *
+Disallow:
+Sitemap: https://www.silhouette.com/sitemap.xml
