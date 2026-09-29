@@ -12,7 +12,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import parse_qsl, urljoin, urlsplit
 
 from lxml import html as lxml_html
 
@@ -34,6 +34,7 @@ class ListingItem:
     json_ld: dict[str, Any] = field(default_factory=dict)
     css: dict[str, Any] = field(default_factory=dict)
     flags: dict[str, Any] = field(default_factory=dict)
+    variant_id: str | None = None  # the card link's ?variant= (Shopify: the variant matching a variant-level filter)
 
 
 @dataclass
@@ -256,10 +257,18 @@ def _tree(html: str):
 
 
 def canonical_url(url: str, url_regex: str | None) -> str:
-    """The product's identity URL: group 1 of url_regex made absolute ("/collections/sun/products/izzi?variant=1"
-    -> "/products/izzi"), so one frame listed in two collections, or once per color, is one product."""
+    """The product's identity URL: the capture groups of url_regex, joined and made absolute
+    ("/collections/sun/products/izzi?variant=1" -> "/products/izzi"; with two groups
+    "/en/collections/optical/products/agathe1" -> "/en/products/agathe1"), so one frame listed in two collections,
+    or once per color, is one product."""
     m = re.search(url_regex, url) if url_regex else None
-    return urljoin(url, m.group(1)) if m and m.group(1) else url
+    path = "".join(g for g in m.groups() if g) if m else ""
+    return urljoin(url, path) if path else url
+
+
+def link_variant_id(url: str) -> str | None:
+    """The `variant` query parameter of a product link, if any."""
+    return next((v for k, v in parse_qsl(urlsplit(url).query) if k == "variant" and v), None)
 
 
 def facet_values(html: str, param: str) -> list[tuple[str, str]]:
@@ -305,7 +314,33 @@ def parse_variants(tree, rule: VariantsRule) -> list[dict[str, Any]]:
         for code, variant in variants.items():
             if len(layers := by_code.get(_alnum(code), [])) >= 2:  # a single colour says nothing beyond its label
                 variant["layers"] = layers
+    if rule.ids == "shopify_analytics":
+        for variant_id, title in shopify_variant_titles(tree).items():
+            m = re.search(rule.code.regex, title) if rule.code.regex else None
+            code = (m.group(1) if m.groups() else m.group(0)).strip() if m else title.strip()
+            if code in variants:
+                variants[code].setdefault("id", variant_id)
     return list(variants.values())
+
+
+SHOPIFY_META = re.compile(r"\bvar meta\s*=\s*(\{.*?\});", re.S)
+
+
+def shopify_variant_titles(tree) -> dict[str, str]:
+    """{variant id: variant title} from Shopify's analytics metadata (`var meta = {"product": {"variants": [{"id",
+    "public_title"}]}}`), present on every Shopify storefront. Only the id and the title are read, never the price.
+    A missing or malformed block gives {}."""
+    for script in tree.cssselect("script"):
+        m = SHOPIFY_META.search(script.text or "")
+        if not m:
+            continue
+        try:
+            variants = json.loads(m.group(1)).get("product", {}).get("variants") or []
+        except (json.JSONDecodeError, AttributeError):
+            return {}
+        return {str(v["id"]): v["public_title"] for v in variants
+                if isinstance(v, dict) and v.get("id") and isinstance(v.get("public_title"), str)}
+    return {}
 
 
 def _alnum(code: str) -> str:
@@ -352,10 +387,12 @@ def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int 
         href = (links[0].get("href") or "").strip() if links else ""
         if not href:
             continue
-        url = canonical_url(urljoin(page_url, href), cfg.listing.url_regex)
+        raw_url = urljoin(page_url, href)
+        url = canonical_url(raw_url, cfg.listing.url_regex)
         items.append(ListingItem(
             url=url, rank=start_rank + len(items), json_ld=by_url.get(url, {}),
             css=css_fields(card, cfg.fields, "card", page_url), flags=css_flags(card, cfg, "card"),
+            variant_id=link_variant_id(raw_url),
         ))
     return items
 

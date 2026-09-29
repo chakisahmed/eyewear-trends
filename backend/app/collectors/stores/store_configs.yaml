@@ -155,6 +155,49 @@ stores:
       # ("Havana/Blue", frameId "5 KORE 54O HVBL" = code HV/BL) -> variant.layers, for laminations and Bicolore.
       layers: vto_carousel
 
+  # Morel (France), Shopify, the brand's own catalog (Morel, 1880 and its lines): a creator brand, not a Tunisian
+  # shelf. Checked 2026-09-29, /en/ catalog:
+  # - listings: 48 product-card per page, <link rel=next>; optical < 8 pages, sunglasses 2+. Filters: gender and
+  #   material (frame level), color_name (variant level, 16 bilingual labels: Bleu / Blue, Noir / Black…);
+  # - product pages: no JSON-LD Product and NO price shown to shoppers (only in Shopify's analytics metadata, which
+  #   is never read for prices: Morel is presence-only). A spec table gives Shape, Front / Temple material, Gender;
+  # - colour variants are radios labelled with the code only ("BM02 AGATHE 1"). The colour filter links the matching
+  #   variant (?variant=), and Shopify's variant list gives id -> "RP01 AGATHE 1": that is how a code gets its
+  #   colour (per_variant + ids). Nothing is decoded from the code itself;
+  # - robots.txt: same Shopify rules as Etnia (no sort_by, no "+"); one filter per request.
+  morel.com:
+    name: "Morel"
+    base_url: "https://morel.com"
+    lang: en
+    country: FR
+    default_brand: "Morel"             # no JSON-LD: every frame is the brand's own
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/en/collections/optical", categories: "Optique" }
+        - { url: "/en/collections/sunglasses", categories: "Solaire" }
+      pagination: { next: "link[rel=next]", max_pages: 20 }
+      product: "product-card"
+      link: "a.product-title"
+      url_regex: '(/en)/collections/[^/]+(/products/[^/?#]+)'   # -> /en/products/agathe1
+      facets:
+        - { name: "Gender", param: "filter.p.m.mymorel.gender" }            # Man, Woman
+        - { name: "Materials", param: "filter.p.m.mymorel.material" }       # Acetate, Combined, Stainless steel, Titanium, Wood
+        - { name: "Couleur", param: "filter.v.m.mymorel.color_name", per_variant: true }
+    product_pages:
+      enabled: true                    # the spec table (shape, materials) and the variant codes live there
+      max_products: 800
+    fields:
+      name: { css: "a.product-title" }   # "AGATHE 1"
+    specs:
+      rows: "div.accordion__content table tr"
+      key: "td:first-child strong"
+      value: "td:nth-child(2)"
+    variants:
+      rows: "label[for*='-option1-']"  # "BM02 AGATHE 1"
+      code: { regex: '^(\S+)' }        # BM02 (Palier 3); its colour comes from the colour filter pass
+      ids: shopify_analytics
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

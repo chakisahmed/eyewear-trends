@@ -181,6 +181,8 @@ class BaseStoreCrawler:
                             flagged.add(item.url)
                         else:
                             add_label(by_url[item.url].flags.setdefault("raw_specs", {}), facet.name, label)
+                        if facet.per_variant and item.variant_id:  # the variant this label matched
+                            by_url[item.url].flags.setdefault("variant_colors", {}).setdefault(item.variant_id, label)
             log.info("%s: facet %s = %s, %d products", cfg.name, facet.name, label, matched)
         if facet.flag and complete:
             for url in listed - flagged:
@@ -216,6 +218,12 @@ class BaseStoreCrawler:
             specs = item.flags.get("raw_specs", {}) | (page.flags.get("raw_specs", {}) if page else {})
             if specs:
                 flags["raw_specs"] = specs
+            # per-variant labels from a variant-level filter reach the variant with that id; the join map is dropped
+            variant_colors = flags.pop("variant_colors", None) or {}
+            if variant_colors and isinstance(flags.get("variants"), list):
+                flags["variants"] = [v | {"color": variant_colors[str(v["id"])]}
+                                     if isinstance(v, dict) and "color" not in v and str(v.get("id")) in variant_colors else v
+                                     for v in flags["variants"]]
             fields = self.postprocess({**fields, "url": item.url, "rank": item.rank, "flags": flags or None})
             try:
                 products.append(ScrapedProduct(**fields))

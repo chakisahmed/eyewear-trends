@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 8  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 10  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -37,12 +37,17 @@ RULES_VERSION = 8  # stored with each tag; bump when the rules below change, the
 #     a pattern, not a hue.
 # v8: multi-layer acetate variants (flags["variants"][].layers, e.g. ["Havana", "Blue"]): a color tag per layer,
 #     Bicolore (two_tone), and a non-taxonomy `lamination` tag ("blue+tortoiseshell"), all with the variant code.
+# v9: front / temple material spec labels (morel.com). Its "Type" (Rimmed / Semi-rimless / Rimless) is deliberately
+#     NOT a label: "semi-rimless" would match rimless.
+# v10: Morel vocabulary from its first crawl, specs and variants only: "Almond" -> oval, "Ruthenium" -> grey.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
 SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
     "materials": "material", "material": "material", "matiere": "material", "matieres": "material",
     "materiau": "material", "materiaux": "material", "matiere du cadre": "material",
+    "front material": "material", "temple material": "material", "matiere face": "material",
+    "matiere branches": "material", "matiere des branches": "material",
     "materiau du cadre": "material", "matiere de la monture": "material", "materiau de la monture": "material",
     "gender": "audience", "genre": "audience", "sexe": "audience", "le sexe": "audience",
     "color": "color", "colour": "color", "couleur": "color", "coloris": "color",
@@ -56,9 +61,11 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
 SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal")),
     "color": (("carey", "tortoiseshell"),  # Hawkers' word for tortoiseshell
-              ("army", "green"), ("petrol", "blue")),  # Etnia's color names
+              ("army", "green"), ("petrol", "blue"),  # Etnia's color names
+              ("ruthenium", "grey")),  # Morel: a dark grey metal plating
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
-              ("pantos square", "square"), ("cat eye butterfly", "cat_eye")),  # Etnia's one-shape labels
+              ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
+              ("almond", "oval")),  # Morel: a softly pointed oval
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),

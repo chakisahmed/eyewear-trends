@@ -110,6 +110,10 @@ class VariantsRule(_Strict):
     # Acetate layers of a multi-colour variant ("Havana/Blue") -> variant["layers"], from a named reader since the
     # source is JSON in a script, not markup: "vto_carousel" = a virtual try-on widget's <script data-vto-carousel>.
     layers: Literal["vto_carousel"] | None = None
+    # Variant ids -> variant["id"], so a listing filter's per-variant labels can reach the right code (Facet.per_variant):
+    # "shopify_analytics" = Shopify's analytics metadata (id + variant title; the code rule's regex is applied to the
+    # title). Prices in that metadata are never read.
+    ids: Literal["shopify_analytics"] | None = None
 
     @field_validator("rows")
     @classmethod
@@ -149,6 +153,9 @@ class Facet(_Strict):
     # Set flags[flag] = True on the products listed (instead of raw_specs[name]), False on the rest of the listing
     # when every page of the pass loaded; left unset when one failed (unknown, never a false False).
     flag: str | None = None
+    # A variant-level filter (Shopify "filter.v.…"): the card links the variant that matched, so also record
+    # flags["variant_colors"][variant id] = label; the crawler hands it to that variant (VariantsRule.ids).
+    per_variant: bool = False
 
     @field_validator("flag")
     @classmethod

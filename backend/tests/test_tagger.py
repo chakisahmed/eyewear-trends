@@ -173,6 +173,14 @@ def test_three_layers_and_no_layers():
     assert layered("Havana") == {("color", "tortoiseshell", "HV/BL")}       # one layer is not a lamination
 
 
+def test_rules_version_10_morel_vocabulary_in_specs_and_variants_only():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 10
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Almond"}})) == {("shape", "oval")}
+    assert codes(tag_product("X", {"variants": [{"code": "RU01", "color": "Ruthenium"}]})) == {("color", "grey")}
+    assert codes(tag_product("Almond edition", None)) == set()                  # free text: no alias
+
+
 def test_face_shape_is_never_a_frame_shape():
     """LaMode lists VISAGE (recommended face shapes: Ovale, Rond...) next to Forme Lunette."""
     specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}
