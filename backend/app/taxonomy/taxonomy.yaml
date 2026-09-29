@@ -100,20 +100,20 @@ dimensions:
       gold:
         fr: Doré
         hex: "#c9a227"
-        synonyms_fr: [doré, dorée, or]
-        synonyms_en: [gold, golden]
+        synonyms_fr: [doré, dorée, or, or rose, or jaune]
+        synonyms_en: [gold, golden, rose gold, pink gold, yellow gold]   # a metal finish, not pink or yellow
         query: {fr: lunettes dorées, en: gold glasses}
       silver:
         fr: Argenté
         hex: "#b8bcc2"
         synonyms_fr: [argenté, argentée, argent, chrome]
-        synonyms_en: [silver, chrome, gunmetal]
+        synonyms_en: [silver, chrome, gunmetal, gun metal]
         query: {fr: lunettes argentées, en: silver glasses}
       brown:
         fr: Marron / Cognac
         hex: "#6b4226"
-        synonyms_fr: [marron, brun, cognac, caramel, chocolat]
-        synonyms_en: [brown, cognac, caramel, chocolate]
+        synonyms_fr: [marron, brun, cognac, caramel, chocolat, ambre, miel]
+        synonyms_en: [brown, cognac, caramel, chocolate, amber, honey]   # translucent acetate tones
         query: {fr: lunettes marron, en: brown glasses}
       beige:
         fr: Beige / Nude
@@ -121,17 +121,68 @@ dimensions:
         synonyms_fr: [beige, nude, crème, champagne]
         synonyms_en: [beige, nude, cream, champagne]
         query: {fr: lunettes beige, en: beige glasses}
+      grey:
+        fr: Gris
+        hex: "#74777b"
+        synonyms_fr: [gris, grise, gris foncé, gris clair, anthracite, graphite, ardoise]
+        synonyms_en: [grey, gray, dark grey, light grey, charcoal, slate]
+        query: {fr: lunettes grises, en: grey glasses}
+      white:
+        fr: Blanc / Ivoire
+        hex: "#f3efe6"
+        synonyms_fr: [blanc, blanche, ivoire, écru, blanc cassé]
+        synonyms_en: [white, ivory, off-white]
+        query: {fr: lunettes blanches, en: white glasses}
+      blue:
+        fr: Bleu
+        hex: "#2b5ea7"
+        synonyms_fr: [bleu, bleue, bleu marine, marine, bleu nuit, bleu ciel, bleu pétrole, bleu électrique]
+        synonyms_en: [blue, navy, cobalt, denim, sky blue, dark blue, light blue, teal, turquoise, petrol blue, electric blue]
+        query: {fr: lunettes bleues, en: blue glasses}
+      red:
+        fr: Rouge / Bordeaux
+        hex: "#a51f2d"
+        synonyms_fr: [rouge, bordeaux, bourgogne, cerise, grenat, lie de vin]
+        synonyms_en: [red, burgundy, cherry, wine, oxblood, crimson, maroon]
+        query: {fr: lunettes rouges, en: red glasses}
+      green:
+        fr: Vert / Kaki
+        hex: "#4a7a3d"
+        synonyms_fr: [vert, verte, kaki, olive, vert olive, vert bouteille, vert sapin, émeraude]
+        synonyms_en: [green, khaki, sage, emerald, army green, forest green, bottle green]
+        query: {fr: lunettes vertes, en: green glasses}
+      pink:
+        fr: Rose / Fuchsia
+        hex: "#d6457d"
+        synonyms_fr: [rose, rose vif, fuchsia, framboise]
+        synonyms_en: [pink, hot pink, raspberry, magenta]
+        query: {fr: lunettes roses, en: pink glasses}
+      purple:
+        fr: Violet / Aubergine
+        hex: "#6c3d9e"
+        synonyms_fr: [violet, violette, mauve, aubergine, prune, pourpre]
+        synonyms_en: [purple, plum]
+        query: {fr: lunettes violettes, en: purple glasses}
+      orange:
+        fr: Orange / Jaune
+        hex: "#e5832a"
+        synonyms_fr: [orange, jaune, moutarde, citron, corail, ocre]
+        synonyms_en: [yellow, mustard, lemon, coral]
+        query: {fr: lunettes orange, en: orange glasses}
       pastel:
         fr: Pastel
         hex: "#f4c2d7"
-        synonyms_fr: [pastel, rose poudré, lilas, vert d'eau]
-        synonyms_en: [pastel, blush, lilac, mint]
+        synonyms_fr: [pastel, rose poudré, lilas, vert d'eau, lavande]
+        synonyms_en: [pastel, blush, lilac, mint, lavender]
         query: {fr: lunettes pastel, en: pastel glasses}
       bold:
-        fr: Couleurs vives
+        # Multicolor / neon / "vibrant" with no named hue; a named hue goes to its own family. No single hex is
+        # faithful, so `multicolor` makes the dashboard paint it as a spectrum (the hex is only a fallback).
+        fr: Multicolore / Vives
         hex: "#e63946"
-        synonyms_fr: [couleurs vives, rouge, vert, bleu électrique, fluo, jaune]
-        synonyms_en: [bold color, red, green, cobalt, neon, yellow]
+        multicolor: true
+        synonyms_fr: [couleurs vives, multicolore, fluo, néon, arc-en-ciel]
+        synonyms_en: [bold color, multicolor, multicolour, colorful, neon, rainbow]
         query: {fr: lunettes colorées, en: colorful glasses}
       two_tone:
         fr: Bicolore

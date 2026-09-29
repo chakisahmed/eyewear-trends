@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
+import { MulticolorGradient } from "@/components/charts/MulticolorGradient";
 import { Icon } from "@/components/icons";
-import { guardStyle, lineColor } from "@/lib/chroma";
+import { MULTICOLOR_CSS, guardStyle, lineColor } from "@/lib/chroma";
 import { dayShort, num } from "@/lib/format";
 
 const W = 260, H = 116, PL = 22, PR = 34, PT = 10, PB = 18;
@@ -27,15 +28,20 @@ function change4w(vals: (number | null)[]): string {
 /** Demand card: France vs Monde Google Trends interest on a FIXED 0–100 scale (100 = the keyword's own
  *  peak; same scale on every card, never stretched), direct end labels, and a table view with the same
  *  numbers. A series with no volume at all (below Google's threshold) is not drawn as a fake flat 0. */
-export function MiniDemandCard({ head, label, weeks, fr: frIn, world: worldIn, geoLabel, hex }: {
+export function MiniDemandCard({ head, label, weeks, fr: frIn, world: worldIn, geoLabel, hex, multicolor = false }: {
   head: ReactNode; label: string; weeks: string[]; fr: (number | null)[]; world: (number | null)[]; geoLabel: string;
   /** Real frame color (color dimension): both lines use it, France solid and Monde dashed. */
   hex?: string | null;
+  /** "Multicolore" family: both lines are a spectrum instead of its hex. */
+  multicolor?: boolean;
 }) {
   const [asTable, setAsTable] = useState(false);
-  const real = lineColor(hex);
+  const gradientId = `mc${useId().replace(/[^\w-]/g, "")}`;
+  const real = multicolor ? `url(#${gradientId})` : lineColor(hex);
   const frColor = real ?? "var(--series-1)", worldColor = real ?? "var(--series-2)";
   const worldDash = real ? "6 4" : undefined;
+  const keyPaint = multicolor ? MULTICOLOR_CSS : real;  // CSS background of the legend keys
+  const guard = guardStyle(multicolor ? null : real, multicolor);
   const n = weeks.length;
   const none = weeks.map(() => null);
   const fr = hasVolume(frIn) ? frIn : none, world = hasVolume(worldIn) ? worldIn : none;
@@ -82,12 +88,13 @@ export function MiniDemandCard({ head, label, weeks, fr: frIn, world: worldIn, g
               ))}
               {n > 0 && <text x={PL} y={H - 4} fontSize={8.5}>{dayShort(weeks[0])}</text>}
               {n > 1 && <text x={PL + PW} y={H - 4} textAnchor="end" fontSize={8.5}>{dayShort(weeks[n - 1])}</text>}
-              {real && <polyline className="halo" style={guardStyle(real)} points={poly(world)} strokeWidth={4.5} strokeDasharray={worldDash} />}
+              {multicolor && <MulticolorGradient id={gradientId} x1={PL} x2={PL + PW} />}
+              {real && <polyline className="halo" style={guard} points={poly(world)} strokeWidth={4.5} strokeDasharray={worldDash} />}
               <polyline points={poly(world)} fill="none" stroke={worldColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={worldDash} />
-              {real && <polyline className="halo" style={guardStyle(real)} points={poly(fr)} strokeWidth={4.5} />}
+              {real && <polyline className="halo" style={guard} points={poly(fr)} strokeWidth={4.5} />}
               <polyline points={poly(fr)} fill="none" stroke={frColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              {lf && <circle cx={X(lf.i)} cy={Y(lf.v)} r={2.5} fill={frColor} className={real ? "halo-ring" : undefined} style={guardStyle(real)} />}
-              {lw && <circle cx={X(lw.i)} cy={Y(lw.v)} r={2.5} fill={worldColor} className={real ? "halo-ring" : undefined} style={guardStyle(real)} />}
+              {lf && <circle cx={X(lf.i)} cy={Y(lf.v)} r={2.5} fill={frColor} className={real ? "halo-ring" : undefined} style={guard} />}
+              {lw && <circle cx={X(lw.i)} cy={Y(lw.v)} r={2.5} fill={worldColor} className={real ? "halo-ring" : undefined} style={guard} />}
               {lf && <text className="end-label" x={PL + PW + 5} y={yf + 3} fontSize={9}>{num(lf.v)}</text>}
               {lw && <text className="end-label" x={PL + PW + 5} y={yw + 3} fontSize={9}>{num(lw.v)}</text>}
             </svg>
@@ -101,9 +108,11 @@ export function MiniDemandCard({ head, label, weeks, fr: frIn, world: worldIn, g
         {!empty && (
           <div className="mini-foot">
             <div className="mini-legend">
-              <span className="legend-item"><span className={real ? "legend-line halo-dot" : "legend-line"} style={{ ["--c" as string]: frColor, ...guardStyle(real) }} />{geoLabel}</span>
+              <span className="legend-item"><span className={real ? "legend-line halo-dot" : "legend-line"} style={{ ["--c" as string]: keyPaint ?? frColor, ...guard }} />{geoLabel}</span>
               <span className="legend-item"><span className={real ? "legend-line halo-dot" : "legend-line"}
-                    style={{ ["--c" as string]: worldColor, ...(real ? { background: `repeating-linear-gradient(90deg, ${real} 0 4px, transparent 4px 6px)` } : {}), ...guardStyle(real) }} />Monde</span>
+                    style={{ ["--c" as string]: worldColor, ...(keyPaint ? { background: multicolor
+                      ? `repeating-linear-gradient(90deg, transparent 0 4px, var(--surface-card) 4px 6px), ${MULTICOLOR_CSS}`
+                      : `repeating-linear-gradient(90deg, ${keyPaint} 0 4px, transparent 4px 6px)` } : {}), ...guard }} />Monde</span>
             </div>
             <button type="button" className="btn btn-secondary btn-sm view-toggle" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
               <Icon name={asTable ? "demand" : "fileTable"} />

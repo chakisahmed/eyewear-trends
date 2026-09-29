@@ -119,6 +119,29 @@ def test_rules_version_6_etnia_shape_labels_give_one_shape_each():
     assert codes(tag_product("Pantos square edition", None)) == {("shape", "round"), ("shape", "square")}  # alias: specs only
 
 
+def test_rules_version_7_color_families_v2_on_store_vocabulary():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 7
+    family = lambda label: {c for d, c in codes(tag_product("X", {"variants": [{"code": "C", "color": label}]}))}
+    expected = {  # Etnia's color names that had no family before v7
+        "blue": ["Blue", "Blue Denim", "Dark Blue", "Sky Blue", "Turquoise", "Petrol"], "grey": ["Grey", "Dark Grey"],
+        "white": ["White"], "red": ["Bordeaux", "Red"], "green": ["Green", "Army"], "pink": ["Pink", "Fuchsia"],
+        "purple": ["Purple", "Violet", "Aubergine"], "orange": ["Orange", "Coral", "Lemon", "Yellow"],
+        "silver": ["Gun Metal"], "brown": ["Honey"], "gold": ["Pink Gold", "Rose Gold"]}
+    for code, labels in expected.items():
+        for label in labels:
+            assert family(label) == {code}, label
+    for label in ("Bronze", "Copper", "Zebra"):  # a metal tone or a pattern, not a hue: untagged on purpose
+        assert family(label) == set(), label
+
+
+def test_color_words_that_are_also_names_only_count_in_specs():
+    assert codes(tag_product("Lunettes ROSE C2", None)) == set()
+    assert codes(tag_product("ORANGE sunglasses", None)) == set()
+    assert codes(tag_product("X", {"raw_specs": {"Couleur": "Rose"}})) == {("color", "pink")}
+    assert codes(tag_product("Monture bleue", None)) == {("color", "blue")}                   # unambiguous words still count
+
+
 def test_face_shape_is_never_a_frame_shape():
     """LaMode lists VISAGE (recommended face shapes: Ovale, Rond...) next to Forme Lunette."""
     specs = {"Forme Lunette": "Carrée", "Genre": "Femmes", "VISAGE": "Rond", "Magasin": "Magasin Centre X"}

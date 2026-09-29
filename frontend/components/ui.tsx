@@ -1,8 +1,9 @@
 // Small display components shared by every screen (all server-safe).
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
-import { guardStyle, lineColor } from "@/lib/chroma";
+import { MulticolorGradient } from "@/components/charts/MulticolorGradient";
+import { guardStyle, lineColor, swatchPaint } from "@/lib/chroma";
 import { pct, NARROW_NBSP } from "@/lib/format";
 import { STATUS } from "@/lib/taxonomy";
 import type { Attribute, Dimension, Status, Tone } from "@/lib/types";
@@ -13,8 +14,8 @@ import { Icon } from "./icons";
 /** Glyph for shapes, real swatch for colors (ringed so white/clear stay visible), neutral dot otherwise. */
 export function Visual({ dimension, attr }: { dimension: Dimension; attr: Attribute }) {
   if (dimension === "shape") return <Glyph code={attr.code} />;
-  if (dimension === "color" && attr.hex) {
-    return <span className="trend-visual"><span className="swatch" style={{ background: attr.hex }} /></span>;
+  if (dimension === "color" && (attr.hex || attr.multicolor)) {
+    return <span className="trend-visual"><span className="swatch" style={{ background: swatchPaint(attr) }} /></span>;
   }
   return <span className="trend-visual"><span className="neutral-dot" /></span>;
 }
@@ -37,11 +38,14 @@ export function StatusBadge({ status, momentum, tone }: { status: Status; moment
 
 /** 8-week sparkline. Scale rule from the brief: range ≥ 60 % of the peak, centered, never below 0,
  *  so a stable 8, 8, 9, 8 looks flat while 3 → 14 fills the height. */
-export function Sparkline({ values, label, width = 72, height = 24, className = "spark", hex }: {
+export function Sparkline({ values, label, width = 72, height = 24, className = "spark", hex, multicolor = false }: {
   values: number[]; label: string; width?: number; height?: number; className?: string;
   /** Real frame color for the color dimension: the line inherits it (with a contrast halo where needed). */
   hex?: string | null;
+  /** "Multicolore" family: the line is a spectrum instead of its hex. */
+  multicolor?: boolean;
 }) {
+  const gradientId = `mc${useId().replace(/[^\w-]/g, "")}`;
   const pts = values.length > 1 ? values : [values[0] ?? 0, values[0] ?? 0];
   const p = 3, lo = Math.min(...pts), hi = Math.max(...pts);
   const span = Math.max(hi - lo, 0.6 * hi, 1);
@@ -51,12 +55,14 @@ export function Sparkline({ values, label, width = 72, height = 24, className = 
   const last = coords[coords.length - 1];
   const line = coords.map(c => c.map(n => n.toFixed(2)).join(",")).join(" ");
   const real = lineColor(hex);
-  const stroke = real ?? "var(--series-1)";
+  const tinted = multicolor || !!real;
+  const stroke = multicolor ? `url(#${gradientId})` : real ?? "var(--series-1)";
   return (
-    <svg className={className} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} style={guardStyle(real)}>
-      {real && <polyline className="halo" points={line} strokeWidth={4.5} />}
+    <svg className={className} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} style={guardStyle(real, multicolor)}>
+      {multicolor && <MulticolorGradient id={gradientId} x1={p} x2={width - p} />}
+      {tinted && <polyline className="halo" points={line} strokeWidth={4.5} />}
       <polyline points={line} fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r={2.5} fill={stroke} className={real ? "halo-ring" : undefined} />
+      <circle cx={last[0]} cy={last[1]} r={2.5} fill={stroke} className={tinted ? "halo-ring" : undefined} />
     </svg>
   );
 }
@@ -68,7 +74,7 @@ export function TrendRowLink({ href, dimension, row, spark, status, momentum, to
     <Link className="trend-row" href={href}>
       <Visual dimension={dimension} attr={row} />
       <span className="trend-label">{row.label}</span>
-      <Sparkline values={spark} hex={dimension === "color" ? row.hex : null}
+      <Sparkline values={spark} hex={dimension === "color" ? row.hex : null} multicolor={dimension === "color" && !!row.multicolor}
                  label={`${row.label} : tendance sur ${spark.length} semaines, ${STATUS[status].label.toLowerCase()}`} />
       <StatusBadge status={status} momentum={momentum} tone={tone} />
     </Link>

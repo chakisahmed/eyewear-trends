@@ -7,6 +7,7 @@ import { UrlSelect, UrlTabs } from "@/components/shell/Filters";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { EmptyState, StatusBadge, Visual } from "@/components/ui";
 import { api } from "@/lib/api";
+import { swatchPaint } from "@/lib/chroma";
 import { dayShort, num, pct } from "@/lib/format";
 import { DIMENSIONS, DIMENSION_TABS, STATUS, isDimension, seriesSlots } from "@/lib/taxonomy";
 
@@ -26,7 +27,8 @@ export default async function TrendsPage({ searchParams }: PageProps<"/tendances
   // Chart: the 6 most-mentioned attributes this week (brief: ≤ 6 series, the rest stays in the table).
   const charted = data.series.filter(s => s.mentions.some(v => v > 0)).slice(0, 6);
   const slots = seriesSlots(charted.map(s => s.code), order);
-  const series: Series[] = charted.map(s => ({ id: s.code, label: s.label, values: s.mentions, slot: slots[s.code], hex: dim === "color" ? s.hex : null }));
+  const series: Series[] = charted.map(s => ({ id: s.code, label: s.label, values: s.mentions, slot: slots[s.code],
+                                               hex: dim === "color" ? s.hex : null, multicolor: dim === "color" && !!s.multicolor }));
   const shares = [...data.series].filter(s => s.share > 0).sort((a, b) => b.share - a.share);
   const maxShare = shares[0]?.share ?? 1;
   const byMomentum = [...data.series].sort((a, b) => b.momentum - a.momentum);
@@ -69,7 +71,7 @@ export default async function TrendsPage({ searchParams }: PageProps<"/tendances
                                {shares.map(s => (
                                  <div key={s.code} className="share-row">
                                    <span className="share-name">
-                                     {dim === "color" && s.hex && <span className="swatch" style={{ background: s.hex }} aria-hidden="true" />}
+                                     {dim === "color" && (s.hex || s.multicolor) && <span className="swatch" style={{ background: swatchPaint(s) }} aria-hidden="true" />}
                                      <span title={s.label}>{s.label}</span>
                                    </span>
                                    <span className="share-track">
@@ -85,12 +87,12 @@ export default async function TrendsPage({ searchParams }: PageProps<"/tendances
                                  <div className="palette-strip" role="img"
                                       aria-label={`Palette de la semaine : ${shares.map(s => `${s.label} ${Math.round(s.share * 100)} %`).join(", ")}`}>
                                    {shares.map(s => <span key={s.code} className="palette-seg" title={`${s.label} · ${pct(s.share)}`}
-                                                          style={{ width: `${(100 * s.share).toFixed(2)}%`, background: s.hex ?? "var(--surface-subtle)" }} />)}
+                                                          style={{ width: `${(100 * s.share).toFixed(2)}%`, background: swatchPaint(s) ?? "var(--surface-subtle)" }} />)}
                                  </div>
                                  <div className="palette-legend">
                                    {shares.map(s => (
                                      <span key={s.code} className="palette-item">
-                                       <span className="swatch" style={{ background: s.hex ?? undefined }} aria-hidden="true" />
+                                       <span className="swatch" style={{ background: swatchPaint(s) }} aria-hidden="true" />
                                        {s.label} <b>{pct(s.share)}</b>
                                      </span>
                                    ))}

@@ -10,6 +10,8 @@ export interface Attribute {
   code: string;
   label: string;
   hex: string | null;
+  /** Color family with no single hue ("Multicolore"): drawn as a spectrum, hex is only a fallback. */
+  multicolor?: boolean;
 }
 
 export interface Tone {

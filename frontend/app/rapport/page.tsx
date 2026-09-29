@@ -85,7 +85,8 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
                       <tr key={r.code}>
                         <td className="vis"><Visual dimension={dim} attr={r} /></td>
                         <td className="name">{r.label}</td>
-                        <td className="spark-cell"><Sparkline values={r.spark} hex={dim === "color" ? r.hex : null} label={`${r.label} : ${STATUS[r.status].label.toLowerCase()}`} /></td>
+                        <td className="spark-cell"><Sparkline values={r.spark} hex={dim === "color" ? r.hex : null} multicolor={dim === "color" && !!r.multicolor}
+                                                              label={`${r.label} : ${STATUS[r.status].label.toLowerCase()}`} /></td>
                         <td className="mom"><StatusBadge status={r.status} momentum={r.momentum} tone={r} /></td>
                       </tr>
                     ))}
@@ -155,7 +156,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/rapport">
                   <tr key={`${r.dimension}-${r.code}`}>
                     <td className="vis"><Visual dimension={r.dimension} attr={r} /></td>
                     <td className="name">{r.label}<span className="reason">{reasonText(r)}</span></td>
-                    <td className="spark-cell"><Sparkline values={r.spark} hex={r.dimension === "color" ? r.hex : null} label={`${r.label} : en baisse`} /></td>
+                    <td className="spark-cell"><Sparkline values={r.spark} hex={r.dimension === "color" ? r.hex : null} multicolor={r.dimension === "color" && !!r.multicolor} label={`${r.label} : en baisse`} /></td>
                     <td className="mom"><StatusBadge status={r.status} momentum={r.momentum} /></td>
                   </tr>
                 ))}

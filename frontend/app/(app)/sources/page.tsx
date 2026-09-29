@@ -6,6 +6,7 @@ import { UrlSelect } from "@/components/shell/Filters";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { EmptyState, LangPill } from "@/components/ui";
 import { api } from "@/lib/api";
+import { swatchPaint } from "@/lib/chroma";
 import { dayLong } from "@/lib/format";
 import { DIMENSIONS, DIMENSION_TABS, KIND_LABELS, isDimension } from "@/lib/taxonomy";
 import type { SourceKind } from "@/lib/types";
@@ -110,7 +111,7 @@ export default async function SourcesPage({ searchParams }: PageProps<"/sources"
                 <div className="src-chips">
                   {s.attributes.map(a => (
                     <Link key={`${a.dimension}-${a.code}`} className="attr-chip" href={`/tendances/${a.dimension}/${a.code}`} title={DIMENSION_TABS[a.dimension]}>
-                      {a.dimension === "color" && a.hex && <span className="chip-sw" style={{ ["--sw" as string]: a.hex }} aria-hidden="true" />}
+                      {a.dimension === "color" && (a.hex || a.multicolor) && <span className="chip-sw" style={{ ["--sw" as string]: swatchPaint(a) }} aria-hidden="true" />}
                       <span className="chip-dim">{DIM_SINGULAR[a.dimension]} ·</span> {a.label}
                     </Link>
                   ))}

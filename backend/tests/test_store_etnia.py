@@ -207,9 +207,10 @@ async def test_etnia_variants_carry_codes_labels_and_stock():
         {"code": "BK", "color": "Black", "in_stock": True}, {"code": "BL/HO", "color": "Blue", "in_stock": True},
         {"code": "OG", "color": "Orange", "in_stock": True}]                         # " - Notify me" never in a label
     assert kore.flags["out_of_stock"] is False
-    # Palier 1-3: the store's own color name decides the family; blue / orange have no family yet: untagged
+    # Palier 1-3: the store's own color name decides the family (blue and orange since the v2 color families)
     assert {t for t in tags(kore) if t[0] == "color"} == {
-        ("color", "tortoiseshell", "HV/BL"), ("color", "beige", "BE"), ("color", "black", "BK")}
+        ("color", "tortoiseshell", "HV/BL"), ("color", "beige", "BE"), ("color", "black", "BK"),
+        ("color", "blue", "BL/HO"), ("color", "orange", "OG")}
     assert {t for t in tags(products["vreeland"]) if t[0] == "color"} == {("color", "gold", "GD"), ("color", "gold", "GD/BK")}
     izzi = products["izzi"]
     assert [v["code"] for v in izzi.flags["variants"]] == ["BK/ZE", "HV/CL"]           # LensName radios are not colors

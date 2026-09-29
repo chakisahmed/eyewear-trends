@@ -8,6 +8,8 @@
                          --missing: only fetch keywords with no data yet (after a rate-limited run)
   crawl-store DOMAIN     crawl one store from store_configs.yaml into products; free (no LLM)
   retag-products [DOMAIN] re-run the rule-based tagger on stored products; free, no network
+  reread-colors          re-read, with Claude, the colors of articles analysed with an older prompt (colors
+                         only). Prints the count and estimated cost; --confirm spends, then re-scores
   seed-demo              load synthetic demo data and score it
   clear-demo             remove demo data
 """
@@ -28,6 +30,8 @@ from app.collectors.stores.schemas import ScrapedProduct
 from app.collectors.stores.service import StoreSyncService
 from app.config import settings
 from app.db import SessionLocal, init_db
+from app.extraction import llm
+from app.extraction.service import reread_pending, reread_query
 from app.demo import clear_demo, seed_demo
 from app.jobs.pipeline import ALL_STEPS, run_pipeline
 from app.models import Document, Source
@@ -36,14 +40,19 @@ from app.scoring.trends import compute_snapshots
 # Rough Claude cost per article on the default extraction model (Sonnet 5, $2 / $10 per M tokens):
 # ~4 chars per token of article text + ~500 output tokens; the shared taxonomy prompt is cached.
 INPUT_PRICE, OUTPUT_PRICE, OUTPUT_TOKENS = 2 / 1e6, 10 / 1e6, 500
+REREAD_OUTPUT_TOKENS = 150  # a one-dimension re-read answers with that dimension only
+
+
+def cost_estimate(docs, output_tokens: int = OUTPUT_TOKENS) -> tuple[int, float]:
+    """(articles, estimated $) for analysing the documents a select(Document) query returns."""
+    sub = docs.subquery()
+    with SessionLocal() as s:
+        n, chars = s.execute(select(func.count(), func.coalesce(func.sum(func.length(sub.c.text)), 0))).one()
+    return n, (chars / 4) * INPUT_PRICE + n * output_tokens * OUTPUT_PRICE
 
 
 def pending_cost_estimate() -> tuple[int, float]:
-    with SessionLocal() as s:
-        n, chars = s.execute(
-            select(func.count(), func.coalesce(func.sum(func.length(Document.text)), 0)).where(Document.status == "pending")
-        ).one()
-    return n, (chars / 4) * INPUT_PRICE + n * OUTPUT_TOKENS * OUTPUT_PRICE
+    return cost_estimate(select(Document).where(Document.status == "pending"))
 
 
 @click.group(invoke_without_command=True, help=__doc__)
@@ -135,6 +144,26 @@ def retag_products(domain: str | None) -> None:
         n = service.retag_all(source_id)
         counts = ", ".join(f"{dim} {k}" for dim, k in service.tag_counts(source_id).items()) or "none"
         click.echo(f"{n} products re-tagged. Tagged products per dimension: {counts}")
+
+
+@cli.command("reread-colors")
+@click.option("--confirm", is_flag=True, help="Spend: re-read up to max_extract_per_run articles with Claude, then re-score.")
+def reread_colors(confirm: bool) -> None:
+    """Re-read the colors of articles analysed with an older prompt. Colors only: shapes, materials and styles
+    keep their first analysis. Without --confirm, only prints how many articles and the estimated cost."""
+    n, cost = cost_estimate(reread_query("color"), REREAD_OUTPUT_TOKENS)
+    if not n:
+        click.echo("Every article's colors are from the current prompt: nothing to re-read.")
+        return
+    click.echo(f"{n} articles have colors from an older prompt: ~${cost:.2f} to re-read them all, "
+               f"at most {settings.max_extract_per_run} per run.")
+    if not confirm:
+        click.echo("Nothing spent. Run again with --confirm to re-read.")
+        return
+    with SessionLocal() as s:
+        stats = reread_pending(s, llm.get_provider(), "color", limit=settings.max_extract_per_run)
+        click.echo(f"re-read {stats['reread']}, kept {stats['kept']} (judged not relevant this time), "
+                   f"failed {stats['failed']}; {stats['remaining']} left. {compute_snapshots(s)} snapshots")
 
 
 @cli.command("seed-demo")

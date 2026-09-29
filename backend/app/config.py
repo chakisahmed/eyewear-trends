@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     extraction_model: str = "claude-sonnet-5"
     summary_model: str = "claude-sonnet-5"
     extraction_effort: str = "low"  # low | medium | high — extraction is a routine task
-    prompt_version: str = "v1"
+    prompt_version: str = "v2"  # v2: 8 more color families and color rules; `reread-colors` brings v1 colors up to it
 
     # Market: Google Trends / news geo. Retailer country is still an open decision.
     market_geo: str = "FR"

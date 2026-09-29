@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
-import { guardStyle, lineColor } from "@/lib/chroma";
+import { MulticolorGradient } from "@/components/charts/MulticolorGradient";
+import { MULTICOLOR_CSS, guardStyle, lineColor } from "@/lib/chroma";
 import { dayShort, num } from "@/lib/format";
 
 export interface Series {
@@ -16,13 +17,24 @@ export interface Series {
   hex?: string | null;
   /** Dashed line: tells apart two series that share one hex (e.g. France vs Monde for the same color). */
   dash?: boolean;
+  /** "Multicolore" color family: the line is a spectrum (SVG gradient) instead of its hex. */
+  multicolor?: boolean;
 }
 
 const W = 720, H = 300, M = { t: 14, r: 118, b: 30, l: 34 };
 const DASH = "6 4";
 const color = (s: Series) => lineColor(s.hex) ?? `var(--series-${s.slot + 1})`;
+/** CSS background of a legend key or tooltip dot. */
+const paint = (s: Series) => (s.multicolor ? MULTICOLOR_CSS : color(s));
+/** Drawn in a real color (hex or spectrum), so the contrast halo applies. */
+const tinted = (s: Series) => !!(s.multicolor || lineColor(s.hex));
+const guard = (s: Series) => guardStyle(s.hex, s.multicolor);
 /** Props for a marker circle: the halo ring only exists for real-color series (the guard decides if it shows). */
-const ringProps = (s: Series) => (lineColor(s.hex) ? { className: "halo-ring", style: guardStyle(s.hex) } : {});
+const ringProps = (s: Series) => (tinted(s) ? { className: "halo-ring", style: guard(s) } : {});
+const GAP = "var(--surface-card)";
+const dashedKey = (s: Series) => (s.multicolor
+  ? `repeating-linear-gradient(90deg, transparent 0 5px, ${GAP} 5px 8px), ${MULTICOLOR_CSS}`
+  : `repeating-linear-gradient(90deg, ${color(s)} 0 5px, transparent 5px 8px)`);
 
 /** Hand-written SVG line chart (brief rules): ≤ 6 series, one y-axis, recessive grid, direct labels
  *  when ≤ 4 series are visible, crosshair + tooltip listing every series (mouse and ← / → keys). */
@@ -37,9 +49,13 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
 }) {
   const [hidden, setHidden] = useState<Record<string, boolean>>({});
   const [focus, setFocus] = useState<number | null>(null);
+  const gradientId = `mc${useId().replace(/[^\w-]/g, "")}`;
   const visible = series.filter(s => !hidden[s.id]);
   const n = weeks.length;
   const iw = W - M.l - M.r, ih = H - M.t - M.b;
+  /** SVG paint of a line or marker: the spectrum for a multicolor family (in chart units, so a marker takes the
+   *  hue under it), else its hex or palette slot. */
+  const stroke = (s: Series) => (s.multicolor ? `url(#${gradientId})` : color(s));
 
   const { top, step } = useMemo(() => {
     if (yMax) return { top: yMax, step: yMax / 4 };
@@ -76,6 +92,7 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
     <>
       <div className="chart-wrap">
         <svg className="chart-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel}>
+          {series.some(s => s.multicolor) && <MulticolorGradient id={gradientId} x1={M.l} x2={W - M.r} />}
           {Array.from({ length: Math.round(top / step) + 1 }, (_, k) => k * step).map(g => (
             <g key={g}>
               <line className={g === 0 ? "base" : "grid"} x1={M.l} x2={W - M.r} y1={y(g)} y2={y(g)} />
@@ -90,14 +107,14 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
             const dash = s.dash ? DASH : undefined;
             return (
               <g key={s.id}>
-                {lineColor(s.hex) && <polyline className="halo" style={guardStyle(s.hex)} strokeWidth={4.5} strokeDasharray={dash} points={points} />}
-                <polyline fill="none" stroke={color(s)} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash} points={points} />
+                {tinted(s) && <polyline className="halo" style={guard(s)} strokeWidth={4.5} strokeDasharray={dash} points={points} />}
+                <polyline fill="none" stroke={stroke(s)} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash} points={points} />
               </g>
             );
           })}
           {ends.map(e => (
             <g key={e.s.id}>
-              <circle cx={x(e.i)} cy={y(e.v)} r={3} fill={color(e.s)} {...ringProps(e.s)} />
+              <circle cx={x(e.i)} cy={y(e.v)} r={3} fill={stroke(e.s)} {...ringProps(e.s)} />
               <text className="end-label" x={x(e.i) + 8} y={e.y + 4}>{e.s.label} · {num(e.v, Number.isInteger(e.v) ? 0 : 1)}</text>
             </g>
           ))}
@@ -105,8 +122,8 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
             <g>
               <line className="cross-line" x1={x(focus)} x2={x(focus)} y1={M.t} y2={M.t + ih} />
               {visible.map(s => s.values[focus] != null && (
-                <circle key={s.id} cx={x(focus)} cy={y(s.values[focus] as number)} r={4} fill={color(s)}
-                        {...(lineColor(s.hex) ? ringProps(s) : { stroke: "var(--surface-card)", strokeWidth: 2 })} />
+                <circle key={s.id} cx={x(focus)} cy={y(s.values[focus] as number)} r={4} fill={stroke(s)}
+                        {...(tinted(s) ? ringProps(s) : { stroke: "var(--surface-card)", strokeWidth: 2 })} />
               ))}
             </g>
           )}
@@ -127,7 +144,7 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
             <p className="tip-title">Semaine du {dayShort(weeks[focus])}</p>
             {[...visible].sort((a, b) => (b.values[focus] ?? -1) - (a.values[focus] ?? -1)).map(s => (
               <div key={s.id} className="tip-row">
-                <span className={lineColor(s.hex) ? "tip-dot halo-dot" : "tip-dot"} style={{ background: color(s), ...guardStyle(s.hex) }} />
+                <span className={tinted(s) ? "tip-dot halo-dot" : "tip-dot"} style={{ background: paint(s), ...guard(s) }} />
                 <span className="tip-name">{s.label}</span>
                 <span className="tip-val">{s.values[focus] == null ? "–" : `${num(s.values[focus] as number, Number.isInteger(s.values[focus]) ? 0 : 1)}${valueSuffix}`}</span>
               </div>
@@ -143,7 +160,7 @@ export function LineChart({ weeks, series, yMax, legend = true, ariaLabel, value
                       if (!hidden[s.id] && visible.length === 1) return; // keep at least one series
                       setHidden(h => ({ ...h, [s.id]: !h[s.id] }));
                     }}>
-              <span className={lineColor(s.hex) ? "legend-line halo-dot" : "legend-line"} style={{ background: s.dash ? `repeating-linear-gradient(90deg, ${color(s)} 0 5px, transparent 5px 8px)` : color(s), ...guardStyle(s.hex) }} aria-hidden="true" />
+              <span className={tinted(s) ? "legend-line halo-dot" : "legend-line"} style={{ background: s.dash ? dashedKey(s) : paint(s), ...guard(s) }} aria-hidden="true" />
               {s.label}
             </button>
           ))}

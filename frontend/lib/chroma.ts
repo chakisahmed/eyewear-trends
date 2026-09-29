@@ -39,8 +39,10 @@ export function guard(hex: string): { light: boolean; dark: boolean } {
   return { light: low(CARD.light), dark: low(CARD.dark) };
 }
 
-/** Inline custom properties read by `.halo` / `.halo-ring` in shared.css, which switch the halo on per theme. */
-export function guardStyle(hex: string | null | undefined): CSSProperties | undefined {
+/** Inline custom properties read by `.halo` / `.halo-ring` in shared.css, which switch the halo on per theme.
+ *  A multicolor family always gets it: its spectrum has stops too light for the white card and too dark for the dark one. */
+export function guardStyle(hex: string | null | undefined, multicolor = false): CSSProperties | undefined {
+  if (multicolor) return { ["--need-l" as string]: 1, ["--need-d" as string]: 1 };
   if (!hex) return undefined;
   const g = guard(hex);
   return { ["--need-l" as string]: g.light ? 1 : 0, ["--need-d" as string]: g.dark ? 1 : 0 };
@@ -49,4 +51,14 @@ export function guardStyle(hex: string | null | undefined): CSSProperties | unde
 /** A usable "#rrggbb" line color, or null (unknown or malformed hex falls back to the palette). */
 export function lineColor(hex: string | null | undefined): string | null {
   return hex && channels(hex) ? hex : null;
+}
+
+/** "Multicolore" has no single faithful hue, so it is painted as a spectrum: an SVG gradient on lines
+ *  (MulticolorGradient), this CSS gradient on swatches, bars and legend keys. */
+export const MULTICOLOR_STOPS = ["#e63946", "#f4a261", "#e9c46a", "#2a9d8f", "#277da1", "#7b2cbf"] as const;
+export const MULTICOLOR_CSS = `linear-gradient(90deg, ${MULTICOLOR_STOPS.join(", ")})`;
+
+/** CSS background for a color family's swatch, bar or legend key: the spectrum when multicolor, else its hex. */
+export function swatchPaint(attr: { hex?: string | null; multicolor?: boolean }): string | undefined {
+  return attr.multicolor ? MULTICOLOR_CSS : attr.hex ?? undefined;
 }

@@ -26,14 +26,18 @@ def _mention_model(dimension: str, codes: list[str]) -> type[BaseModel]:
 
 
 @lru_cache
-def extraction_model() -> type[BaseModel]:
+def extraction_model(dimensions: tuple[str, ...] | None = None) -> type[BaseModel]:
+    """The full extraction schema, or with `dimensions` a re-read schema asking only for those dimensions
+    (no brands, no summary): a smaller answer, e.g. to re-read colors after the color taxonomy changed."""
     tax = load_taxonomy()
     fields: dict = {
         "is_relevant": (bool, Field(description="True only if the text discusses eyewear (glasses/sunglasses) design, fashion or demand")),
         "language": (Literal["fr", "en", "other"], ...),
     }
-    for dim in tax.dimensions:
+    for dim in dimensions or tax.dimensions:
         fields[dim] = (list[_mention_model(dim, tax.codes(dim))], Field(default_factory=list))
+    if dimensions:
+        return create_model(f"EyewearReread{''.join(d.title() for d in dimensions)}", **fields)
     fields["brands"] = (list[str], Field(default_factory=list, description="Eyewear brands or retailers mentioned"))
     fields["summary_fr"] = (str, Field(description="One sentence in French summarizing the eyewear trend signal of this text; empty if not relevant"))
     return create_model("EyewearExtraction", **fields)

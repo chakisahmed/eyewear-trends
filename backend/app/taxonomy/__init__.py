@@ -23,6 +23,7 @@ class Item:
     query_fr: str
     query_en: str
     hex: str | None = None
+    multicolor: bool = False  # a color family with no single hue ("Multicolore"): drawn as a gradient, hex is a fallback
 
 
 @dataclass(frozen=True)
@@ -107,7 +108,7 @@ class Taxonomy:
             dim: {
                 "label": self.dimension_labels[dim],
                 "items": [
-                    {"code": it.code, "label": it.label_fr, "hex": it.hex}
+                    {"code": it.code, "label": it.label_fr, "hex": it.hex, **({"multicolor": True} if it.multicolor else {})}
                     for it in items.values()
                 ],
             }
@@ -142,6 +143,7 @@ def load_taxonomy(path: Path = TAXONOMY_PATH) -> Taxonomy:
                 query_fr=v["query"]["fr"],
                 query_en=v["query"]["en"],
                 hex=v.get("hex"),
+                multicolor=bool(v.get("multicolor", False)),
             )
             for code, v in spec["items"].items()
         }

@@ -79,6 +79,13 @@ def test_trend_detail(client):
     assert client.get("/api/trends/nope/cat_eye").status_code == 404
 
 
+def test_only_the_multicolor_family_is_flagged(client):
+    colors = {it["code"]: it for it in client.get("/api/taxonomy").json()["color"]["items"]}
+    assert [c for c, it in colors.items() if it.get("multicolor")] == ["bold"]
+    assert client.get("/api/trends/color/bold").json()["multicolor"] is True
+    assert "multicolor" not in client.get("/api/trends/color/blue").json()  # absent, not false: payloads stay small
+
+
 def test_mentions_pagination_and_filters(client):
     page1 = client.get("/api/mentions", params={"dimension": "color", "limit": 5}).json()
     page2 = client.get("/api/mentions", params={"dimension": "color", "limit": 5, "offset": 5}).json()

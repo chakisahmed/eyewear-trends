@@ -47,7 +47,7 @@ DIM_SLUG = {"shape": "formes", "color": "couleurs", "material": "matieres", "sty
 
 def _item(dim: str, code: str) -> dict:
     it = load_taxonomy().get(dim, code)
-    return {"code": code, "label": it.label_fr, "hex": it.hex}
+    return {"code": code, "label": it.label_fr, "hex": it.hex, **({"multicolor": True} if it.multicolor else {})}
 
 
 def _check_dimension(dimension: str) -> None:

@@ -9,6 +9,7 @@ import { RetailPresence } from "@/components/RetailPresence";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { KpiTile, LangPill, StatusBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
+import { swatchPaint } from "@/lib/chroma";
 import { dayLong, dayShort, num, pct } from "@/lib/format";
 import { KIND_LABELS, STATUS, isDimension } from "@/lib/taxonomy";
 import type { Stance } from "@/lib/types";
@@ -53,10 +54,11 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
 
   // Color trends are drawn in their real hex; the two search series then share it (France solid, Monde dashed).
   const hex = dimension === "color" ? d.hex : null;
-  const mentionsSeries: Series[] = [{ id: "mentions", label: "Mentions", values: d.mentions, slot: 0, hex }];
+  const multicolor = dimension === "color" && !!d.multicolor;
+  const mentionsSeries: Series[] = [{ id: "mentions", label: "Mentions", values: d.mentions, slot: 0, hex, multicolor }];
   const searchSeries: Series[] = [
-    { id: "fr", label: meta.market_geo === "FR" ? "France" : meta.market_geo, values: d.search.fr, slot: 0, hex },
-    { id: "world", label: "Monde", values: d.search.world, slot: 1, hex, dash: !!hex },
+    { id: "fr", label: meta.market_geo === "FR" ? "France" : meta.market_geo, values: d.search.fr, slot: 0, hex, multicolor },
+    { id: "world", label: "Monde", values: d.search.world, slot: 1, hex, multicolor, dash: !!hex || multicolor },
   ];
   const hasSearch = searchSeries.some(s => s.values.some(v => v != null));
 
@@ -68,7 +70,7 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
 
         <section className="card detail-head" aria-labelledby="detailTitle">
           {dimension === "shape" ? <Glyph code={d.code} className="detail-glyph" />
-            : dimension === "color" && d.hex ? <span className="detail-glyph"><span className="swatch" style={{ background: d.hex, width: 28, height: 28 }} /></span>
+            : dimension === "color" && (d.hex || d.multicolor) ? <span className="detail-glyph"><span className="swatch" style={{ background: swatchPaint(d), width: 28, height: 28 }} /></span>
             : <span className="detail-glyph"><span className="neutral-dot" /></span>}
           <div>
             <div className="detail-title-row">
