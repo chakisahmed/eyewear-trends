@@ -230,3 +230,22 @@ def test_sunglasses_only_attributes_are_never_prescription_opportunities(s):
     snapshot(s, "shield", "en_hausse", 3.6)
     gaps = retail.shelf_gaps_by_type(s, WEEK)
     assert [(g["code"], g["product_type"]) for g in gaps["opportunities"]] == [("shield", "sun")]
+
+
+# --- reporting week: the last complete week, not the week in progress ------------------------------
+
+def test_latest_week_skips_the_week_in_progress(s):
+    from app.scoring.summary import latest_week
+    monday = date(2026, 9, 28)
+    for week in (date(2026, 9, 14), date(2026, 9, 21), monday):
+        s.add(TrendSnapshot(dimension="shape", code="round", week=week, mentions=0, momentum=0, status="stable"))
+    s.commit()
+    assert latest_week(s, today=monday) == date(2026, 9, 21)          # Monday morning: last week, not an empty one
+    assert latest_week(s, today=date(2026, 10, 5)) == monday           # a week later, 28 Sept is complete
+
+
+def test_latest_week_falls_back_to_the_current_week_when_it_is_the_only_one(s):
+    from app.scoring.summary import latest_week
+    s.add(TrendSnapshot(dimension="shape", code="round", week=date(2026, 9, 28), mentions=1, momentum=0, status="faible"))
+    s.commit()
+    assert latest_week(s, today=date(2026, 9, 30)) == date(2026, 9, 28)

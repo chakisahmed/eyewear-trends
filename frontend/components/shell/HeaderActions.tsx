@@ -8,22 +8,32 @@ import { dayShort } from "@/lib/format";
 import { DIMENSIONS, DIMENSION_TABS } from "@/lib/taxonomy";
 import type { JobRun } from "@/lib/types";
 
-/** Week selector: rewrites ?week= on the current page, keeping the other filters. */
+/** Monday of the current week, "YYYY-MM-DD" (local time), to flag the week still in progress. */
+function currentMonday(now = new Date()): string {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Week selector: rewrites ?week= on the current page, keeping the other filters. The default page week is the
+ *  last complete week (chosen by the API), so the choice is always written to the URL, even for the newest week. */
 export function WeekSelect({ weeks, current }: { weeks: string[]; current: string | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   if (!weeks.length) return null;
+  const inProgress = currentMonday();
   return (
     <label className="sr-only-label">
       <span className="sr-only">Semaine affichée</span>
       <select className="select week-select" value={current ?? weeks[0]}
               onChange={e => {
                 const next = new URLSearchParams(params.toString());
-                if (e.target.value === weeks[0]) next.delete("week"); else next.set("week", e.target.value);
-                router.push(`${pathname}${next.size ? `?${next}` : ""}`);
+                next.set("week", e.target.value);
+                router.push(`${pathname}?${next}`);
               }}>
-        {weeks.map(w => <option key={w} value={w}>Semaine du {dayShort(w)}</option>)}
+        {weeks.map(w => (
+          <option key={w} value={w}>Semaine du {dayShort(w)}{w === inProgress ? " (en cours)" : ""}</option>
+        ))}
       </select>
     </label>
   );

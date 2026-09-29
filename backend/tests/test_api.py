@@ -31,7 +31,7 @@ def clean_jobs():
 
 def test_overview_rows_have_8_week_sparklines(client):
     body = client.get("/api/overview").json()
-    assert body["week"] == week_start(date.today()).isoformat()
+    assert body["week"] == (week_start(date.today()) - timedelta(weeks=1)).isoformat()  # last complete week
     assert body["has_demo"] is True
     shapes = body["rising"]["shape"]
     assert shapes and all(len(r["spark"]) == 8 for r in shapes)

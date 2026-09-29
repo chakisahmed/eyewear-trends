@@ -14,11 +14,17 @@ from app.models import Document, Mention, TrendSnapshot, WeeklySummary
 from app.scoring.retail import (
     MIN_TAGGED, PRODUCT_TYPES, TYPE_LABELS, comparable, shelf_by_attribute, shelf_gaps_by_type, unmapped_share,
 )
+from app.scoring.trends import week_start
 from app.taxonomy import load_taxonomy
 
 
-def latest_week(session: Session) -> date | None:
-    return session.scalar(select(func.max(TrendSnapshot.week)))
+def latest_week(session: Session, today: date | None = None) -> date | None:
+    """The reporting week: the latest scored week that is complete. The week in progress is scored too, but on a
+    Monday it has no mentions yet and every attribute would read as declining; it stays selectable, not default.
+    Falls back to the current week only when no earlier week exists."""
+    current = week_start(today or date.today())
+    return (session.scalar(select(func.max(TrendSnapshot.week)).where(TrendSnapshot.week < current))
+            or session.scalar(select(func.max(TrendSnapshot.week))))
 
 
 def build_brief(session: Session, week: date) -> str:
