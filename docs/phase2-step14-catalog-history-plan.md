@@ -144,5 +144,5 @@ pipeline step are not built.
 - Part 2, sync rules and completeness report: done (see `docs/build-plan.md`, Step 14). `param` pagination cannot tell a
   natural end from a cut-off, so a `?page=` listing that fills `max_pages`, or whose page past the end returns 404,
   reports incomplete and never drops (no shipped store uses `?page=`; all follow `next` links).
-- Part 3, `crawl-stores` runner (due-store cadence, per-store isolation, run report): not started.
+- Part 3, `crawl-stores` runner, `store_crawls` log, Task Scheduler wrapper and docs: done (see `docs/build-plan.md`, Step 14, and `docs/crawl-stores-task-scheduler.md`).
 - Part 4, the read side (new / retired counts, "Nouveauté" pill, brief line): not started.

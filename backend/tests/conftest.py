@@ -14,3 +14,10 @@ def no_live_sitemap_collection(monkeypatch):
     sitemap collector call app.collectors.sitemap_news directly, with a mock transport."""
     import app.jobs.pipeline as pipeline
     monkeypatch.setattr(pipeline, "collect_sitemap_sources", lambda session, progress=None: 0)
+
+
+@pytest.fixture(autouse=True)
+def crawl_lock_in_tmp(monkeypatch, tmp_path):
+    """Crawl commands take a file lock: keep it out of the real data/ folder, where a real crawl may be running."""
+    import app.collectors.stores.runner as runner
+    monkeypatch.setattr(runner, "LOCK_PATH", tmp_path / "crawl-stores.lock")

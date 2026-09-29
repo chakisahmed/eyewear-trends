@@ -7,6 +7,9 @@
   refresh-search         replace collected Google Trends data (one keyword per request) and re-score; free
                          --missing: only fetch keywords with no data yet (after a rate-limited run)
   crawl-store DOMAIN     crawl one store from store_configs.yaml into products; free (no LLM)
+  crawl-stores [DOMAIN...]  crawl every store that is due (weekly by default), one after another; free. Built for
+                         Windows Task Scheduler (tools/crawl-stores.cmd): safe to run daily, idempotent. --dry-run
+                         lists what is due; --force ignores the cadence
   retag-products [DOMAIN] re-run the rule-based tagger on stored products; free, no network
   reread-colors          re-read, with Claude, the colors of articles analysed with an older prompt (colors
                          only). Prints the count and estimated cost; --confirm spends, then re-scores
@@ -14,19 +17,16 @@
   clear-demo             remove demo data
 """
 
-import asyncio
 import json
 import logging
 
 import click
-import httpx
 from sqlalchemy import func, select
 
 from app.collectors.backfill import run_backfill
 from app.collectors.google_trends import collect_google_trends, reset_search_interest
-from app.collectors.stores.base import BaseStoreCrawler
+from app.collectors.stores.runner import CrawlBusy, Decision, StoreOutcome, plan, run_due, run_single
 from app.collectors.stores.config import ScraperConfig, config_for, load_store_configs
-from app.collectors.stores.schemas import CrawlReport, ScrapedProduct
 from app.collectors.stores.service import StoreSyncService
 from app.config import settings
 from app.db import SessionLocal, init_db
@@ -96,14 +96,6 @@ def refresh_search(missing: bool) -> None:
         click.echo(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
 
 
-async def _crawl(cfg: ScraperConfig) -> tuple[list[ScrapedProduct], CrawlReport]:
-    async with httpx.AsyncClient(headers={"User-Agent": settings.user_agent},
-                                 timeout=httpx.Timeout(settings.request_timeout), follow_redirects=True) as client:
-        crawler = BaseStoreCrawler(cfg, client=client)
-        products = await crawler.crawl()
-        return products, crawler.report
-
-
 @cli.command("crawl-store")
 @click.argument("domain")
 @click.option("--accept-drops", is_flag=True,
@@ -115,19 +107,85 @@ def crawl_store(domain: str, accept_drops: bool) -> None:
     Products the store's listing no longer returns are marked inactive (dropped), only when the crawl read the whole
     listing and it did not shrink suspiciously; a returning product is reactivated. Safe to re-run."""
     cfg = _store_config_or_exit(domain)
-    products, report = asyncio.run(_crawl(cfg))
-    with SessionLocal() as s:
-        service = StoreSyncService(s)
-        result = service.sync(service.source_for(cfg).id, products, report, accept_drops=accept_drops)
-    click.echo(f"{cfg.name}: {len(products)} products crawled — inserted {result.inserted}, "
+    try:
+        outcome = run_single(cfg, accept_drops=accept_drops)
+    except CrawlBusy as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+    echo_outcome(outcome)
+    if outcome.status == "failed":
+        raise SystemExit(1)
+
+
+def echo_outcome(outcome: StoreOutcome) -> None:
+    cfg, result = outcome.cfg, outcome.result
+    if outcome.status == "failed":
+        click.echo(f"{cfg.name}: FAILED — {outcome.error}")
+        return
+    click.echo(f"{cfg.name}: {outcome.crawled} products crawled — inserted {result.inserted}, "
                f"updated {result.updated}, conflicts {result.conflicts}, reactivated {result.reactivated}, "
                f"dropped {result.dropped}")
     if result.drop_skipped:
         click.echo(f"  drops skipped: {result.drop_skipped}")
-        for problem in report.problems[:10]:
+        for problem in (outcome.problems or [])[:10]:
             click.echo(f"  - {problem}")
-        if report.complete:
-            click.echo("  (re-run with --accept-drops if the catalog really shrank)")
+        if outcome.status == "ok":
+            click.echo("  (re-run crawl-store with --accept-drops if the catalog really shrank)")
+
+
+@cli.command("crawl-stores")
+@click.argument("domains", nargs=-1)
+@click.option("--force", is_flag=True, help="Crawl even stores that are not due.")
+@click.option("--dry-run", is_flag=True, help="Only list which stores are due and why: no crawl, nothing written.")
+def crawl_stores(domains: tuple[str, ...], force: bool, dry_run: bool) -> None:
+    """Crawl every store that is due (or the named ones, if due), one after another. Free, no LLM.
+
+    Built to be run unattended and daily: a store is due when its last complete crawl is older than its
+    `crawl_every_days` (default 7), an incomplete or failed crawl is retried after 20 h, and running it twice in a row
+    crawls nothing the second time. One store failing never stops the others.
+
+    Exit code: 0 all fine or nothing due; 1 a store failed, or bad config / unknown domain; 2 nothing failed but a crawl
+    was incomplete or skipped its drops (needs a look, see the log and `crawl-store DOMAIN`)."""
+    try:
+        configs = load_store_configs()
+    except ValueError as e:  # invalid store_configs.yaml
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+    def unknown(e: KeyError) -> SystemExit:
+        click.echo(f"Error: no store config for {e.args[0].removeprefix('No store config for ')}. "
+                   f"Known: {', '.join(configs) or 'none'}", err=True)
+        return SystemExit(1)
+
+    if dry_run:
+        try:
+            decisions = plan(configs, domains, force)
+        except KeyError as e:
+            raise unknown(e)
+        for d in decisions:
+            click.echo(f"  {'DUE ' if d.due else 'skip'}  {d.cfg.name:18} {d.reason}")
+        click.echo(f"{sum(d.due for d in decisions)} of {len(decisions)} stores due (dry run: nothing crawled)")
+        return
+
+    def announce(decisions: list[Decision]) -> None:
+        due = [d.cfg.name for d in decisions if d.due]
+        click.echo(f"{len(due)} of {len(decisions)} stores due" + (f": {', '.join(due)}" if due else ": nothing to do"))
+        for d in decisions:
+            if not d.due:
+                click.echo(f"  skip  {d.cfg.name:18} {d.reason}")
+
+    try:
+        decisions, outcomes = run_due(configs, domains, force, on_start=announce, on_outcome=echo_outcome)
+    except CrawlBusy as e:  # an overlapping scheduled run is not an error
+        click.echo(f"{e}: nothing to do")
+        return
+    except KeyError as e:
+        raise unknown(e)
+    failed = [o for o in outcomes if o.status == "failed"]
+    attention = [o for o in outcomes if o.needs_attention]
+    if outcomes:
+        click.echo(f"done: {len(outcomes) - len(failed) - len(attention)} ok, {len(attention)} need attention, {len(failed)} failed")
+    raise SystemExit(1 if failed else 2 if attention else 0)
 
 
 def _store_config_or_exit(domain: str) -> ScraperConfig:

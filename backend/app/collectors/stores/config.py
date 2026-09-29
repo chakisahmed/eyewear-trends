@@ -214,6 +214,7 @@ class ScraperConfig(_Strict):
     variants: VariantsRule | None = None  # product page color variants -> flags["variants"]
     description_specs: bool = False  # also read "Label : value" pairs from the JSON-LD description
     delay_s: float = Field(1.5, ge=0.5)  # politeness floor between requests
+    crawl_every_days: int = Field(7, ge=1, le=90)  # `crawl-stores` re-crawls the store once its last complete crawl is this old
 
     @field_validator("default_currency")
     @classmethod
