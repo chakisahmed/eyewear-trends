@@ -17,7 +17,7 @@ import app.collectors.stores as stores_pkg
 from app.collectors.stores.base import BaseStoreCrawler
 from app.collectors.stores.config import config_for, parse_store_configs
 from app.collectors.stores.parser import parse_listing, parse_price, parse_product_page
-from app.collectors.stores.schemas import ScrapedProduct
+from app.collectors.stores.schemas import CrawlReport, ScrapedProduct, db_url_of
 from app.collectors.stores.service import StoreSyncService
 from app.db import SessionLocal, init_db
 from app.models import Product, Source
@@ -242,6 +242,8 @@ async def test_crawl_end_to_end(cfg):
     assert got[f"{BASE}/p/c"].currency == "TND"
 
     assert "/blocked/d" not in paths                                      # robots.txt respected
+    assert f"{BASE}/p/nameless" in crawler.report.listed                  # validation dropped it, the shelf still lists it
+    assert not crawler.report.complete and crawler.report.problems == ["/lunettes page 3: not fetched"]
     assert "/lunettes?page=3" in paths and "/lunettes?page=4" not in paths  # 500 survived, max_pages=3 respected
     assert "/p/c" not in paths                                            # max_products=2
     assert all(r.headers["User-Agent"] == "TestBot/1" for r in requests)
@@ -266,6 +268,90 @@ async def test_default_client_sends_project_user_agent(cfg, monkeypatch):
     assert requests and all(r.headers["User-Agent"] == settings.user_agent for r in requests)
 
 
+# --- completeness report -----------------------------------------------------------------------------
+
+NEXT_YAML = CONFIG_YAML.replace("{param: page, max_pages: 3}", '{next: "a.next", max_pages: 3}')
+
+
+def page(*slugs: str, next_to: str | None = None) -> str:
+    link = f'<a class="next" href="{next_to}">Suivant</a>' if next_to else ""
+    return "<ul>" + "".join(card(s, title=s.upper()) for s in slugs) + "</ul>" + link
+
+
+async def crawl_report(yaml: str, pages: dict[str, str | int], robots: str = "") -> tuple[list[ScrapedProduct], CrawlReport]:
+    """Crawl a fake shop: a page maps to its HTML, or to an HTTP error status."""
+    cfg = parse_store_configs(yaml)["shop.test"]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        if path == "/robots.txt":
+            return httpx.Response(200, text=robots)
+        body = pages.get(path)
+        if isinstance(body, int):
+            return httpx.Response(body)
+        return httpx.Response(200, text=body) if body is not None else httpx.Response(404)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(cfg, client=client)
+        crawler.delay_s = 0
+        return await crawler.crawl(), crawler.report
+
+
+def listed(report: CrawlReport) -> set[str]:
+    return {u.rsplit("/", 1)[-1] for u in report.listed}
+
+
+@pytest.mark.anyio
+async def test_report_next_links_ending_naturally_is_complete():
+    products, report = await crawl_report(NEXT_YAML, {"/lunettes": page("a", "b", next_to="/lunettes/2"), "/lunettes/2": page("c")})
+    assert report.complete and listed(report) == {"a", "b", "c"} and len(products) == 3
+    # a listing that fills exactly max_pages and has no further link is a natural end too
+    _, report = await crawl_report(NEXT_YAML, {"/lunettes": page("a", next_to="/lunettes/2"),
+                                               "/lunettes/2": page("b", next_to="/lunettes/3"), "/lunettes/3": page("c")})
+    assert report.complete and listed(report) == {"a", "b", "c"}
+
+
+@pytest.mark.anyio
+async def test_report_a_failed_page_behind_a_next_link_cuts_the_listing_and_says_so():
+    _, report = await crawl_report(NEXT_YAML, {"/lunettes": page("a", next_to="/lunettes/2"), "/lunettes/2": 500})
+    assert listed(report) == {"a"} and report.problems == ["/lunettes page 2: not fetched"]
+
+
+@pytest.mark.anyio
+async def test_report_stopping_at_max_pages_with_more_to_list_is_incomplete():
+    pages = {"/lunettes": page("a", next_to="/lunettes/2"), "/lunettes/2": page("b", next_to="/lunettes/3"),
+             "/lunettes/3": page("c", next_to="/lunettes/4")}
+    _, report = await crawl_report(NEXT_YAML, pages)
+    assert listed(report) == {"a", "b", "c"} and report.problems == ["/lunettes: stopped at max_pages (3) with more to list"]
+    # ?page= pagination has no link to check: a listing that fills max_pages counts as cut off
+    full = {"/lunettes": page("a"), "/lunettes?page=2": page("b"), "/lunettes?page=3": page("c")}
+    _, report = await crawl_report(CONFIG_YAML, full)
+    assert report.problems == ["/lunettes: stopped at max_pages (3) with more to list"]
+    _, report = await crawl_report(CONFIG_YAML, {"/lunettes": page("a"), "/lunettes?page=2": page("b"),
+                                                 "/lunettes?page=3": "<ul></ul>"})   # ...but an empty page ends it
+    assert report.complete and listed(report) == {"a", "b"}
+
+
+@pytest.mark.anyio
+async def test_report_empty_pages_are_soft_blocks_unless_they_end_a_param_listing():
+    _, report = await crawl_report(NEXT_YAML, {"/lunettes": "<ul></ul>"})
+    assert report.problems == ["/lunettes: first page listed nothing"] and not report.listed
+    _, report = await crawl_report(NEXT_YAML, {"/lunettes": page("a", next_to="/lunettes/2"), "/lunettes/2": "<ul></ul>"})
+    assert report.problems == ["/lunettes page 2: listed nothing"] and listed(report) == {"a"}
+
+
+@pytest.mark.anyio
+async def test_report_a_listing_refused_by_robots_txt_is_incomplete():
+    _, report = await crawl_report(NEXT_YAML, {"/lunettes": page("a")}, robots="User-agent: *\nDisallow: /lunettes\n")
+    assert report.problems == ["/lunettes page 1: not fetched"] and not report.listed
+
+
+def test_db_url_of_is_the_stored_form_of_a_product_url():
+    for url in ("https://Shop.Test", "https://SHOP.test/p/a?x=1", "https://shop.test/p/é à", "https://shop.test/p/a b"):
+        assert db_url_of(url) == ScrapedProduct(url=url, name="A").db_url(), url
+    assert db_url_of("https://shop.test/" + "a" * 1000) is None and db_url_of("not a url") is None
+
+
 # --- sync service ----------------------------------------------------------------------------------
 
 def test_sync_inserts_updates_and_refuses_cross_source(cfg):
@@ -277,12 +363,12 @@ def test_sync_inserts_updates_and_refuses_cross_source(cfg):
         assert source.kind == "store" and source.country == "TN"
         first = [ScrapedProduct(url=f"{BASE}/p/x", name="X", price=100, currency="TND", rank=1, seen_at=now),
                  ScrapedProduct(url=f"{BASE}/p/y", name="Y", rank=2, seen_at=now)]
-        assert vars(service.sync(source.id, first)) == {"inserted": 2, "updated": 0, "conflicts": 0}
+        assert vars(service.sync(source.id, first)) == {"inserted": 2, "updated": 0, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None}
 
         later = now + timedelta(days=1)
         second = [ScrapedProduct(url=f"{BASE}/p/x", name="X", price=90, currency="TND", rank=1, seen_at=later),
                   ScrapedProduct(url=f"{BASE}/p/x", name="X v2", price=80, currency="TND", rank=1, seen_at=later)]
-        assert vars(service.sync(source.id, second)) == {"inserted": 0, "updated": 1, "conflicts": 0}  # in-batch dup: last wins
+        assert vars(service.sync(source.id, second)) == {"inserted": 0, "updated": 1, "conflicts": 0, "reactivated": 0, "dropped": 0, "drop_skipped": None}  # in-batch dup: last wins
         x = s.scalar(select(Product).where(Product.url == f"{BASE}/p/x"))
         assert (x.name, x.price) == ("X v2", 80)
         assert x.seen_at.replace(tzinfo=timezone.utc) == later  # SQLite returns naive UTC
@@ -291,7 +377,7 @@ def test_sync_inserts_updates_and_refuses_cross_source(cfg):
         s.add(other)
         s.flush()
         stolen = [ScrapedProduct(url=f"{BASE}/p/y", name="Hijack", seen_at=later)]
-        assert vars(service.sync(other.id, stolen)) == {"inserted": 0, "updated": 0, "conflicts": 1}
+        assert vars(service.sync(other.id, stolen)) == {"inserted": 0, "updated": 0, "conflicts": 1, "reactivated": 0, "dropped": 0, "drop_skipped": None}
         y = s.scalar(select(Product).where(Product.url == f"{BASE}/p/y"))
         assert (y.name, y.source_id) == ("Y", source.id)
 

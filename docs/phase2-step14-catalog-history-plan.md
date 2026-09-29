@@ -135,4 +135,14 @@ shows up: match on a stable id when the store exposes one (Shopify's product id 
 3. The schedule lives in the existing scheduler process (`python -m app.jobs.scheduler`), next to the daily press job.
    `python -m app.cli crawl-stores` calls the same function, so a Windows Task Scheduler entry stays a drop-in option.
 
-Implementation has not started: it waits for the go-ahead.
+Changes to the decisions above, made on approval: the weekly crawl is triggered by **Windows Task Scheduler**, not by
+`jobs/scheduler.py`; `crawl-stores` must therefore be self-contained and idempotent, and the scheduler and `stores`
+pipeline step are not built.
+
+## Status
+- Part 1, schema: done and live (`ab4dbe5`).
+- Part 2, sync rules and completeness report: done (see `docs/build-plan.md`, Step 14). `param` pagination cannot tell a
+  natural end from a cut-off, so a `?page=` listing that fills `max_pages`, or whose page past the end returns 404,
+  reports incomplete and never drops (no shipped store uses `?page=`; all follow `next` links).
+- Part 3, `crawl-stores` runner (due-store cadence, per-store isolation, run report): not started.
+- Part 4, the read side (new / retired counts, "Nouveauté" pill, brief line): not started.

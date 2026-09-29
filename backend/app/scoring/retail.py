@@ -20,10 +20,10 @@ Stores that publish no list price at all are left out of markdown figures, not c
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
 from statistics import mean
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.collectors.stores.tagger import SPEC_DIMENSIONS
@@ -31,7 +31,6 @@ from app.models import Product, ProductTag, Source, TrendSnapshot
 from app.taxonomy import fold, load_taxonomy
 
 DIMENSIONS = ("shape", "color", "material", "style")
-ACTIVE_DAYS = 14  # a product counts if seen within this many days of its store's latest crawl
 MIN_TAGGED = 20  # tagged products needed in a dimension before its shelf shares mean anything
 OPPORTUNITY_SHARE = 0.05
 RISK_SHARE = 0.15
@@ -46,14 +45,12 @@ MARKET_COUNTRY = "TN"  # the "Marché Tunisien" lens: shelf shares and gaps only
 
 
 def active_products(session: Session, country: str | None = None) -> list[tuple[Product, str]]:
-    """(product, store name) for every product still on its store's shelf; country restricts it to one market's
-    stores (Source.country)."""
-    latest = dict(session.execute(select(Product.source_id, func.max(Product.seen_at)).group_by(Product.source_id)).all())
-    query = select(Product, Source.name).join(Source, Source.id == Product.source_id)
+    """(product, store name) for every product still on its store's shelf (`is_active`: in the store's latest complete
+    crawl, maintained by StoreSyncService); country restricts it to one market's stores (Source.country)."""
+    query = select(Product, Source.name).join(Source, Source.id == Product.source_id).where(Product.is_active.is_(True))
     if country:
         query = query.where(Source.country == country)
-    return [(p, store) for p, store in session.execute(query).all()
-            if p.seen_at >= latest[p.source_id] - timedelta(days=ACTIVE_DAYS)]
+    return [(p, store) for p, store in session.execute(query).all()]
 
 
 def markdown(p: Product) -> float:

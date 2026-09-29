@@ -33,17 +33,17 @@ def type_tag(kind: str) -> ProductTag:
 
 def add_store(s, name: str, n_products: dict[str, int], *, seen=NOW, stale: dict[str, int] | None = None, price=100.0,
               kind: str = "sun", country: str = "TN"):
-    """n_products: shape code -> number of active products; stale: shape code -> products seen long ago."""
+    """n_products: shape code -> number of active products; stale: shape code -> products a crawl dropped."""
     src = Source(name=name, kind="store", url=f"https://{name.lower()}.test", lang="fr", country=country)
     s.add(src)
     s.flush()
     i = 0
-    for batch, when in ((n_products, seen), (stale or {}, seen - timedelta(days=60))):
+    for batch, when, active in ((n_products, seen, True), (stale or {}, seen - timedelta(days=60), False)):
         for code, n in batch.items():
             for _ in range(n):
                 i += 1
                 p = Product(source_id=src.id, url=f"{src.url}/p{i}", name=f"{name} {i}", price=price, currency="TND",
-                            rank=i, seen_at=when)
+                            rank=i, seen_at=when, is_active=active)
                 p.tags = [ProductTag(dimension="shape", code=code, field="spec:Forme", term=code, rules_version=2), type_tag(kind)]
                 s.add(p)
     s.commit()
@@ -264,9 +264,10 @@ def test_latest_week_falls_back_to_the_current_week_when_it_is_the_only_one(s):
 
 # --- frequent pairings (laminations) -------------------------------------------------------------
 
-def add_laminated(s, src, slug: str, laminations: list[tuple[str, str]], *, flags=None, seen=NOW, rank=1):
+def add_laminated(s, src, slug: str, laminations: list[tuple[str, str]], *, flags=None, active=True, rank=1):
     """A frame whose variants are laminations: (combination code, supplier code) each."""
-    p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), rank=rank, seen_at=seen, flags=flags)
+    p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), rank=rank, seen_at=NOW, flags=flags,
+                is_active=active)
     p.tags = [ProductTag(dimension="lamination", code=code, field="variant-layers", term=code, rules_version=10, supplier_code=sup)
               for code, sup in laminations]
     s.add(p)
@@ -281,7 +282,7 @@ def test_pairings_count_frames_per_partner_colour_and_flag_best_sellers(s):
     add_laminated(s, etnia, "f2", [("blue+tortoiseshell", "BL/HV")], flags={"is_bestseller": False}, rank=1)
     add_laminated(s, etnia, "f3", [("black+blue", "BK/BL")], flags={"is_bestseller": True})
     add_laminated(s, etnia, "f4", [("beige+blue+pink", "CR/BL/PK")])                                   # three layers: two partners
-    add_laminated(s, etnia, "f5", [("blue+red", "BL/RD")], seen=NOW - timedelta(days=60))            # stale: not on the shelf
+    add_laminated(s, etnia, "f5", [("blue+red", "BL/RD")], active=False)                              # dropped: not on the shelf
     add_laminated(s, etnia, "f6", [("black+tortoiseshell", "BK/HV")])                                # no blue
     s.commit()
 

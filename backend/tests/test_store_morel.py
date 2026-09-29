@@ -102,8 +102,14 @@ def site() -> dict[str, str]:
 
 
 async def crawl_morel() -> tuple[dict[str, ScrapedProduct], list[httpx.URL]]:
+    products, requested, _ = await crawl_morel_report()
+    return products, requested
+
+
+async def crawl_morel_report(without: tuple[str, ...] = ()):
+    """(products, requested urls, CrawlReport); `without`: paths that 404."""
     cfg = load_store_configs()["morel.com"]
-    pages, requested = site(), []
+    pages, requested = {k: v for k, v in site().items() if k not in without}, []
 
     def handler(request: httpx.Request) -> httpx.Response:
         requested.append(request.url)
@@ -114,7 +120,7 @@ async def crawl_morel() -> tuple[dict[str, ScrapedProduct], list[httpx.URL]]:
         crawler = BaseStoreCrawler(cfg, client=client)
         crawler.delay_s = 0
         products = {p.db_url().rsplit("/", 1)[-1]: p for p in await crawler.crawl()}
-    return products, requested
+    return products, requested, crawler.report
 
 
 @pytest.fixture
@@ -175,6 +181,18 @@ async def test_morel_requests_respect_robots_and_never_combine_filters():
         assert "sort_by" not in raw and "+" not in raw and ".json" not in raw, raw
         assert sum(k.startswith("filter.") for k, _ in parse_qsl(urlsplit(raw).query)) <= 1, raw
     assert {u.path for u in requested if "/products/" in u.path} == {"/en/products/agathe1", "/en/products/mila4", "/en/products/sol1"}
+
+
+@pytest.mark.anyio
+async def test_morel_report_lists_every_frame_and_ignores_a_failing_colour_filter():
+    products, _, report = await crawl_morel_report()
+    assert report.complete and report.listed == {p.db_url() for p in products.values()}
+    # the colour filter is an enrichment pass: losing one page loses a colour, not the frames
+    products, _, report = await crawl_morel_report(without=(filter_url("optical", COLOR, "Red"),))
+    assert report.complete and set(products) == {"agathe1", "mila4", "sol1"}
+    # the second optical listing page is not: frames on it may exist without our knowing
+    _, _, report = await crawl_morel_report(without=("/en/collections/optical?page=2",))
+    assert not report.complete and report.problems == ["/en/collections/optical page 2: not fetched"]
 
 
 # --- generic pieces -------------------------------------------------------------------------------

@@ -225,10 +225,10 @@ def test_trend_detail_retail_presence(client):
         s.add_all([a, b])
         s.flush()
 
-        def product(src, slug, *, price, currency, rank, seen=now, out=False, kind="optical", code="wood", list_price=None):
+        def product(src, slug, *, price, currency, rank, active=True, out=False, kind="optical", code="wood", list_price=None):
             p = Product(source_id=src.id, url=f"{src.url}/{slug}", name=slug.upper(), brand=src.name, price=price,
                         list_price=list_price,
-                        currency=currency, rank=rank, image_url=f"{src.url}/{slug}.jpg", seen_at=seen,
+                        currency=currency, rank=rank, image_url=f"{src.url}/{slug}.jpg", seen_at=now, is_active=active,
                         flags={"out_of_stock": True} if out else None)
             p.tags = [ProductTag(dimension="material", code=code, field="spec:Materials", term=code, rules_version=1),
                       ProductTag(dimension="product_type", code=kind, field="categories", term=kind, rules_version=1)]
@@ -236,7 +236,7 @@ def test_trend_detail_retail_presence(client):
 
         product(a, "a1", price=40, currency="TND", rank=1)
         product(a, "a2", price=None, currency="TND", rank=2, out=True)                     # sold out: counted, not priced
-        product(a, "a3", price=99, currency="TND", rank=0, seen=now - timedelta(days=30))  # stale: not counted
+        product(a, "a3", price=99, currency="TND", rank=0, active=False)                   # dropped by a crawl: not counted
         product(a, "a4", price=50, currency="TND", rank=3, kind="sun")
         product(a, "a5", price=10, currency="TND", rank=4, code="metal")                  # other attribute
         product(b, "b1", price=100, currency="EUR", rank=2, kind="sun", list_price=200)  # -50 %

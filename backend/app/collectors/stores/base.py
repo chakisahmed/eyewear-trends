@@ -2,7 +2,8 @@
 
 One class for every retailer: what to extract comes from store_configs.yaml, never from per-store
 code. The crawler has no database and no LLM access; it only returns list[ScrapedProduct], which
-StoreSyncService (service.py) persists.
+StoreSyncService (service.py) persists. `crawler.report` (a CrawlReport) says what the listings returned and
+whether they may be incomplete, which is what lets the sync tell "gone from the catalog" from "not seen this time".
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from app.collectors.stores.config import Facet, ListingUrl, ScraperConfig
 from app.collectors.stores.parser import (
     ListingItem, facet_values, merge, next_page_url, parse_listing, parse_product_page,
 )
-from app.collectors.stores.schemas import ScrapedProduct
+from app.collectors.stores.schemas import CrawlReport, ScrapedProduct, db_url_of
 from app.config import settings
 
 log = logging.getLogger(__name__)
@@ -63,6 +64,7 @@ class BaseStoreCrawler:
         )
         self._robots: dict[str, robotparser.RobotFileParser | None] = {}
         self._requests = 0
+        self.report = CrawlReport()
 
     async def __aenter__(self) -> BaseStoreCrawler:
         return self
@@ -127,21 +129,33 @@ class BaseStoreCrawler:
                     return
 
     async def listing_items(self) -> list[ListingItem]:
-        cfg, items = self.config, []
+        cfg, items, report = self.config, [], self.report
         by_url: dict[str, ListingItem] = {}
-        max_pages = cfg.listing.pagination.max_pages if cfg.listing.pagination else 1
+        pagination = cfg.listing.pagination
+        max_pages = pagination.max_pages if pagination else 1
+        via_next = pagination is not None and pagination.param is None  # pages are reached by following links
         for entry in cfg.listing.urls:
             start, category = (entry.url, entry.categories) if isinstance(entry, ListingUrl) else (entry, None)
             first_url, first_html, listed = urljoin(str(cfg.base_url), start), None, set()
+            last: tuple[int, str, str, int] | None = None  # page, url, html, products found: the last page read
             async with aclosing(self.listing_pages(first_url)) as pages:
                 async for page, url, html in pages:
-                    if html is not None:
+                    if html is None:
+                        report.problems.append(f"{start} page {page}: not fetched")
+                    else:
                         first_html = first_html or (html if page == 1 else None)
                         found = parse_listing(html, url, cfg, start_rank=len(items) + 1)
                         if not found and page > 1:
+                            if via_next:  # a link led here: an empty page is a soft block or a changed layout
+                                report.problems.append(f"{start} page {page}: listed nothing")
                             break  # past the last page
+                        if not found:
+                            report.problems.append(f"{start}: first page listed nothing")
+                        last = (page, url, html, len(found))
                         for item in found:
                             listed.add(item.url)
+                            if stored := db_url_of(item.url):
+                                report.listed.add(stored)
                             if item.url not in by_url:
                                 by_url[item.url] = item
                                 item.rank = len(items) + 1
@@ -149,6 +163,11 @@ class BaseStoreCrawler:
                             if category:
                                 add_label(by_url[item.url].flags, "categories", category)
                     log.info("%s: listing %s page %d (max %d), %d products so far", cfg.name, start, page, max_pages, len(items))
+            # The last allowed page still lists products and more may follow: the catalog may be longer than we read.
+            # (With ?param= pagination there is no link to check, so a listing that fills max_pages counts as cut off.)
+            if last and pagination and last[0] == max_pages and last[3] and (
+                    pagination.param or (pagination.next and next_page_url(last[2], last[1], pagination.next))):
+                report.problems.append(f"{start}: stopped at max_pages ({max_pages}) with more to list")
             for facet in cfg.listing.facets if first_html is not None else ():
                 await self.facet_pass(facet, first_url, first_html, by_url, listed)
         return items
@@ -196,6 +215,7 @@ class BaseStoreCrawler:
 
     async def crawl(self) -> list[ScrapedProduct]:
         cfg = self.config
+        self.report = CrawlReport()
         items = await self.listing_items()
         pages = {}
         if cfg.product_pages.enabled:

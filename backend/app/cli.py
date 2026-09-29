@@ -26,7 +26,7 @@ from app.collectors.backfill import run_backfill
 from app.collectors.google_trends import collect_google_trends, reset_search_interest
 from app.collectors.stores.base import BaseStoreCrawler
 from app.collectors.stores.config import ScraperConfig, config_for, load_store_configs
-from app.collectors.stores.schemas import ScrapedProduct
+from app.collectors.stores.schemas import CrawlReport, ScrapedProduct
 from app.collectors.stores.service import StoreSyncService
 from app.config import settings
 from app.db import SessionLocal, init_db
@@ -96,23 +96,38 @@ def refresh_search(missing: bool) -> None:
         click.echo(f"removed {removed} old values, stored {stored} new ones, {compute_snapshots(s)} snapshots")
 
 
-async def _crawl(cfg: ScraperConfig) -> list[ScrapedProduct]:
+async def _crawl(cfg: ScraperConfig) -> tuple[list[ScrapedProduct], CrawlReport]:
     async with httpx.AsyncClient(headers={"User-Agent": settings.user_agent},
                                  timeout=httpx.Timeout(settings.request_timeout), follow_redirects=True) as client:
-        return await BaseStoreCrawler(cfg, client=client).crawl()
+        crawler = BaseStoreCrawler(cfg, client=client)
+        products = await crawler.crawl()
+        return products, crawler.report
 
 
 @cli.command("crawl-store")
 @click.argument("domain")
-def crawl_store(domain: str) -> None:
-    """Crawl one store from store_configs.yaml and upsert its products (free, no LLM)."""
+@click.option("--accept-drops", is_flag=True,
+              help="Drop products the listing no longer returns even if it shrank a lot (a real catalog cull). "
+                   "Never overrides an incomplete crawl.")
+def crawl_store(domain: str, accept_drops: bool) -> None:
+    """Crawl one store from store_configs.yaml and upsert its products (free, no LLM).
+
+    Products the store's listing no longer returns are marked inactive (dropped), only when the crawl read the whole
+    listing and it did not shrink suspiciously; a returning product is reactivated. Safe to re-run."""
     cfg = _store_config_or_exit(domain)
-    products = asyncio.run(_crawl(cfg))
+    products, report = asyncio.run(_crawl(cfg))
     with SessionLocal() as s:
         service = StoreSyncService(s)
-        result = service.sync(service.source_for(cfg).id, products)
+        result = service.sync(service.source_for(cfg).id, products, report, accept_drops=accept_drops)
     click.echo(f"{cfg.name}: {len(products)} products crawled — inserted {result.inserted}, "
-               f"updated {result.updated}, conflicts {result.conflicts}")
+               f"updated {result.updated}, conflicts {result.conflicts}, reactivated {result.reactivated}, "
+               f"dropped {result.dropped}")
+    if result.drop_skipped:
+        click.echo(f"  drops skipped: {result.drop_skipped}")
+        for problem in report.problems[:10]:
+            click.echo(f"  - {problem}")
+        if report.complete:
+            click.echo("  (re-run with --accept-drops if the catalog really shrank)")
 
 
 def _store_config_or_exit(domain: str) -> ScraperConfig:

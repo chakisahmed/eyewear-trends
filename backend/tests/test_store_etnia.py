@@ -171,9 +171,15 @@ def site() -> dict[str, str]:
     }
 
 
-async def crawl_etnia() -> tuple[dict[str, ScrapedProduct], list[httpx.URL]]:
+async def crawl_etnia(without: tuple[str, ...] = ()) -> tuple[dict[str, ScrapedProduct], list[httpx.URL]]:
+    products, requested, _ = await crawl_etnia_report(without)
+    return products, requested
+
+
+async def crawl_etnia_report(without: tuple[str, ...] = ()):
+    """(products, requested urls, CrawlReport); `without`: paths that 404, as if the store failed to serve them."""
     cfg = load_store_configs()["etniabarcelona.com"]
-    pages, requested = site(), []
+    pages, requested = {k: v for k, v in site().items() if k not in without}, []
 
     def handler(request: httpx.Request) -> httpx.Response:
         requested.append(request.url)
@@ -184,7 +190,7 @@ async def crawl_etnia() -> tuple[dict[str, ScrapedProduct], list[httpx.URL]]:
         crawler = BaseStoreCrawler(cfg, client=client)
         crawler.delay_s = 0
         products = {p.db_url().rsplit("/", 1)[-1]: p for p in await crawler.crawl()}
-    return products, requested
+    return products, requested, crawler.report
 
 
 @pytest.fixture
@@ -374,3 +380,16 @@ async def test_raw_specs_from_facets_and_the_product_page_are_merged_page_first(
         (a,) = await crawler.crawl()
     assert a.db_url() == f"{BASE}/p/a"
     assert a.flags["raw_specs"] == {"Gender": "Femme", "Forme": "Pilote", "Calibre": "52"}  # the page wins on Forme
+
+
+@pytest.mark.anyio
+async def test_etnia_crawl_report_is_complete_and_survives_a_failing_filter_page():
+    products, _, report = await crawl_etnia_report()
+    assert report.complete and {u.rsplit("/", 1)[-1] for u in report.listed} == set(products)
+    # a facet page that fails only enriches less: presence is decided by the main listings
+    filter_page = next(k for k in site() if "filter" in k)
+    _, _, report = await crawl_etnia_report(without=(filter_page,))
+    assert report.complete
+    # a main listing page that fails does not: the catalog may be longer than what was read
+    _, _, report = await crawl_etnia_report(without=("/collections/optical?page=2",))
+    assert not report.complete and "not fetched" in report.problems[0]

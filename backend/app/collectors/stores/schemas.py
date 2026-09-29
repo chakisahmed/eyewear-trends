@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, field_validator, model_validator
 
 CURRENCY_RE = re.compile(r"^[A-Z]{3}$")
 MAX_URL, MAX_NAME, MAX_BRAND = 1000, 300, 100  # products.url / name / brand column lengths
@@ -19,6 +20,36 @@ MAX_URL, MAX_NAME, MAX_BRAND = 1000, 300, 100  # products.url / name / brand col
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
+
+
+_HTTP_URL = TypeAdapter(HttpUrl)
+
+
+def db_url_of(url: str) -> str | None:
+    """The stored form of a product URL (what ScrapedProduct.db_url() gives), or None if it cannot be a product URL.
+    Presence checks compare in this form: HttpUrl normalises (host case, bare-host slash, escaping)."""
+    try:
+        stored = str(_HTTP_URL.validate_python(url))
+    except ValidationError:
+        return None
+    return stored if len(stored) <= MAX_URL else None
+
+
+@dataclass
+class CrawlReport:
+    """What a crawl saw of the store's catalog, beside the products it managed to build.
+
+    `listed` is every product URL the listings returned, in stored form, including cards that validation later drops
+    (still on the shelf). `problems` says why the listing may be incomplete (a page that failed or was refused, a
+    stop at max_pages...); an incomplete crawl never marks anything as dropped. Facet passes only enrich products and
+    never decide presence, so their failures are not problems."""
+
+    listed: set[str] = field(default_factory=set)
+    problems: list[str] = field(default_factory=list)
+
+    @property
+    def complete(self) -> bool:
+        return not self.problems
 
 
 class ScrapedProduct(BaseModel):
