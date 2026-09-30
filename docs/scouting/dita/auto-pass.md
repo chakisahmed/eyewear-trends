@@ -20,8 +20,15 @@ Site: <https://dita.com/>  ·  2026-09-29  ·  **Verdict: Promising**
 
 - Product page https://dita.com/en-tn/products/laurhyn: JSON-LD Product name='LAURHYN' price=624.75 USD color=None material=None sku='DTX204-A-01'; detail words: color, frame, lens, material, rim, shape, size; swatch/variant-like elements: 23; price visible; first swatch labels: ['White Gold', 'Silver', 'Smoked Pearl', 'White Gold']; Shopify variants blob in the page.
 
+## Second look, from Ahmed's notes (2026-09-30)
+
+- **The first pass tried a collection page as a product page** (it picked `/en-tn/collections/mens-optical`); the real product page is `/en-tn/products/<slug>`.
+- **Locale changes the price:** Evercharm is $834.75 on `/en-tn`, $795 on `/en-gb` and `/en-fr`; no `/en-us` (the US store is the root). The prefix is part of each product's URL, so it must be chosen before the first crawl.
+- **Paging** is an `<a rel="next">` anchor (3 pages, 40 per page, 81 frames); cards are `<product-item>`.
+- **Filters:** `filter.v.m.vdp.frame_shape` and `filter.v.m.vdp.frame_composition` (including the site's typo "Titanuim"), one at a time; the URL in the notes uses `sort_by` and a price range, both forbidden.
+- **Product data:** JSON-LD offers give the SKU, price and stock per colourway; the colour name is `Frame - Finish / Lens`, so the frame colour needs a two-level split (" / " then " - ").
+
 ## Verdict: Promising
 
-- **What the pages show:** Shopify. Frames are in the served HTML (80 product links on the optical page, about 81 frames, 3 pages, also a load-more control). JSON-LD `Product` with USD price and SKU; swatch labels like `White Gold`, `Silver`, `Smoked Pearl`. The site redirected us to the **Tunisian storefront (`/en-tn`)**.
-
-- **Next:** Choose the locale to track (`/en-us` or a European one) and confirm the prices in it; then `notes.md`.
+- **What the pages show:** the third Etnia-class Shopify brand: server pages, `rel=next`, one-at-a-time shape and material filters, SKU, price and stock per colourway in structured data, colour names of the form `Frame - Finish / Lens`.
+- **Next:** decide the locale (`/en-tn` as in the notes, or a neutral `/en-fr` or `/en-gb`); then the config: a nested colour split (a small generic addition) and shape aliases (Polyangular, Navigator, Diamond) from the first crawl's report.
