@@ -72,14 +72,17 @@ class FlagRule(FieldRule):
 
 
 class SpecsRule(_Strict):
+    """A product page's spec rows -> flags["raw_specs"]. `value` is a CSS selector inside the row; left out, the value
+    is the row's own text after the key's text (a row like `<p><span>Build</span> Rectangular</p>`, where the value is a
+    bare text node that CSS cannot select)."""
     rows: str
     key: str
-    value: str
+    value: str | None = None
 
     @field_validator("rows", "key", "value")
     @classmethod
-    def _css(cls, v: str) -> str:
-        return check_css(v)
+    def _css(cls, v: str | None) -> str | None:
+        return check_css(v) if v is not None else v
 
 
 class ValueRule(_Strict):

@@ -218,3 +218,13 @@ def test_rules_version_13_dita_typo_white_gold_and_two_shapes_in_specs_and_varia
     assert codes(tag_product("X", {"variants": [{"code": "C", "color": "White"}]})) == {("color", "white")}   # plain white stays white
     free = codes(tag_product("White gold edition, polyangular diamond", None))                          # aliases: specs and variants only
     assert ("color", "white") in free and not {c for d, c in free if d == "shape"}
+
+
+def test_the_build_label_is_a_shape_and_meyrowitzs_words_map_to_ours():
+    """E.B. Meyrowitz's "Build" line (v14): Rounded and Ovular are aliases, Rectangular, Soft Rectangular and Teardrop are taxonomy words."""
+    assert codes(tag_product("X", {"raw_specs": {"Build": "Rounded"}})) == {("shape", "round")}
+    assert codes(tag_product("X", {"raw_specs": {"Build": "Ovular"}})) == {("shape", "oval")}
+    assert codes(tag_product("X", {"raw_specs": {"Build": "Soft Rectangular"}})) == {("shape", "rectangle")}
+    assert codes(tag_product("X", {"raw_specs": {"Build": "Teardrop"}})) == {("shape", "aviator")}
+    assert codes(tag_product("X", {"raw_specs": {"Bridgework": "Keyhole", "Top Line": "Arched", "Rim Structure": "Thick"}})) == set()   # no dimension
+    assert codes(tag_product("Rounded Ovular", {})) == set()                                        # the aliases never apply to names

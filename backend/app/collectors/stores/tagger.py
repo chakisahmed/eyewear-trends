@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 13  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 14  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -48,6 +48,9 @@ RULES_VERSION = 13  # stored with each tag; bump when the rules below change, th
 # v13: Dita, specs and variants only: the site's own typo "Titanuim" -> titanium (it sits beside the correct "Titanium" in
 #      one filter); "White Gold" -> gold (it used to tag gold AND white: a metal finish is not white); the shapes
 #      Polyangular and Diamond -> geometric. "Navigator" is deliberately unmapped.
+# v14: E.B. Meyrowitz, specs only: its "Build" line is the frame's shape, so the label "Build" -> shape; "Rounded" ->
+#      round and "Ovular" -> oval ("Rectangular", "Soft Rectangular" and "Teardrop" are taxonomy synonyms already).
+#      Its other detail lines (Top Line, Bridgework, Rim Structure) have no taxonomy dimension: stored, not tagged.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -59,7 +62,7 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
     "materiau du cadre": "material", "matiere de la monture": "material", "materiau de la monture": "material",
     "gender": "audience", "genre": "audience", "sexe": "audience", "le sexe": "audience",
     "color": "color", "colour": "color", "couleur": "color", "coloris": "color",
-    "forme": "shape", "shape": "shape", "forme lunette": "shape", "forme de lunette": "shape",
+    "forme": "shape", "shape": "shape", "build": "shape", "forme lunette": "shape", "forme de lunette": "shape",
     "forme monture": "shape", "forme de la monture": "shape",
     "style": "style",
 }
@@ -78,7 +81,8 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
               ("almond", "oval"),  # Morel: a softly pointed oval
-              ("polyangular", "geometric"), ("diamond", "geometric")),  # Dita's shape filter
+              ("polyangular", "geometric"), ("diamond", "geometric"),  # Dita's shape filter
+              ("rounded", "round"), ("ovular", "oval")),  # E.B. Meyrowitz's "Build" line
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),

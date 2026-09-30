@@ -18,12 +18,12 @@ Site: <https://ebmeyrowitz.com/>  ·  2026-09-29  ·  **Verdict: Promising**
 
 - **Counts:** 65 spectacles (6 pages) and 58 sunglasses (5 pages), no filters. Each colourway is its own product: the 123 products are about **35 models**, 20 of them in several colours.
 - **Colour is in the name** ("The Grosvenor in Olive"): 37 distinct colours, 15 already match a colour family, 22 are marketing names (Bonfire, Jello, Demi Blonde, Saffron...).
-- **Price** is in the markup (`£1,250.00`), no JSON-LD and no SKU. **No shape, material or gender** anywhere.
+- **Price** is in the markup (`£1,250.00`), no JSON-LD and no SKU. **Shape** is on every product page ("Finer details" > Build, found after Ahmed's notes); **no material or gender**.
 - **Badges:** Special Edition 16, Limited Release 6, New 6.
 
-## Verdict: Promising, small (colour and price only)
+## Verdict: Promising, small (colour, shape and price)
 
 - **What the pages show:** an easy Shopify catalog: `rel=next` paging, price and colour readable from the markup with the crawler's existing features (one variant per product from the name, price from the page,
-  no new generic code). About 4 minutes and 40 MB. But **only colour and price** come out: no shape, material or audience.
+  no new generic code). About 4 minutes and 40 MB. It gives colour, price and (from the "Finer details" block, found later) shape; no material or audience.
 - **Next:** worth doing after the brands with shape and material data. One thing to decide: a colourway product counts as a frame, so the shelf shows 123 references for about 35 models (the Tunisian retailers
   list colourways as separate products too). The Colours switcher would allow a model-level catalog, at the cost of more machinery and no colour for single-colour models.

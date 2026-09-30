@@ -307,7 +307,8 @@ stores:
 
   # E.B. Meyrowitz (UK, Shopify), scouted 2026-09-30 (docs/scouting/eb-meyrowitz), colour and price only:
   # - optical /collections/spectacles (65 products, 6 pages of 12) and sun /collections/sunglasses (58, 5 pages),
-  #   <link rel="next"> paging, about 320 KB a page; no filters, so no facets;
+  #   <link rel="next"> paging, about 320 KB a page. The filters are tag paths (/collections/sunglasses/shape-rectangular,
+  #   colour-olive...), not query parameters: not used (the product page gives the shape for every frame);
   # - EACH COLOURWAY IS ITS OWN PRODUCT ("The Grosvenor in Olive"): 123 products, 27 models. A colourway counts as a
   #   frame, like the Tunisian retailers' listings. The page's "Colours:" switcher is not read (it can omit the
   #   current colour and has typos), and the URL handle is not the model key (9 handles disagree with the displayed
@@ -316,7 +317,10 @@ stores:
   # - the card says "From £1,250.00"; the page's p.product-showcase__price says £1,250.00 (£1,350.00 for sun);
   # - the colour is in the name (the page's hidden h1, twice), after "in" (written "In" on some): one variant per
   #   product whose code and colour are that name; there is no SKU;
-  # - no JSON-LD, no shape, material or gender; stock is not readable (no frame is marked sold out);
+  # - no JSON-LD, material or gender; stock is not readable (no frame is marked sold out);
+  # - each product page has a "Finer details" block, four `<p class="products-details__description"><span>Label</span> Value</p>`
+  #   lines, the same on every colourway of a model: Build (Rectangular 8 models, Rounded 13, Soft Rectangular 4, Ovular 1,
+  #   Teardrop 1) is the frame's SHAPE; Top Line, Bridgework and Rim Structure are kept in raw_specs, not tagged;
   # - weight: about 135 requests and 40 MB, about 4 minutes.
   ebmeyrowitz.com:
     name: "E.B. Meyrowitz"
@@ -340,6 +344,9 @@ stores:
     fields:
       name: { css: "h3.product-grid-item__heading a" }                   # "The Grosvenor in Olive"
       price: { css: "p.product-showcase__price", scope: page }            # "£1,250.00"
+    specs:
+      rows: "p.products-details__description"   # <span>Build</span> Rectangular
+      key: "span"                                # the value is the row's text after the key
     variants:
       rows: "h1"                       # twice on the page, the same name: one variant
       code: { regex: '(?i)\s+in\s+(.+)$' }    # "The Vigo In Amber Mottle" -> "Amber Mottle" (the store's own name is the code)

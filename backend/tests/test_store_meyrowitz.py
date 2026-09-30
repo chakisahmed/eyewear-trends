@@ -2,13 +2,15 @@
 collection-scoped, the price is on the product page, and there is no JSON-LD, SKU, shape or material. Offline: markup trimmed from
 the real pages (2026-09-30), served by httpx.MockTransport with the real robots.txt rules."""
 
+import re
 from urllib.parse import parse_qsl, urlsplit
 
 import httpx
 import pytest
 
 from app.collectors.stores.base import BaseStoreCrawler
-from app.collectors.stores.config import load_store_configs
+from app.collectors.stores.config import load_store_configs, parse_store_configs
+from app.collectors.stores.parser import parse_product_page
 from app.collectors.stores.schemas import ScrapedProduct
 from app.collectors.stores.tagger import tag_product
 
@@ -36,6 +38,18 @@ PLACEMENT = {  # collection -> pages of handles
     "sunglasses": [["the-aldwych-in-black", "the-argyll-in-crystal"]],
 }
 PRICE = {"spectacles": "£1,250.00", "sunglasses": "£1,350.00"}
+DETAILS = {  # model -> the "Finer details" lines (the same on every colourway of a model)
+    "the-grosvenor": [("Top Line", "Arched"), ("Build", "Rounded"), ("Bridgework", "Keyhole"), ("Rim Structure", "Thick")],
+    "the-garrick": [("Top Line", "Flat"), ("Build", "Soft Rectangular"), ("Bridgework", "Classical"), ("Rim Structure", "Medium-Thick")],
+    "the-vigo": [("Top Line", "Rolling"), ("Build", "Ovular"), ("Bridgework", "Classical"), ("Rim Structure", "Medium")],
+    "the-new-yorker": [("Top Line", "Arched"), ("Build", "Teardrop"), ("Bridgework", "Keyhole"), ("Rim Structure", "Thick")],
+    "the-aldwych": [("Top Line", "Straight"), ("Build", "Rectangular"), ("Bridgework", "Keyhole"), ("Rim Structure", "Thick")],
+    "the-argyll": [("Top Line", "Arched"), ("Build", "Rounded"), ("Bridgework", "Classical"), ("Rim Structure", "Medium Fine")],
+}
+
+
+def model_of(handle: str) -> str:
+    return re.sub(r"-in-.*$", "", handle)
 
 
 def collection_of(handle: str) -> str:
@@ -63,10 +77,13 @@ def product_page(handle: str) -> str:
     name, _ = FRAMES[handle]
     siblings = "".join(f'<li><a href="/collections/spectacles/products/{h}" title="{FRAMES[h][0].split(" in ")[-1]}">x</a></li>'
                        for h in FRAMES if h != handle and h.startswith(handle.split("-in-")[0]))
+    details = "".join(f'<p class="products-details__description"> <span>{k}</span> {v} </p>' for k, v in DETAILS[model_of(handle)])
     return (f'<html><head><link rel="canonical" href="{EBM}/products/{handle}"></head><body>'
             f'<h1 class="d-none">{name}</h1><h1 class="d-none">{name}</h1>'
             f'<p class="product-showcase__price product-standard-price">{PRICE[collection_of(handle)]}</p>'
-            f'<ul class="product-showcase__frame--list">{siblings}</ul></body></html>')
+            f'<ul class="product-showcase__frame--list">{siblings}</ul>'
+            f'<div class="products-details__box"><h3 class="products-page__heading">Finer details</h3>'
+            f'<div class="products-details__content">{details}</div></div></body></html>')
 
 
 def site() -> dict[str, str]:
@@ -139,16 +156,44 @@ async def test_one_variant_per_product_from_the_name_and_the_switcher_is_ignored
 
 
 @pytest.mark.anyio
-async def test_colour_tags_agree_and_no_shape_or_material_is_invented():
+async def test_colour_tags_agree_and_the_build_line_is_the_shape():
     products, _, _ = await crawl_meyrowitz()
     assert ("color", "black", "Black") in tags(products["the-aldwych-in-black"])
     assert ("color", "clear", "Crystal") in tags(products["the-argyll-in-crystal"])
     vigo = {(d, c) for d, c, _ in tags(products["the-vigo"]) if d == "color"}
     assert vigo == {("color", "brown")}                                               # the name and the variant say the same family
     assert not any(t[0] == "color" and t[2] == "Colour 8" for t in tags(products["the-new-yorker-in-colour-9"]))   # no family for a placeholder
+    shapes = {k: {c for d, c, _ in tags(p) if d == "shape"} for k, p in products.items()}
+    assert shapes == {"the-grosvenor-in-olive": {"round"}, "the-grosvenor-in-jello": {"round"},            # Rounded
+                      "the-garrick-in-black": {"rectangle"}, "the-aldwych-in-black": {"rectangle"},          # Soft Rectangular, Rectangular
+                      "the-vigo": {"oval"}, "the-new-yorker-in-colour-9": {"aviator"},                       # Ovular, Teardrop
+                      "the-argyll-in-crystal": {"round"}}
     for p in products.values():
-        assert {d for d, _, _ in tags(p)} <= {"color", "product_type"}, p.name
+        assert {d for d, _, _ in tags(p)} <= {"color", "product_type", "shape"}, p.name   # no material, audience or style is invented
     assert ("product_type", "sun", None) in tags(products["the-aldwych-in-black"])
+
+
+@pytest.mark.anyio
+async def test_all_four_detail_lines_are_kept_but_only_build_is_tagged():
+    products, _, _ = await crawl_meyrowitz()
+    assert products["the-garrick-in-black"].flags["raw_specs"] == {
+        "Top Line": "Flat", "Build": "Soft Rectangular", "Bridgework": "Classical", "Rim Structure": "Medium-Thick"}
+    assert not any(t.field.startswith("spec:") and t.field != "spec:Build" for t in tag_product("x", products["the-vigo"].flags))
+
+
+def test_a_spec_row_without_a_value_selector_reads_the_text_after_the_key():
+    cfg = parse_store_configs("""
+stores:
+  shop.test:
+    name: Shop Test
+    base_url: https://shop.test
+    lang: en
+    listing: {urls: ["/c"], product: "div.card", link: "a"}
+    specs: {rows: "p.d", key: "span"}
+""")["shop.test"]
+    html = ('<p class="d"><span>Top Line</span> Arched </p><p class="d"><span>Build</span>Soft   Rectangular</p>'
+            '<p class="d"><span>Empty</span></p><p class="d">no key here</p>')
+    assert parse_product_page(html, "https://shop.test/p/x", cfg).flags["raw_specs"] == {"Top Line": "Arched", "Build": "Soft Rectangular"}
 
 
 @pytest.mark.anyio
@@ -166,3 +211,4 @@ def test_the_shipped_entry_is_a_gb_catalog_with_one_variant_from_the_name():
     assert cfg.listing.url_regex == "(/products/[^/?#]+)" and cfg.listing.model_regex is None and cfg.name_strip is None
     assert cfg.variants.rows == "h1" and cfg.variants.code.regex == cfg.variants.label.regex == r"(?i)\s+in\s+(.+)$"
     assert cfg.fields["price"].scope == "page" and cfg.listing.pagination.next == "link[rel=next]"
+    assert (cfg.specs.rows, cfg.specs.key, cfg.specs.value) == ("p.products-details__description", "span", None)

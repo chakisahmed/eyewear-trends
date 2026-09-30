@@ -468,10 +468,18 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
     specs: dict[str, str] = {}
     if cfg.specs:
         for row in tree.cssselect(cfg.specs.rows):
-            k, v = row.cssselect(cfg.specs.key), row.cssselect(cfg.specs.value)
+            k = row.cssselect(cfg.specs.key)
             key = " ".join(k[0].text_content().split()) if k else ""
-            if key and v:
-                specs[key] = " ".join(v[0].text_content().split())
+            if not key:
+                continue
+            if cfg.specs.value is None:  # the row's own text after the key's
+                text = " ".join(row.text_content().split())
+                value = text[len(key):].strip() if text.startswith(key) else ""
+            else:
+                v = row.cssselect(cfg.specs.value)
+                value = " ".join(v[0].text_content().split()) if v else ""
+            if value:
+                specs[key] = value
     if cfg.description_specs and raw_nodes:
         described = description_specs(raw_nodes[i].get("description"))
         specs = described | specs  # a table value wins over the description on the same label
