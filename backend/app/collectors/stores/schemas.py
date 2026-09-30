@@ -38,18 +38,20 @@ def db_url_of(url: str) -> str | None:
 
 @dataclass(frozen=True)
 class FacetGap:
-    """A facet value (e.g. Materials = Metal) whose listing had a page that could not be fetched: the products under it
-    are missing that label this crawl. Only enrichment is affected, never which products exist."""
+    """A facet value (e.g. Materials = Metal) whose listing had a page that could not be fetched, or whose cards matched
+    none of the products already listed (their links differ from the plain listing's): the products under it are
+    missing that label this crawl. Only enrichment is affected, never which products exist."""
 
     facet: str  # the facet's name, the raw_specs key (or the flag's facet name)
     label: str
     flag: str | None = None  # the flag it sets (e.g. is_bestseller), when it is a flag facet
     per_variant: bool = False  # it also colours variants (a variant-level filter)
     url: str = ""
+    reason: str = "not fetched"
 
     @property
     def note(self) -> str:
-        return f"facet {self.facet} = {self.label} ({urlsplit(self.url).path or self.url}): not fetched"
+        return f"facet {self.facet} = {self.label} ({urlsplit(self.url).path or self.url}): {self.reason}"
 
 
 @dataclass

@@ -222,6 +222,7 @@ stores:
       pagination: { next: "link[rel=next]", max_pages: 20 }
       product: "product-item"
       link: "a[href^='/products/']"
+      url_regex: '(/products/[^/?#]+)'  # drops the ?_pos=&_fid=&_ss=&variant= tracking that filtered pages add to card links
       model_regex: '^https://[^/]+/products/(.+?)(?:-\d{2})?$'   # norton-46, norton-48 -> "norton"
       facets:
         - { name: "Shape", param: "filter.v.m.filter.shape" }          # Aviator, Butterfly, Cat Eye, Cateye, Hexagonal, Rectangle, Round, Square
@@ -258,6 +259,7 @@ stores:
       pagination: { next: "link[rel=next]", max_pages: 20 }
       product: "product-card"
       link: "a.product-card__link"
+      url_regex: '(/products/[^/?#]+)'  # drops the ?_pos=&_fid=&_ss= tracking that filtered pages add to card links
       facets:
         - { name: "Shape", param: "filter.p.m.custom.shape" }          # Square, Round, Oval, Cat-eye, Aviator
         - { name: "Materials", param: "filter.p.m.custom.material" }   # Acetate, Steel, Titanium, Combination

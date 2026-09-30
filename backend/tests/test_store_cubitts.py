@@ -3,6 +3,7 @@ swatches as variants, and a best-sellers collection that only flags frames the o
 markup trimmed from the real pages (2026-09-30), served by httpx.MockTransport with the real robots.txt rules."""
 
 import json
+import sys
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit
 
 import httpx
@@ -48,10 +49,12 @@ MATERIALS = {"spectacles": {"Acetate": ["albion", "dalmeny", "cyrus"], "Steel": 
              "sunglasses": {"Acetate": ["clayton-sunglass", "brydon-sunglass", "laystall-sunglass"]}}
 
 
-def card(slug: str) -> str:
+def card(slug: str, pos: int | None = None) -> str:
+    """`pos` set = a filtered page, whose card links carry Shopify's tracking, as on the real site."""
     name = FRAMES.get(slug, (slug.title(), []))[0]
+    href = f"/products/{slug}" + (f"?_pos={pos}&_fid=8d4bfee2c&_ss=c" if pos else "")
     return (f'<product-card class=" product-card product-list__item" data-show-index="true"><div class="product-card__media">'
-            f'<a class="product-card__link" href="/products/{slug}">{name}</a></div></product-card>')
+            f'<a class="product-card__link" href="{href}">{name}</a></div></product-card>')
 
 
 def form(collection: str) -> str:
@@ -63,9 +66,10 @@ def form(collection: str) -> str:
             + f'<input type="checkbox" name="{SIZE}" id="s1" value="gid://shopify/FilterSettingGroup/2"><label for="s1">Medium</label>')
 
 
-def listing(slugs, *, next_href=None, collection=None) -> str:
+def listing(slugs, *, next_href=None, collection=None, tracked=False) -> str:
     head = f'<link rel="next" href="{next_href}">' if next_href else ""
-    return f'<html><head>{head}</head><body>{form(collection) if collection else ""}{"".join(card(s) for s in slugs)}</body></html>'
+    cards = "".join(card(s, i if tracked else None) for i, s in enumerate(slugs, start=1))
+    return f'<html><head>{head}</head><body>{form(collection) if collection else ""}{cards}</body></html>'
 
 
 def product_page(slug: str) -> str:
@@ -92,7 +96,7 @@ def site() -> dict[str, str]:
             pages[f"/collections/{collection}" + (f"?page={i}" if i > 1 else "")] = listing(slugs, next_href=more, collection=collection if i == 1 else None)
         for param, groups in ((SHAPE, SHAPES[collection]), (MATERIAL, MATERIALS[collection])):
             for value, slugs in groups.items():
-                pages[filter_url(collection, param, value)] = listing(slugs)
+                pages[filter_url(collection, param, value)] = listing(slugs, tracked=True)
     for i, slugs in enumerate(BEST, start=1):
         pages["/collections/bestselling-glasses" + (f"?page={i}" if i > 1 else "")] = listing(slugs, next_href="/collections/bestselling-glasses?page=2" if i == 1 else None)
     for slug in FRAMES:
@@ -234,3 +238,21 @@ def test_the_shipped_entry_is_a_uk_brand_catalog():
 def test_facet_gap_notes_name_the_flag_listing():
     assert FacetGap("is_bestseller", "list", "is_bestseller", False, f"{CUB}/collections/bestselling-glasses?page=2").note == (
         "facet is_bestseller = list (/collections/bestselling-glasses): not fetched")
+
+
+@pytest.mark.anyio
+async def test_filtered_pages_link_with_tracking_and_every_filter_value_still_matches_its_frames():
+    products, _, report = await crawl_cubitts()
+    assert report.gaps == [] and report.complete
+    assert products["eyre-spectacles"].flags["raw_specs"] == {"Shape": "Cat-eye", "Materials": "Steel"}
+    assert all("?" not in p.db_url() for p in products.values())                                # no tracking in a stored URL
+    assert load_store_configs()["cubitts.com"].listing.url_regex == "(/products/[^/?#]+)"
+
+
+@pytest.mark.anyio
+async def test_a_best_seller_list_sharing_no_frame_with_the_shelves_is_a_gap(monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "BEST", [["ghost"], ["phantom"]])            # cards, but none of them a listed frame
+    products, _, report = await crawl_cubitts()
+    (gap,) = report.gaps
+    assert gap.flag == "is_bestseller" and gap.note.endswith("2 cards, none matches a listed product (links differ: url_regex?)")
+    assert not any(p.flags.get("is_bestseller") for p in products.values())

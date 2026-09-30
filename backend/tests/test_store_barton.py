@@ -49,11 +49,13 @@ MATERIALS = {"optical-collection": {"Titanium": ["euclid"], "Acetate": ["banks-4
              "sunglass-collection": {"Acetate": ["lamarr"]}}
 
 
-def card(slug: str) -> str:
+def card(slug: str, pos: int | None = None) -> str:
+    """`pos` set = a filtered page, whose card links carry Shopify's tracking (the first also a ?variant=), as on the real site."""
     name = FRAMES[slug][0]
+    href = f"/products/{slug}" + (f"?_pos={pos}&_fid=d5ef8783a&_ss=c" + ("&variant=53513335832942" if pos == 1 else "") if pos else "")
     return (f'<product-item class="product-item product-item--custom "><div class="product-item__info-top">'
-            f'<a href="/products/{slug}"><div class="product-item-meta__title">{name}</div></a></div>'
-            f'<div class="product-item__image-wrapper"><a href="/products/{slug}"><img alt=""></a></div></product-item>')
+            f'<a href="{href}"><div class="product-item-meta__title">{name}</div></a></div>'
+            f'<div class="product-item__image-wrapper"><a href="{href}"><img alt=""></a></div></product-item>')
 
 
 def form(collection: str) -> str:
@@ -64,9 +66,10 @@ def form(collection: str) -> str:
     return group(SHAPE, SHAPES[collection]) + group(MATERIAL, MATERIALS[collection])
 
 
-def listing(collection: str, slugs: list[str], next_href: str | None = None, with_form: bool = True) -> str:
+def listing(collection: str, slugs: list[str], next_href: str | None = None, with_form: bool = True, tracked: bool = False) -> str:
     head = f'<link rel="next" href="{next_href}">' if next_href else ""
-    return f'<html><head>{head}</head><body>{form(collection) if with_form else ""}{"".join(card(s) for s in slugs)}</body></html>'
+    cards = "".join(card(s, i if tracked else None) for i, s in enumerate(slugs, start=1))
+    return f'<html><head>{head}</head><body>{form(collection) if with_form else ""}{cards}</body></html>'
 
 
 def product_page(slug: str) -> str:
@@ -90,7 +93,7 @@ def site() -> dict[str, str]:
             pages[f"/collections/{collection}?page=2"] = listing(collection, second, with_form=False)
         for param, groups in ((SHAPE, SHAPES[collection]), (MATERIAL, MATERIALS[collection])):
             for value, slugs in groups.items():
-                pages[filter_url(collection, param, value)] = listing(collection, slugs, with_form=False)
+                pages[filter_url(collection, param, value)] = listing(collection, slugs, with_form=False, tracked=True)
     for slug in FRAMES:
         pages[f"/products/{slug}"] = product_page(slug)
     return pages
@@ -180,9 +183,40 @@ async def test_requests_respect_robots_one_filter_no_sort_no_plus():
     assert any(u.raw_path.decode() == filter_url("optical-collection", SHAPE, "Cat Eye") for u in requested)   # spaces are %20
 
 
+@pytest.mark.anyio
+async def test_filtered_pages_link_with_tracking_and_still_match_the_listed_frames():
+    products, _, report = await crawl_barton()
+    assert report.gaps == [] and report.complete                                                # every filter value matched its frames
+    assert sorted(p.db_url() for p in products.values()) == sorted(f"{BP}/products/{k}" for k in products)   # no tracking in a stored URL
+    assert products["cassady-47"].flags["raw_specs"] == {"Materials": "Acetate"}                # page 2's frame, found through a filter
+
+
+@pytest.mark.anyio
+async def test_a_filter_whose_cards_match_no_listed_frame_is_a_gap_not_a_silent_zero():
+    """The failure this guard exists for: without url_regex the tracked links never equal the plain listing's."""
+    cfg = load_store_configs()["bartonperreira.com"]
+    broken = cfg.model_copy(update={"listing": cfg.listing.model_copy(update={"url_regex": None, "model_regex": None})})
+    pages = site()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        return httpx.Response(200, text=pages[path]) if path in pages else httpx.Response(404)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler), headers={"User-Agent": "TestBot/1"}) as client:
+        crawler = BaseStoreCrawler(broken, client=client)
+        crawler.delay_s = 0
+        products = await crawler.crawl()
+    assert products and crawler.report.complete                                                 # presence is unaffected: no problems, only gaps
+    gaps = crawler.report.gaps
+    assert {g.facet for g in gaps} == {"Shape", "Materials"} and len(gaps) == 7                 # every filter value of both collections
+    assert all("none matches a listed product" in g.note and "url_regex" in g.note for g in gaps)
+    assert not any(p.flags.get("raw_specs") for p in products)                                   # nothing was tagged from the filters
+
+
 def test_the_shipped_entry_is_a_us_brand_catalog_with_json_ld_variants():
     cfg = load_store_configs()["bartonperreira.com"]
     assert (cfg.country, cfg.default_brand, cfg.name_strip) == ("US", "Barton Perreira", r"\s*\(\d{2}\)$")
+    assert cfg.listing.url_regex == "(/products/[^/?#]+)"                                       # filtered pages add ?_pos=&_fid=&_ss=
     assert cfg.variants.json_ld_offers and cfg.variants.color_split == ColorSplit(sep=" / ", color=0)
     assert [f.param for f in cfg.listing.facets] == [SHAPE, MATERIAL] and cfg.listing.pagination.next == "link[rel=next]"
     assert [(k, model_key(f"{BP}/products/{k}", cfg.listing.model_regex)) for k in ("norton-48", "lamarr", "princeton-49")] == [

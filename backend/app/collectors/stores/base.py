@@ -219,6 +219,7 @@ class BaseStoreCrawler:
         that cannot be fetched is a FacetGap: the crawl is retried and the sync keeps the flags it already had."""
         cfg = self.config
         first_url, failed_url = urljoin(str(cfg.base_url), entry.url), None
+        cards = matched = 0
         async with aclosing(self.listing_pages(first_url)) as pages:
             async for page, url, html in pages:
                 if html is None:
@@ -227,11 +228,16 @@ class BaseStoreCrawler:
                 found = parse_listing(html, url, cfg)
                 if not found and page > 1:
                     break
+                cards += len(found)
                 for item in found:
                     if item.url in by_url:
+                        matched += 1
                         by_url[item.url].flags[entry.flag] = True
         if failed_url:
             self.report.gaps.append(FacetGap(entry.flag, "list", entry.flag, False, failed_url))
+        elif cards and not matched:  # the same check as a facet's: a flag listing that shares no product with the main ones
+            self.report.gaps.append(FacetGap(entry.flag, "list", entry.flag, False, first_url,
+                                             f"{cards} cards, none matches a listed product (links differ: url_regex?)"))
         log.info("%s: flag listing %s: %s set on %d products", cfg.name, entry.url, entry.flag,
                  sum(1 for i in by_url.values() if i.flags.get(entry.flag)))
 
@@ -246,8 +252,9 @@ class BaseStoreCrawler:
         for value, label in facet_values(first_html, facet.param):
             if facet.only is not None and label not in facet.only:
                 continue  # never requested
-            matched, failed_url = 0, None
-            async with aclosing(self.listing_pages(with_query(first_url, **{facet.param: value}))) as pages:
+            matched, cards, failed_url = 0, 0, None
+            filtered_url = with_query(first_url, **{facet.param: value})
+            async with aclosing(self.listing_pages(filtered_url)) as pages:
                 async for page, url, html in pages:
                     if html is None:
                         complete = False  # blocked or failed: products not listed here are unknown, not "no"
@@ -255,6 +262,7 @@ class BaseStoreCrawler:
                     found = parse_listing(html, url, cfg) if html is not None else []
                     if not found and page > 1:
                         break
+                    cards += len(found)
                     for item in found:
                         if item.url not in by_url:
                             continue
@@ -268,6 +276,10 @@ class BaseStoreCrawler:
                             by_url[item.url].flags.setdefault("variant_colors", {}).setdefault(item.variant_id, label)
             if failed_url:  # the crawl is incomplete for this label: the sync keeps what it knew, the run is retried
                 self.report.gaps.append(FacetGap(facet.name, label, facet.flag, facet.per_variant, failed_url))
+            elif cards and not matched:  # a filter's products are a subset of the collection's: none matching means the links differ
+                complete = False
+                self.report.gaps.append(FacetGap(facet.name, label, facet.flag, facet.per_variant, filtered_url,
+                                                 f"{cards} cards, none matches a listed product (links differ: url_regex?)"))
             log.info("%s: facet %s = %s, %d products", cfg.name, facet.name, label, matched)
         if facet.flag and complete:
             for url in listed - flagged:
