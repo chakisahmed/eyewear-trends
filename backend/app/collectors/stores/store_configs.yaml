@@ -305,6 +305,46 @@ stores:
       json_ld_offers: true
       color_split: { sep: " / ", color: 0, then: { sep: " - ", color: 0 } }   # "Yellow Gold - Black - Shiny Silver / Dark Grey Gradient": the frame is Yellow Gold
 
+  # E.B. Meyrowitz (UK, Shopify), scouted 2026-09-30 (docs/scouting/eb-meyrowitz), colour and price only:
+  # - optical /collections/spectacles (65 products, 6 pages of 12) and sun /collections/sunglasses (58, 5 pages),
+  #   <link rel="next"> paging, about 320 KB a page; no filters, so no facets;
+  # - EACH COLOURWAY IS ITS OWN PRODUCT ("The Grosvenor in Olive"): 123 products, 27 models. A colourway counts as a
+  #   frame, like the Tunisian retailers' listings. The page's "Colours:" switcher is not read (it can omit the
+  #   current colour and has typos), and the URL handle is not the model key (9 handles disagree with the displayed
+  #   name: "The Garrick in Dark Mottle" lives at ...-in-black);
+  # - card links are collection-scoped (/collections/spectacles/products/x): url_regex keeps /products/x;
+  # - the card says "From £1,250.00"; the page's p.product-showcase__price says £1,250.00 (£1,350.00 for sun);
+  # - the colour is in the name (the page's hidden h1, twice), after "in" (written "In" on some): one variant per
+  #   product whose code and colour are that name; there is no SKU;
+  # - no JSON-LD, no shape, material or gender; stock is not readable (no frame is marked sold out);
+  # - weight: about 135 requests and 40 MB, about 4 minutes.
+  ebmeyrowitz.com:
+    name: "E.B. Meyrowitz"
+    base_url: "https://ebmeyrowitz.com"
+    lang: en
+    country: GB                        # a brand catalog, not the Tunisian market lens
+    default_brand: "E.B. Meyrowitz"    # no JSON-LD: every frame is the brand's own
+    default_currency: GBP
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/spectacles", categories: "Optique" }
+        - { url: "/collections/sunglasses", categories: "Solaire" }
+      pagination: { next: "link[rel=next]", max_pages: 20 }
+      product: "div.product-grid-item"
+      link: "h3.product-grid-item__heading a"
+      url_regex: '(/products/[^/?#]+)'   # drops the /collections/<name> prefix
+    product_pages:
+      enabled: true                    # the price and the colour (hidden h1) live on the product page
+      max_products: 400
+    fields:
+      name: { css: "h3.product-grid-item__heading a" }                   # "The Grosvenor in Olive"
+      price: { css: "p.product-showcase__price", scope: page }            # "£1,250.00"
+    variants:
+      rows: "h1"                       # twice on the page, the same name: one variant
+      code: { regex: '(?i)\s+in\s+(.+)$' }    # "The Vigo In Amber Mottle" -> "Amber Mottle" (the store's own name is the code)
+      label: { regex: '(?i)\s+in\s+(.+)$' }
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:
