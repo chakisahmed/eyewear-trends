@@ -20,7 +20,12 @@ Site: <https://www.kuboraum.com/>  ·  2026-09-29  ·  **Verdict: Medium**
 
 - Product page https://www.kuboraum.com/masks/d71-violet-petal/: no JSON-LD Product; detail words: color, lens, material, rim, size; swatch/variant-like elements: 0; no price text.
 
-## Verdict: Medium
+## Second look (2026-09-30, from Ahmed's notes and browser checks)
+
+- **Counts:** 473 optical cards and 363 sun cards, 137 of them in both: **699 distinct model-colour pages**. Everything is in one page per collection (no paging, filters are client-side model codes).
+- **Product page:** labelled lines for material, colour, temple colour, lens, bridge, lens width and temple length; **no price, no shape, no gender, no badges, no JSON-LD**.
+
+## Verdict: Medium (presence, colour, material and sizes; no price or shape)
 
 - **What the pages show:** WordPress. The optical collection serves 473 links in one 1 MB page (`/masks/<model>-<colour>/`, one per colour, so colour is in the URL and name). **No price, no JSON-LD**: presence-only. Small robots.txt, nothing restrictive.
 
