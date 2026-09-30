@@ -269,6 +269,40 @@ stores:
       code: { attr: value }            # the store's own colour name is its identity for the colour (Palier 3)
       label: { attr: value }
 
+  # Dita (USA, Shopify), scouted 2026-09-30 (docs/scouting/dita), storefront /en-fr (the neutral international one: $795
+  # for a frame that is $834.75 on /en-tn; the prefix is part of every stored URL, so it is fixed from the first crawl):
+  # - optical /en-fr/collections/optical (81 frames) and sun /en-fr/collections/sunglasses (91), 3 pages of 40 each,
+  #   paging by an <a rel="next"> anchor; cards are <product-item> elements with two anchors;
+  # - filters (one per request; robots.txt forbids sort_by and several filter parameters): frame shape and frame
+  #   composition. Filtered pages append ?_pos=&_fid=&_ss= tracking to the card links: url_regex cuts it;
+  # - the product page's JSON-LD has one Offer per colourway (name, sku, price in USD, availability). The name is
+  #   "frame colour / lens colour" and the frame colour is "Frame - Finish - Finish": only the first token is the frame's colour;
+  # - the "best-selling" collections list the whole catalog in sales order, so they cannot flag best-sellers;
+  # - weight: about 1.1 MB per listing page and 740 KB per product page: roughly 165 MB and 230 requests per crawl.
+  dita.com:
+    name: "Dita"
+    base_url: "https://dita.com"
+    lang: en
+    country: US                        # the brand's home market, a catalog and not the Tunisian lens
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/en-fr/collections/optical", categories: "Optique" }
+        - { url: "/en-fr/collections/sunglasses", categories: "Solaire" }
+      pagination: { next: "a[rel=next]", max_pages: 20 }
+      product: "product-item"
+      link: "a[href*='/products/']"
+      url_regex: '(/en-fr/products/[^/?#]+)'
+      facets:
+        - { name: "Shape", param: "filter.v.m.vdp.frame_shape" }              # Aviator, Browline, Cat-Eye, Diamond, Navigator, Polyangular, Round, Square (sun: Shield)
+        - { name: "Materials", param: "filter.v.m.vdp.frame_composition" }     # Acetate, Titanium, Titanium/Acetate (and the typo Titanuim)
+    product_pages:
+      enabled: true                    # price (JSON-LD) and the colourways live on the product page
+      max_products: 400
+    variants:
+      json_ld_offers: true
+      color_split: { sep: " / ", color: 0, then: { sep: " - ", color: 0 } }   # "Yellow Gold - Black - Shiny Silver / Dark Grey Gradient": the frame is Yellow Gold
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

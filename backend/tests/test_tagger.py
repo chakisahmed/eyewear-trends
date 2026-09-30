@@ -204,3 +204,17 @@ def test_rules_version_12_steel_is_metal_in_material_specs_only():
     assert codes(tag_product("X", {"raw_specs": {"Materials": "Steel"}})) == {("material", "metal")}
     assert codes(tag_product("X", {"raw_specs": {"Materials": "Acetate, Steel"}})) == {("material", "acetate"), ("material", "metal")}
     assert codes(tag_product("Steel edition", None)) == set()                                  # free text: no alias
+
+
+def test_rules_version_13_dita_typo_white_gold_and_two_shapes_in_specs_and_variants_only():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 13
+    assert codes(tag_product("X", {"raw_specs": {"Materials": "Titanuim"}})) == {("material", "titanium")}
+    assert codes(tag_product("X", {"raw_specs": {"Materials": "Titanium/Acetate"}})) == {("material", "titanium"), ("material", "acetate")}
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Polyangular"}})) == codes(tag_product("X", {"raw_specs": {"Shape": "Diamond"}})) == {("shape", "geometric")}
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Navigator"}})) == set()                        # deliberately unmapped
+    for label in ("White Gold", "Brushed White Gold", "Yellow Gold"):
+        assert codes(tag_product("X", {"variants": [{"code": "C", "color": label}]})) == {("color", "gold")}, label
+    assert codes(tag_product("X", {"variants": [{"code": "C", "color": "White"}]})) == {("color", "white")}   # plain white stays white
+    free = codes(tag_product("White gold edition, polyangular diamond", None))                          # aliases: specs and variants only
+    assert ("color", "white") in free and not {c for d, c in free if d == "shape"}

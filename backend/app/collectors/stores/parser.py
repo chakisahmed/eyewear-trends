@@ -316,17 +316,24 @@ def offer_variants(node: dict | None) -> list[dict[str, Any]]:
 
 
 def split_color(variants: list[dict[str, Any]], split) -> None:
-    """Apply a ColorSplit in place: color = the frame's part; all parts kept when the name has several. A name without
-    the requested part loses its color rather than getting a wrong one."""
+    """Apply a ColorSplit in place: color = the frame's part; all parts kept when the name has several (variant["parts"]
+    for the first level, variant["subparts"] for a `then` level). A name without the requested part loses its color
+    rather than getting a wrong one."""
     for variant in variants:
         label = variant.get("color")
         if not isinstance(label, str):
             continue
-        parts = [p.strip() for p in label.split(split.sep)]
-        if len(parts) > 1:
-            variant["parts"] = parts
-        if split.color < len(parts) and parts[split.color]:
-            variant["color"] = parts[split.color]
+        level, chosen, key = split, label, "parts"
+        while level is not None:
+            parts = [p.strip() for p in chosen.split(level.sep)]
+            if len(parts) > 1:
+                variant[key] = parts
+            chosen = parts[level.color] if level.color < len(parts) else ""
+            if not chosen:
+                break
+            level, key = level.then, "subparts"
+        if chosen:
+            variant["color"] = chosen
         else:
             del variant["color"]
 

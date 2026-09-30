@@ -261,3 +261,31 @@ def test_model_key_and_the_config_validators():
         parse_store_configs(YAML.replace("(.+?)", ".+?"))
     with pytest.raises(ValueError):
         parse_store_configs(YAML.replace("lang: en", "lang: en\n    name_strip: '(unclosed'"))
+
+
+def test_split_color_can_split_twice_frame_colour_first_then_its_first_token():
+    """Dita: "Yellow Gold - Black - Shiny Silver / Dark Grey to Clear Gradient" = frame - finish - finish / lens."""
+    split = ColorSplit(sep=" / ", color=0, then=ColorSplit(sep=" - ", color=0))
+    variants = [{"code": "A", "color": "Yellow Gold - Black - Shiny Silver / Dark Grey to Clear Gradient"},
+                {"code": "B", "color": "Brushed White Gold / Brown - Brown Gradient"},      # the lens itself holds " - ": untouched
+                {"code": "C", "color": "Silver"},                                            # nothing to split
+                {"code": "D", "color": " / Clear"},                                          # no frame part: no colour
+                {"code": "E", "color": "Black Glass - Silver / Grey"},
+                {"code": "F"}]
+    split_color(variants, split)
+    assert variants[0] == {"code": "A", "color": "Yellow Gold", "parts": ["Yellow Gold - Black - Shiny Silver", "Dark Grey to Clear Gradient"],
+                           "subparts": ["Yellow Gold", "Black", "Shiny Silver"]}
+    assert variants[1] == {"code": "B", "color": "Brushed White Gold", "parts": ["Brushed White Gold", "Brown - Brown Gradient"]}
+    assert variants[2] == {"code": "C", "color": "Silver"}
+    assert variants[3] == {"code": "D", "parts": ["", "Clear"]}
+    assert variants[4]["color"] == "Black Glass" and variants[4]["subparts"] == ["Black Glass", "Silver"]
+    assert variants[5] == {"code": "F"}
+
+
+def test_split_color_second_level_can_pick_another_token_and_go_deeper():
+    variants = [{"code": "A", "color": "Front - Finish / Lens"}]
+    split_color(variants, ColorSplit(color=0, then=ColorSplit(sep=" - ", color=1)))
+    assert variants[0]["color"] == "Finish"
+    deeper = [{"code": "A", "color": "A - B:C / X"}]
+    split_color(deeper, ColorSplit(color=0, then=ColorSplit(sep=" - ", color=1, then=ColorSplit(sep=":", color=1))))
+    assert deeper[0]["color"] == "C" and deeper[0]["subparts"] == ["B", "C"]

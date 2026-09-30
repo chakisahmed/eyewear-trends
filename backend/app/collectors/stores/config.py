@@ -101,9 +101,12 @@ class ValueRule(_Strict):
 
 class ColorSplit(_Strict):
     """A compound color name ("Absinthe / Clear / Chestnut / Antique Gold": front / lens / temples / finish): only the
-    part at `color` is the variant's color (the frame's); every part is kept as variant["parts"] for later."""
+    part at `color` is the variant's color (the frame's); every part is kept as variant["parts"] for later.
+    `then` splits the chosen part again ("Yellow Gold - Black - Shiny Silver / Dark Grey Gradient": " / " picks the frame,
+    " - " picks its first token), keeping that level's parts as variant["subparts"]."""
     sep: str = Field(" / ", min_length=1)
     color: int = Field(0, ge=0, le=5)
+    then: ColorSplit | None = None
 
 
 class VariantsRule(_Strict):

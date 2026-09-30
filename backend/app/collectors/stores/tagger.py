@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 12  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 13  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -45,6 +45,9 @@ RULES_VERSION = 12  # stored with each tag; bump when the rules below change, th
 #      are added from the crawl's report of front colours with no family. ("Cateye", its second shape spelling, is
 #      already a taxonomy synonym.)
 # v12: Cubitts, specs only: the material filter value "Steel" -> metal ("stainless steel" already was).
+# v13: Dita, specs and variants only: the site's own typo "Titanuim" -> titanium (it sits beside the correct "Titanium" in
+#      one filter); "White Gold" -> gold (it used to tag gold AND white: a metal finish is not white); the shapes
+#      Polyangular and Diamond -> geometric. "Navigator" is deliberately unmapped.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -65,14 +68,17 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
 # "Plastique" is deliberately absent: it could be acetate or injected TR90.
 SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal"),
-                 ("steel", "metal")),  # Cubitts' filter value
+                 ("steel", "metal"),  # Cubitts' filter value
+                 ("titanuim", "titanium")),  # Dita's typo, in its own filter
     "color": (("carey", "tortoiseshell"),  # Hawkers' word for tortoiseshell
               ("army", "green"), ("petrol", "blue"),  # Etnia's color names
               ("ruthenium", "grey"),  # Morel: a dark grey metal plating
-              ("chestnut", "brown"), ("espresso", "brown"), ("hickory", "brown")),  # Barton Perreira
+              ("chestnut", "brown"), ("espresso", "brown"), ("hickory", "brown"),  # Barton Perreira
+              ("white gold", "gold")),  # Dita: a metal finish, so not also "white"
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
-              ("almond", "oval")),  # Morel: a softly pointed oval
+              ("almond", "oval"),  # Morel: a softly pointed oval
+              ("polyangular", "geometric"), ("diamond", "geometric")),  # Dita's shape filter
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),

@@ -59,6 +59,10 @@ CUSTOM 4-PIECE TITANIUM LENS PIERCINGS DITA PROPRIETARY TITANIUM HEX SCREW 5-BAR
 MADE IN JAPAN
 ## Anything else
 
+## Status
+- **Locale settled: `/en-fr`** (USD, $795 for Evercharm). **Crawler config written** (Step 17, `docs/phase2-step17-dita-plan.md`), tested offline. **Not yet crawled**:
+  `python -m app.cli crawl-store dita.com` (about 7 minutes, about 165 MB) from a terminal, then `retag-products`.
+
 ## Checks (Claude, 2026-09-30, in the browser: about 10 page views, 1.5 s apart)
 - **The storefront decides the price.** The same frame, Evercharm, is **$834.75 on `/en-tn`** and **$795 on `/en-gb` and `/en-fr`** (all in USD). There is no
   `/en-us` path (404); the US store is the site root. Your notes chose `en-tn`. That URL prefix is part of every product's identity in our database, so the locale
