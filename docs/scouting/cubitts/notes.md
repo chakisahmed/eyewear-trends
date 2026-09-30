@@ -66,6 +66,10 @@ Complimentary frame rehab after a year
 doesn not show, only way to know a product is bestseller is it appears in sorted list  by it
 ## Anything else
 
+## Status
+- **Crawler config written** (Step 16, `docs/phase2-step16-cubitts-plan.md`), tested offline. **Not yet crawled**: `python -m app.cli crawl-store cubitts.com`
+  (about 12 minutes, about 200 MB) from a terminal, then `retag-products`.
+
 ## Checks (Claude, 2026-09-30, in the browser: about 20 page views, 1.5 s apart)
 - **Currency is GBP, not euros**: the product page shows `£175` and its structured data says `GBP`.
 - **Paging is plain server pages.** The "infinite scroll" only loads the same `?page=N` pages, and each carries `<link rel="next">`:

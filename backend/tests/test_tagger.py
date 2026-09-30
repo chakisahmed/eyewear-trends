@@ -196,3 +196,11 @@ def test_rules_version_11_barton_perreira_colour_names_in_variants_and_both_cat_
     for label in ("Chestnut", "Espresso", "Hickory"):
         assert codes(tag_product("X", {"variants": [{"code": "C", "color": label}]})) == {("color", "brown")}, label
     assert codes(tag_product("Chestnut hickory espresso", None)) == set()                       # colour aliases: specs and variants only
+
+
+def test_rules_version_12_steel_is_metal_in_material_specs_only():
+    from app.collectors.stores.tagger import RULES_VERSION
+    assert RULES_VERSION >= 12
+    assert codes(tag_product("X", {"raw_specs": {"Materials": "Steel"}})) == {("material", "metal")}
+    assert codes(tag_product("X", {"raw_specs": {"Materials": "Acetate, Steel"}})) == {("material", "acetate"), ("material", "metal")}
+    assert codes(tag_product("Steel edition", None)) == set()                                  # free text: no alias

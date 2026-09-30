@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 11  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 12  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -44,6 +44,7 @@ RULES_VERSION = 11  # stored with each tag; bump when the rules below change, th
 #      Gradient" is also Bicolore: "gradient" is a taxonomy synonym). Its marketing colour names are not guessed: they
 #      are added from the crawl's report of front colours with no family. ("Cateye", its second shape spelling, is
 #      already a taxonomy synonym.)
+# v12: Cubitts, specs only: the material filter value "Steel" -> metal ("stainless steel" already was).
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -63,7 +64,8 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
 # Trends, so it stays untouched). Only applied to scoped spec values, never to names or categories.
 # "Plastique" is deliberately absent: it could be acetate or injected TR90.
 SPEC_ALIASES = {  # dimension -> (folded phrase, code)
-    "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal")),
+    "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal"),
+                 ("steel", "metal")),  # Cubitts' filter value
     "color": (("carey", "tortoiseshell"),  # Hawkers' word for tortoiseshell
               ("army", "green"), ("petrol", "blue"),  # Etnia's color names
               ("ruthenium", "grey"),  # Morel: a dark grey metal plating

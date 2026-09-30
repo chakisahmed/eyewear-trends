@@ -233,6 +233,42 @@ stores:
       json_ld_offers: true
       color_split: { sep: " / ", color: 0 }   # "Absinthe / Clear / Chestnut / Antique Gold": the frame is Absinthe
 
+  # Cubitts (UK, Shopify), scouted 2026-09-30 (docs/scouting/cubitts):
+  # - optical /collections/spectacles (6 pages, 117 frames) and sun /collections/sunglasses (7 pages, 132), 20 cards per
+  #   page, <link rel="next"> paging (the site's "infinite scroll" loads these same pages);
+  # - cards are <product-card> elements with a.product-card__link;
+  # - product-level filters, one per request: shape and material. The "Bestsellers" sort is the filter parameter
+  #   filter.p.m.custom.sort_by, which robots.txt forbids (`/collections/*sort_by*`): never requested. Instead the plain
+  #   collection /collections/bestselling-glasses (16 optical frames) flags is_bestseller (True only: it covers optical only);
+  # - product page: JSON-LD Product (name, brand Cubitts, price in GBP); the colourways are the swatch inputs
+  #   input[name=Colour], whose value is the store's own colour name. A variant is size / colour / prescription, so sizes
+  #   are not separate products;
+  # - weight: about 1.3 MB per listing page and 550 KB per product page: roughly 200 MB and 300 requests per crawl.
+  cubitts.com:
+    name: "Cubitts"
+    base_url: "https://cubitts.com"
+    lang: en
+    country: GB                        # a brand catalog, not the Tunisian market lens
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/spectacles", categories: "Optique" }
+        - { url: "/collections/sunglasses", categories: "Solaire" }
+        - { url: "/collections/bestselling-glasses", flag: is_bestseller }
+      pagination: { next: "link[rel=next]", max_pages: 20 }
+      product: "product-card"
+      link: "a.product-card__link"
+      facets:
+        - { name: "Shape", param: "filter.p.m.custom.shape" }          # Square, Round, Oval, Cat-eye, Aviator
+        - { name: "Materials", param: "filter.p.m.custom.material" }   # Acetate, Steel, Titanium, Combination
+    product_pages:
+      enabled: true                    # price (JSON-LD) and the colour swatches live on the product page
+      max_products: 400
+    variants:
+      rows: "input.product-color-swatch__radio[name='Colour']"
+      code: { attr: value }            # the store's own colour name is its identity for the colour (Palier 3)
+      label: { attr: value }
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

@@ -164,6 +164,23 @@ class Pagination(_Strict):
 class ListingUrl(_Strict):
     url: str  # relative to base_url, or absolute
     categories: str | None = None  # flags["categories"] of every product listed here, e.g. "Solaire"
+    # A listing that only flags: every product it lists that the other listings also list gets flags[flag] = True
+    # (e.g. a "best-sellers" collection). It never adds a product and never counts as presence. True or unset,
+    # never False: such a list often covers one shelf only, so "not on it" says nothing.
+    flag: str | None = None
+
+    @field_validator("flag")
+    @classmethod
+    def _identifier(cls, v: str | None) -> str | None:
+        if v is not None and not v.isidentifier():
+            raise ValueError(f"flag must be an identifier, e.g. is_bestseller: {v!r}")
+        return v
+
+    @model_validator(mode="after")
+    def _flag_or_categories(self) -> ListingUrl:
+        if self.flag and self.categories:
+            raise ValueError("a flag listing adds no products, so it takes no 'categories'")
+        return self
 
 
 class Facet(_Strict):
@@ -211,6 +228,12 @@ class ListingRule(_Strict):
     @classmethod
     def _css(cls, v: str) -> str:
         return check_css(v)
+
+    @model_validator(mode="after")
+    def _some_main_listing(self) -> ListingRule:
+        if all(isinstance(u, ListingUrl) and u.flag for u in self.urls):
+            raise ValueError("listing.urls needs at least one listing that is not a flag-only one")
+        return self
 
     @field_validator("url_regex", "model_regex")
     @classmethod

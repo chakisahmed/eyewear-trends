@@ -167,7 +167,8 @@ class BaseStoreCrawler:
         pagination = cfg.listing.pagination
         max_pages = pagination.max_pages if pagination else 1
         via_next = pagination is not None and pagination.param is None  # pages are reached by following links
-        for entry in cfg.listing.urls:
+        flag_listings = [u for u in cfg.listing.urls if isinstance(u, ListingUrl) and u.flag]
+        for entry in (u for u in cfg.listing.urls if u not in flag_listings):
             start, category = (entry.url, entry.categories) if isinstance(entry, ListingUrl) else (entry, None)
             first_url, first_html, listed = urljoin(str(cfg.base_url), start), None, set()
             last: tuple[int, str, str, int] | None = None  # page, url, html, products found: the last page read
@@ -208,7 +209,31 @@ class BaseStoreCrawler:
                 report.problems.append(f"{start}: stopped at max_pages ({max_pages}) with more to list")
             for facet in cfg.listing.facets if first_html is not None else ():
                 await self.facet_pass(facet, first_url, first_html, by_url, listed)
+        for entry in flag_listings:  # after the main listings: they only flag what those found
+            await self.flag_pass(entry, by_url)
         return items
+
+    async def flag_pass(self, entry: ListingUrl, by_url: dict[str, ListingItem]) -> None:
+        """Set flags[entry.flag] = True on every product the listing shares with the main ones. Enrichment only: a
+        product found only here is ignored (no product, not on the shelf), so nothing depends on it for presence. A page
+        that cannot be fetched is a FacetGap: the crawl is retried and the sync keeps the flags it already had."""
+        cfg = self.config
+        first_url, failed_url = urljoin(str(cfg.base_url), entry.url), None
+        async with aclosing(self.listing_pages(first_url)) as pages:
+            async for page, url, html in pages:
+                if html is None:
+                    failed_url = failed_url or url
+                    continue
+                found = parse_listing(html, url, cfg)
+                if not found and page > 1:
+                    break
+                for item in found:
+                    if item.url in by_url:
+                        by_url[item.url].flags[entry.flag] = True
+        if failed_url:
+            self.report.gaps.append(FacetGap(entry.flag, "list", entry.flag, False, failed_url))
+        log.info("%s: flag listing %s: %s set on %d products", cfg.name, entry.url, entry.flag,
+                 sum(1 for i in by_url.values() if i.flags.get(entry.flag)))
 
     async def facet_pass(self, facet: Facet, first_url: str, first_html: str, by_url: dict[str, ListingItem],
                          listed: set[str]) -> None:
