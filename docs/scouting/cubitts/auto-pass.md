@@ -20,8 +20,19 @@ Site: <https://cubitts.com/>  ·  2026-09-29  ·  **Verdict: Promising**
 
 - Product page https://cubitts.com/products/laystall: JSON-LD Product name='Laystall' price=175.0 GBP color=None material=None sku=None; detail words: color, colour, frame, lens, shape, size; swatch/variant-like elements: 25; price visible; first swatch labels: ['Amber']; Shopify variants blob in the page.
 
+## Second look, from Ahmed's notes (2026-09-30)
+
+- **Paging corrected:** 6 pages for the 117 spectacles and 7 for the 132 sunglasses (the first pass had seen only two page numbers), all plain `?page=N`
+  with `rel=next`, about 1.3 MB each. What looks like infinite scroll is the same pages loaded by script.
+- **Colours and variants:** colour swatches are `input[name="Colour"]` with plain names; a variant is size / colour / prescription (Dalmeny: 20 variants,
+  5 colours). Price is GBP (`£175`), the notes' "euros" is a slip.
+- **Best-sellers:** the sort filter is `filter.p.m.custom.sort_by`, forbidden by robots.txt; the plain collection `/collections/bestselling-glasses`
+  (16 frames) is allowed and would flag them.
+- **Filters worth using:** shape (5 values) and material (4); one at a time.
+
 ## Verdict: Promising
 
-- **What the pages show:** Shopify, GBP prices. Frames are in the served HTML (about 117 spectacles, 2 listing pages, `rel=next`). Product page has JSON-LD `Product` with price, colour swatches (25 variant elements, labels like `Amber`) and a Shopify variants blob.
-
-- **Next:** Fill `notes.md`; check the colour swatch labels on one saved product page. Likely the closest match to Etnia's setup.
+- **What the pages show:** the second Etnia-class brand after Barton Perreira: Shopify, UK store in GBP, server-rendered pages with `rel=next`, product-level
+  shape and material filters, plain colour names, and a plain best-sellers collection.
+- **Next:** write the config (two collections, shape and material passes, colour swatches as variants, a best-sellers listing flag, name aliases for
+  the colours). One small generic addition is needed: a listing URL that only flags its products. Nothing about sizes.
