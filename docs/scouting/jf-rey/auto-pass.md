@@ -20,8 +20,16 @@ Site: <https://www.jfrey.fr/en/>  ·  2026-09-29  ·  **Verdict: Promising**
 
 - Frame page https://www.jfrey.fr/en/jf3157/: no JSON-LD Product; detail words: color, frame, lens, material, size; swatch/variant-like elements: 0; no price text.
 
-## Verdict: Promising
+## Second look, from Ahmed's notes (2026-09-30)
 
-- **What the pages show:** WordPress (the English site is `www.jfrey.fr/en/`). Catalog pages by range (`catalog-men-en`, `catalog-women-en`, sun): the men's page alone serves 63 frame links (`/en/<model code>/`) on one page. **No price and no JSON-LD**: presence-only, like Morel. Product pages mention colour and material in text.
+- **robots.txt asks for `Crawl-delay: 10`** (10 s between requests): honoured, so a crawl runs at `delay_s: 10`, about 35 minutes for a couple of hundred models.
+- **Every model is already in the served HTML** (63 men's models on `/en/catalog-men-en/`); "View more styles" only reveals rows, it fetches nothing. Women's, kids' and sun pages work the same way.
+- **Colours are opaque codes** (`JF3157 - 9955`, `COL. 0029`): 273 codes for the 63 men's models, no colour names anywhere, so no colour family can be tagged.
+- **The model page** has the name (`og:title`), the size, the colour codes and a free-text design paragraph and feature list (material and shape are only in that text). **No price, no JSON-LD, no filters.**
 
-- **Next:** A saved frame page: how are colours and materials written? Confirm all frames sit on one page per range.
+## Verdict: Medium (presence-only, low value)
+
+- **What the pages show:** a large, easy-to-read catalog (about 60 models per range, several colourways each) with **no price, no colour names, no structured data**. Audience and type come from which
+  catalog page a model is on (except sun, which mixes men and women); material and shape only from a marketing paragraph.
+- **Next:** park it unless the client wants French independent brands for presence, or supplies the colour-code legend. If pursued: config at `delay_s: 10`, and one small new tagger feature (read the design paragraph for
+  shape and material only, never colour).
