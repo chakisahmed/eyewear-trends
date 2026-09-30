@@ -18,7 +18,11 @@ Site: <https://www.rigards.com/>  ·  2026-09-29  ·  **Verdict: Medium**
 
 - `/collections/all` (101 KB, final URL https://www.rigards.com/collections/all): 0 frame links in the served HTML, e.g. []; paging: no rel=next.
 
-## Verdict: Medium
+## Second look (2026-09-30, from the submenu screenshot and browser checks): no catalog published
+
+- The six "Natural materials" entries are story pages with no frames; the 9 collections in the sitemap are all empty, and there is no products sitemap. The shop publishes no product.
+
+## Verdict: Medium, revised to **Nothing to crawl** (see the second look)
 
 - **What the pages show:** Shopify. The menu's only collection link is a story page ("Natural materials"), and `/collections/all` serves no frame links (101 KB page). Probably a small catalog shown through page-builder sections or script.
 
