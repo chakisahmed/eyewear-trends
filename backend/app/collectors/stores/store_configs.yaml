@@ -271,13 +271,14 @@ stores:
       code: { attr: value }            # the store's own colour name is its identity for the colour (Palier 3)
       label: { attr: value }
 
-  # Dita (USA, Shopify), scouted 2026-09-30 (docs/scouting/dita), storefront /en-fr (the neutral international one: $795
-  # for a frame that is $834.75 on /en-tn; the prefix is part of every stored URL, so it is fixed from the first crawl):
+  # Dita (USA, Shopify), scouted 2026-09-30 (docs/scouting/dita), storefront /en-fr (the France market, priced in EUR for a
+  # client without cookies, which is how the crawler asks: Laurhyn is 550 EUR; a browser carrying a Tunisia-market cookie sees /en-tn
+  # and USD instead. The prefix is part of every stored URL, so it is fixed from the first crawl):
   # - optical /en-fr/collections/optical (81 frames) and sun /en-fr/collections/sunglasses (91), 3 pages of 40 each,
   #   paging by an <a rel="next"> anchor; cards are <product-item> elements with two anchors;
   # - filters (one per request; robots.txt forbids sort_by and several filter parameters): frame shape and frame
   #   composition. Filtered pages append ?_pos=&_fid=&_ss= tracking to the card links: url_regex cuts it;
-  # - the product page's JSON-LD has one Offer per colourway (name, sku, price in USD, availability). The name is
+  # - the product page's JSON-LD has one Offer per colourway (name, sku, price in EUR on /en-fr, availability). The name is
   #   "frame colour / lens colour" and the frame colour is "Frame - Finish - Finish": only the first token is the frame's colour;
   # - the "best-selling" collections list the whole catalog in sales order, so they cannot flag best-sellers;
   # - weight: about 1.1 MB per listing page and 740 KB per product page: roughly 165 MB and 230 requests per crawl.
@@ -285,7 +286,7 @@ stores:
     name: "Dita"
     base_url: "https://dita.com"
     lang: en
-    country: US                        # the brand's home market, a catalog and not the Tunisian lens
+    country: US                        # the brand's home market, a catalog and not the Tunisian lens (prices are EUR: the /en-fr market)
     delay_s: 1.5
     listing:
       urls:

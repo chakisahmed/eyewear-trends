@@ -79,3 +79,6 @@ MADE IN JAPAN
   colour follows the "/" (it is also a separate option). Only the frame colour would become the colour tag.
 - **Size:** Evercharm has 3 variants (colour x lens), no size options; sizes look like a filter attribute, not separate products (to confirm on a few more frames).
 - **Not settled:** the locale (above), and the cost of a crawl (about 1.3 MB per listing page, 40 frames per page).
+
+## Correction (2026-10-01): the crawler's prices are in EUR
+The `/en-fr` storefront is the France market: a client with no cookies (the crawler) gets **EUR** (Laurhyn 550 EUR). The USD prices above were seen in a browser that carried a Tunisia-market cookie (it was redirected to `/en-tn`). The config keeps `/en-fr` and `country: US` (the brand's home market); "Navigator" now tags aviator (tagger v15).

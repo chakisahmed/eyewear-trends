@@ -73,7 +73,7 @@ def listing(slugs, *, next_href=None, collection=None, tracking=False) -> str:
 
 def product_page(slug: str) -> str:
     name, prefix, price, colourways = FRAMES[slug]
-    offers = [{"@type": "Offer", "name": c, "sku": f"{prefix}-A-{i:02d}", "price": price, "priceCurrency": "USD", "availability": IN,
+    offers = [{"@type": "Offer", "name": c, "sku": f"{prefix}-A-{i:02d}", "price": price, "priceCurrency": "EUR", "availability": IN,
                "url": f"{DITA}/en-fr/products/{slug}?variant={i}"} for i, c in enumerate(colourways, start=1)]
     ld = {"@context": "http://schema.org/", "@type": "Product", "name": name, "url": f"{DITA}/en-fr/products/{slug}",
           "brand": {"@type": "Brand", "name": "DITA Eyewear"}, "offers": offers}
@@ -135,7 +135,7 @@ async def test_every_page_is_followed_by_its_rel_next_anchor_and_identities_igno
     assert {"/en-fr/collections/optical?page=2", "/en-fr/collections/optical?page=3", "/en-fr/collections/sunglasses?page=2"} <= paths
     assert all("?" not in p.db_url() for p in products.values())              # the ?_pos=&_fid=&_ss= of filtered pages is cut
     laurhyn = products["laurhyn"]
-    assert (laurhyn.name, laurhyn.brand, laurhyn.price, laurhyn.currency) == ("LAURHYN", "DITA Eyewear", 595.0, "USD")
+    assert (laurhyn.name, laurhyn.brand, laurhyn.price, laurhyn.currency) == ("LAURHYN", "DITA Eyewear", 595.0, "EUR")
     assert laurhyn.db_url() == f"{DITA}/en-fr/products/laurhyn"
     assert laurhyn.flags["categories"] == "Optique" and products["mach-five"].flags["categories"] == "Solaire"
 
@@ -177,7 +177,7 @@ async def test_shape_and_material_labels_become_tags_including_the_sites_own_typ
     assert got("monolix-optical") == {("shape", "geometric"), ("material", "acetate")}                    # Polyangular
     assert got("lineage-68x") == {("shape", "shield"), ("material", "titanium")}
     assert got("flight-006") == {("shape", "geometric"), ("material", "acetate")}                         # Diamond
-    assert got("mach-five") == {("material", "titanium")}                                                  # Navigator: deliberately unmapped
+    assert got("mach-five") == {("material", "titanium"), ("shape", "aviator")}                            # Navigator -> aviator (v15)
 
 
 @pytest.mark.anyio

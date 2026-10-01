@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 14  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 15  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -47,10 +47,15 @@ RULES_VERSION = 14  # stored with each tag; bump when the rules below change, th
 # v12: Cubitts, specs only: the material filter value "Steel" -> metal ("stainless steel" already was).
 # v13: Dita, specs and variants only: the site's own typo "Titanuim" -> titanium (it sits beside the correct "Titanium" in
 #      one filter); "White Gold" -> gold (it used to tag gold AND white: a metal finish is not white); the shapes
-#      Polyangular and Diamond -> geometric. "Navigator" is deliberately unmapped.
+#      Polyangular and Diamond -> geometric. ("Navigator" was left unmapped here; v15 maps it.)
 # v14: E.B. Meyrowitz, specs only: its "Build" line is the frame's shape, so the label "Build" -> shape; "Rounded" ->
 #      round and "Ovular" -> oval ("Rectangular", "Soft Rectangular" and "Teardrop" are taxonomy synonyms already).
 #      Its other detail lines (Top Line, Bridgework, Rim Structure) have no taxonomy dimension: stored, not tagged.
+# v15: Dita's shape "Navigator" -> aviator (its own copy calls it an aviator with a square lens; 30 frames). E.B. Meyrowitz's
+#      colour names from its first crawl, variants only: Demi-Blonde -> tortoiseshell; Dark Mottle, Copper Mottle, Cinnamon,
+#      Ochre -> brown; Moss, Jade -> green; Midnight, Atlantic, Cyan, Aqua -> blue; Shadow, Cloud -> grey; Barley, Savannah,
+#      Desert Sun -> beige; Saffron, Sunshine, Sunburst -> orange (the taxonomy's orange / yellow family). Left untagged on
+#      purpose: Jello, Opal, Mirage, Bonfire, Lava, Mountain Rain and the placeholder "Colour 8".
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -77,12 +82,21 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("army", "green"), ("petrol", "blue"),  # Etnia's color names
               ("ruthenium", "grey"),  # Morel: a dark grey metal plating
               ("chestnut", "brown"), ("espresso", "brown"), ("hickory", "brown"),  # Barton Perreira
-              ("white gold", "gold")),  # Dita: a metal finish, so not also "white"
+              ("white gold", "gold"),  # Dita: a metal finish, so not also "white"
+              # E.B. Meyrowitz's marketing colour names
+              ("demi blonde", "tortoiseshell"),
+              ("dark mottle", "brown"), ("copper mottle", "brown"), ("cinnamon", "brown"), ("ochre", "brown"),
+              ("moss", "green"), ("jade", "green"),
+              ("midnight", "blue"), ("atlantic", "blue"), ("cyan", "blue"), ("aqua", "blue"),
+              ("shadow", "grey"), ("cloud", "grey"),
+              ("barley", "beige"), ("savannah", "beige"), ("desert sun", "beige"),
+              ("saffron", "orange"), ("sunshine", "orange"), ("sunburst", "orange")),
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
               ("almond", "oval"),  # Morel: a softly pointed oval
               ("polyangular", "geometric"), ("diamond", "geometric"),  # Dita's shape filter
-              ("rounded", "round"), ("ovular", "oval")),  # E.B. Meyrowitz's "Build" line
+              ("rounded", "round"), ("ovular", "oval"),  # E.B. Meyrowitz's "Build" line
+              ("navigator", "aviator")),  # Dita: an aviator with a square lens
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),

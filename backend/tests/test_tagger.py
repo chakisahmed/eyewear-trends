@@ -212,7 +212,7 @@ def test_rules_version_13_dita_typo_white_gold_and_two_shapes_in_specs_and_varia
     assert codes(tag_product("X", {"raw_specs": {"Materials": "Titanuim"}})) == {("material", "titanium")}
     assert codes(tag_product("X", {"raw_specs": {"Materials": "Titanium/Acetate"}})) == {("material", "titanium"), ("material", "acetate")}
     assert codes(tag_product("X", {"raw_specs": {"Shape": "Polyangular"}})) == codes(tag_product("X", {"raw_specs": {"Shape": "Diamond"}})) == {("shape", "geometric")}
-    assert codes(tag_product("X", {"raw_specs": {"Shape": "Navigator"}})) == set()                        # deliberately unmapped
+    assert codes(tag_product("X", {"raw_specs": {"Shape": "Navigator"}})) == {("shape", "aviator")}        # v15: an aviator with a square lens
     for label in ("White Gold", "Brushed White Gold", "Yellow Gold"):
         assert codes(tag_product("X", {"variants": [{"code": "C", "color": label}]})) == {("color", "gold")}, label
     assert codes(tag_product("X", {"variants": [{"code": "C", "color": "White"}]})) == {("color", "white")}   # plain white stays white
@@ -228,3 +228,18 @@ def test_the_build_label_is_a_shape_and_meyrowitzs_words_map_to_ours():
     assert codes(tag_product("X", {"raw_specs": {"Build": "Teardrop"}})) == {("shape", "aviator")}
     assert codes(tag_product("X", {"raw_specs": {"Bridgework": "Keyhole", "Top Line": "Arched", "Rim Structure": "Thick"}})) == set()   # no dimension
     assert codes(tag_product("Rounded Ovular", {})) == set()                                        # the aliases never apply to names
+
+
+def test_meyrowitzs_marketing_colour_names_map_to_a_family_in_variants_only():
+    """v15: only the names the client approved; the doubtful ones stay untagged."""
+    def family(name):
+        return {t.code for t in tag_product("The X", {"variants": [{"code": name, "color": name}]}) if t.dimension == "color"}
+    expected = {"Demi-Blonde": "tortoiseshell", "Dark Mottle": "brown", "Copper Mottle": "brown", "Cinnamon": "brown", "Ochre": "brown",
+                "Moss": "green", "Jade": "green", "Midnight": "blue", "Atlantic": "blue", "Cyan": "blue", "Aqua": "blue",
+                "Shadow": "grey", "Cloud": "grey", "Barley": "beige", "Savannah": "beige", "Desert Sun": "beige",
+                "Saffron": "orange", "Sunshine": "orange", "Sunburst": "orange"}
+    for name, code in expected.items():
+        assert family(name) == {code}, name
+    for name in ("Jello", "Opal", "Mirage", "Bonfire", "Lava", "Mountain Rain", "Colour 8"):
+        assert family(name) == set(), name
+    assert {t.code for t in tag_product("Moss Aqua Shadow", {}) if t.dimension == "color"} == set()   # never from a name
