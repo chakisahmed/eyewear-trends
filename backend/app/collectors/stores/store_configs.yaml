@@ -441,6 +441,35 @@ stores:
       code: { css: ".slider-caption__color--code" }
       label: { css: ".slider-caption__color--name" }
 
+  kuboraum.com:
+    name: "Kuboraum"
+    base_url: "https://www.kuboraum.com"
+    lang: en
+    country: DE                         # Kuboraum GmbH, Berlin (DE 291441542), handmade in Italy
+    default_brand: "Kuboraum"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/optical-mask/", categories: "Optique" }
+        - { url: "/collections/sun-mask/", categories: "Solaire" }
+      product: "div.mask-item"
+      link: "a.mask-link"
+      url_regex: '(/masks/[^/?#]+/)'
+    product_pages:
+      enabled: true
+      max_products: 800                 # Catalog has 699 unique models (473 optical, 363 sun, 137 overlap)
+    fields:
+      name: { css: "h1", scope: page }
+      image_url: { css: "img.gallery-image, img.main-image", attr: ["src", "data-src"], scope: page }
+    specs:
+      rows: ".new-description span.bold"
+      tail: true                        # Reads <span class="bold">KEY:</span> VALUE <br> using the text node tail
+    variants:
+      rows: ".new-description"
+      code: { regex: 'CODE:\s*(.+?)\s*MATERIAL:' }
+      label: { regex: 'COLOR:\s*(.+?)\s*(?:TEMPLES COLOR|LENS):' }
+
 
 
 

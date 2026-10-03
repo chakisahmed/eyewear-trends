@@ -68,6 +68,16 @@ RULES_VERSION = 16  # stored with each tag; bump when the rules below change, th
 #      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
 #      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
 #      ("aluminium", "metal"), ("aluminum", "metal").
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v17: Face à Face: audience words in CATEGORY_TAGS ("feminine", "feminin" -> women, "masculine", "masculin" -> men);
+#      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
+#      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
+#      ("aluminium", "metal"), ("aluminum", "metal").
+# v18: Kuboraum, specs and variants only: rosegold -> gold, gun metal / gunmetal -> grey,
+#      antique light gold -> gold.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -104,7 +114,11 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("midnight", "blue"), ("atlantic", "blue"), ("cyan", "blue"), ("aqua", "blue"),
               ("shadow", "grey"), ("cloud", "grey"),
               ("barley", "beige"), ("savannah", "beige"), ("desert sun", "beige"),
-              ("saffron", "orange"), ("sunshine", "orange"), ("sunburst", "orange")),
+              ("saffron", "orange"), ("sunshine", "orange"), ("sunburst", "orange"),
+              # Kuboraum finishes
+              ("rosegold", "gold"),
+              ("gunmetal", "grey"),
+              ("antique light gold", "gold")),
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
               ("almond", "oval"),  # Morel: a softly pointed oval
