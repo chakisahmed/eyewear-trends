@@ -60,10 +60,18 @@ RULES_VERSION = 16  # stored with each tag; bump when the rules below change, th
 #      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
 #      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
 #      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v17: Face à Face: audience words in CATEGORY_TAGS ("feminine", "feminin" -> women, "masculine", "masculin" -> men);
+#      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
+#      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
+#      ("aluminium", "metal"), ("aluminum", "metal").
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
-SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is matched against
+SPEC_DIMENSIONS: dict[str, str | tuple[str, ...]] = {  # folded raw_specs key -> dimension(s) its value is matched against
     "materials": "material", "material": "material", "matiere": "material", "matieres": "material",
     "materiau": "material", "materiaux": "material", "matiere du cadre": "material",
     "front material": "material", "temple material": "material", "matiere face": "material",
@@ -73,7 +81,8 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
     "color": "color", "colour": "color", "couleur": "color", "coloris": "color",
     "forme": "shape", "shape": "shape", "build": "shape", "forme lunette": "shape", "forme de lunette": "shape",
     "forme monture": "shape", "forme de la monture": "shape",
-    "style": "style",
+    "front type": "shape",
+    "style": ("style", "audience"),
 }
 # Store vocabulary the taxonomy does not list (taxonomy.yaml also feeds the LLM prompt and Google
 # Trends, so it stays untouched). Only applied to scoped spec values, never to names or categories.
@@ -81,7 +90,8 @@ SPEC_DIMENSIONS = {  # folded raw_specs key -> the only dimension its value is m
 SPEC_ALIASES = {  # dimension -> (folded phrase, code)
     "material": (("acier inoxydable", "metal"), ("acier", "metal"), ("inox", "metal"), ("stainless steel", "metal"),
                  ("steel", "metal"),  # Cubitts' filter value
-                 ("titanuim", "titanium")),  # Dita's typo, in its own filter
+                 ("titanuim", "titanium"),  # Dita's typo, in its own filter
+                 ("aluminium", "metal"), ("aluminum", "metal")),  # Face à Face
     "color": (("carey", "tortoiseshell"),  # Hawkers' word for tortoiseshell
               ("army", "green"), ("petrol", "blue"),  # Etnia's color names
               ("ruthenium", "grey"),  # Morel: a dark grey metal plating
@@ -107,8 +117,8 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("octogone", "geometric"), ("bandeau", "shield")),
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
-    ("audience", "men"): ("homme", "hommes", "man", "men"),
-    ("audience", "women"): ("femme", "femmes", "woman", "women"),
+    ("audience", "men"): ("homme", "hommes", "man", "men", "masculine", "masculin"),
+    ("audience", "women"): ("femme", "femmes", "woman", "women", "feminine", "feminin"),
     ("audience", "unisex"): ("mixte", "unisex", "unisexe"),
     ("product_type", "optical"): ("optique", "lunettes de vue", "vue", "eyeglasses", "optical"),
     ("product_type", "sun"): ("solaire", "solaires", "lunettes de soleil", "soleil", "sunglasses", "sun"),
@@ -210,10 +220,15 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
 
     specs = flags.get("raw_specs")
     for key, value in (specs.items() if isinstance(specs, dict) else ()):
-        dim = SPEC_DIMENSIONS.get(fold(str(key)))
-        if f"_spec_{dim}" in idx and isinstance(value, str):
-            for code, term in _match(value, idx[f"_spec_{dim}"], skip_ambiguous=False):
-                add(dim, code, f"spec:{key}", term)
+        target_dims = SPEC_DIMENSIONS.get(fold(str(key)))
+        if not target_dims:
+            continue
+        if isinstance(target_dims, str):
+            target_dims = (target_dims,)
+        for dim in target_dims:
+            if f"_spec_{dim}" in idx and isinstance(value, str):
+                for code, term in _match(value, idx[f"_spec_{dim}"], skip_ambiguous=False):
+                    add(dim, code, f"spec:{key}", term)
 
     desc = flags.get("description")
     if isinstance(desc, str):

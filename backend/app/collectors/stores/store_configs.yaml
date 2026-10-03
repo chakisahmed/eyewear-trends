@@ -408,6 +408,39 @@ stores:
       code: { attr: "data-c", regex: '^(?:.*_)?([0-9A-Z]+)$' }
       label: { attr: "data-a" }
 
+  faceaface-paris.com:
+    name: "Face à Face"
+    base_url: "https://www.faceaface-paris.com"
+    lang: en
+    country: FR
+    default_brand: "Face à Face"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/en/optical", categories: "Optique" }
+        - { url: "/en/sun", categories: "Solaire" }
+      pagination: { param: Page, max_pages: 5 }
+      product: "div.product-placement__wrapper"
+      link: "a.product-showcase__placement"
+      url_regex: '(https://www\.faceaface-paris\.com)?(?::\d+)?(/en/(?:optical|sun)/[^/]+/[^/]+/[^/?#]+)'
+    product_pages:
+      enabled: true
+      max_products: 300
+    fields:
+      name: { css: ".slider-caption__shape--name, .concept-box__name", scope: page }
+      image_url: { css: ".product-slider__image, .product-placement__image--front", attr: ["src", "data-bg"], scope: page }
+    flags:
+      description: { css: ".concept-box__description", scope: page }
+    specs:
+      rows: ".specs__container"
+      key: ".specs--label"
+      value: ".specs--value"
+    variants:
+      rows: ".slider-caption__color"
+      code: { css: ".slider-caption__color--code" }
+      label: { css: ".slider-caption__color--name" }
+
 
 
 

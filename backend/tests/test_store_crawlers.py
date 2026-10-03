@@ -102,11 +102,11 @@ def test_config_loads_and_resolves_domains(cfg):
         config_for("other.test", configs)
 
 
-def test_shipped_config_has_the_ten_stores():
+def test_shipped_config_has_the_eleven_stores():
     from app.collectors.stores.config import load_store_configs
     configs = load_store_configs()
-    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn", "lamode.tn", "etniabarcelona.com", "morel.com", "bartonperreira.com", "cubitts.com", "dita.com", "ebmeyrowitz.com", "anneetvalentin.com"]
-    assert [c.country for c in configs.values()] == ["TN", "TN", "TN", "ES", "FR", "US", "GB", "US", "GB", "FR"]  # brand catalogs are not a Tunisian shelf
+    assert list(configs) == ["outika-eyewear.tn", "mykenza.tn", "lamode.tn", "etniabarcelona.com", "morel.com", "bartonperreira.com", "cubitts.com", "dita.com", "ebmeyrowitz.com", "anneetvalentin.com", "faceaface-paris.com"]
+    assert [c.country for c in configs.values()] == ["TN", "TN", "TN", "ES", "FR", "US", "GB", "US", "GB", "FR", "FR"]  # brand catalogs are not a Tunisian shelf
     outika = configs["outika-eyewear.tn"]
     assert outika.product_pages.enabled and outika.listing.pagination.next  # price is product-page only; path paging
     assert configs["mykenza.tn"].listing.pagination.max_pages == 20         # 10 cut both categories (first live crawl)
