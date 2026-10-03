@@ -534,6 +534,33 @@ stores:
       label: { css: "input", attr: "value" }
       swatch: { css: "span.swatch", attr: "style", regex: 'url\(([^)]+)\)' }
 
+  kirkandkirk.com:
+    name: "Kirk & Kirk"
+    base_url: "https://kirkandkirk.com"
+    lang: en
+    country: GB                         # London/Brighton (UK), handmade in France & Italy
+    default_brand: "Kirk & Kirk"
+    default_currency: GBP
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/glasses/", categories: "Optique" }
+        - { url: "/sunglasses/", categories: "Solaire" }
+      product: "div.kak-card[data-cat-name]"
+      link: "a.kak-product"
+      url_regex: '(/product/[^/?#]+)'
+    fields:
+      name: { css: "a.kak-product" }
+      price: { css: ".kak-card-price .woocommerce-Price-amount" }
+      image_url: { css: "img.kak-card__image--default", attr: ["src", "data-src"] }
+    flags:
+      description: { css: "img.kak-card__image--default", attr: "title" }
+    variants:
+      rows: ".kak-card-controls .kak-card-controls__pill"
+      code: { css: "img.kak-card-controls__dot", attr: "title" }
+      label: { css: "img.kak-card-controls__dot", attr: "title" }
+      swatch: { css: "img.kak-card-controls__dot", attr: "src" }
+
 
 
 

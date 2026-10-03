@@ -105,6 +105,27 @@ RULES_VERSION = 16  # stored with each tag; bump when the rules below change, th
 # v20: Cutler and Gross, variants only: olive on black -> two_tone; humble potato, old brown havana,
 #      oil havana -> tortoiseshell; smoke quartz -> grey; horn crystal, sand crystal, smoke crystal -> clear;
 #      obsidian -> black; rhodium -> silver; rhubarb -> red; saffron horn -> orange.
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v17: Face à Face: audience words in CATEGORY_TAGS ("feminine", "feminin" -> women, "masculine", "masculin" -> men);
+#      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
+#      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
+#      ("aluminium", "metal"), ("aluminum", "metal").
+# v18: Kuboraum, specs and variants only: rosegold -> gold, gun metal / gunmetal -> grey,
+#      antique light gold -> gold.
+# v19: Lafont, specs, description, and variants: match description against _spec_material (e.g. "acetate", "metal");
+#      shape alias ("p3", "round"); Lafont color code ("100", "black").
+# v20: Cutler and Gross, variants only: olive on black -> two_tone; humble potato, old brown havana,
+#      oil havana -> tortoiseshell; smoke quartz -> grey; horn crystal, sand crystal, smoke crystal -> clear;
+#      obsidian -> black; rhodium -> silver; rhubarb -> red; saffron horn -> orange.
+# v21: Kirk & Kirk, shape and variants: shape aliases ("roundness", "round"), ("upswept", "cat_eye"),
+#      ("aviators", "aviator"), ("angular", "geometric"), ("circular", "round");
+#      color aliases: admiral, capri, indigo, lagoon, ocean, royal -> blue; apple, jungle, juniper, meadow -> green;
+#      candy -> pink; carmine, chilli, matte vamp, passion -> red; citrus, corn, melon -> orange;
+#      coffee, earth, walnut -> brown; glacier -> clear; iris, prince -> purple; jet -> black;
+#      secret, smoke, stone -> grey; tiger -> tortoiseshell.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -160,7 +181,37 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("obsidian", "black"),
               ("rhodium", "silver"),
               ("rhubarb", "red"),
-              ("saffron horn", "orange")),
+              ("saffron horn", "orange"),
+              # Kirk & Kirk
+              ("admiral", "blue"),
+              ("apple", "green"),
+              ("candy", "pink"),
+              ("capri", "blue"),
+              ("carmine", "red"),
+              ("chilli", "red"),
+              ("citrus", "orange"),
+              ("coffee", "brown"),
+              ("corn", "orange"),
+              ("earth", "brown"),
+              ("glacier", "clear"),
+              ("indigo", "blue"),
+              ("iris", "purple"),
+              ("jet", "black"),
+              ("jungle", "green"),
+              ("juniper", "green"),
+              ("lagoon", "blue"),
+              ("matte vamp", "red"),
+              ("meadow", "green"),
+              ("melon", "orange"),
+              ("ocean", "blue"),
+              ("passion", "red"),
+              ("prince", "purple"),
+              ("royal", "blue"),
+              ("secret", "grey"),
+              ("smoke", "grey"),
+              ("stone", "grey"),
+              ("tiger", "tortoiseshell"),
+              ("walnut", "brown")),
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("p3", "round"),  # Lafont: P3 / panto shape
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
@@ -171,7 +222,13 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               # Anne & Valentin editorial shape forms
               ("papillonnante", "butterfly"), ("papillonnant", "butterfly"),
               ("trapezoidale", "wayfarer"), ("hexagone", "geometric"),
-              ("octogone", "geometric"), ("bandeau", "shield")),
+              ("octogone", "geometric"), ("bandeau", "shield"),
+              # Kirk & Kirk editorial shape words
+              ("roundness", "round"),
+              ("upswept", "cat_eye"),
+              ("aviators", "aviator"),
+              ("angular", "geometric"),
+              ("circular", "round")),
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men", "masculine", "masculin"),
