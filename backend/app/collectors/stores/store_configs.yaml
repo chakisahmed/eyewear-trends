@@ -804,6 +804,38 @@ stores:
       price: { css: ".price" }
       image_url: { css: "img" }
 
+  # Garrett Leight California Optical (Venice Beach, USA), Shopify storefront. Checked 2026-10-02:
+  # Effortless contemporary California style founded in 2010 by Garrett Leight (son of Larry Leight).
+  # Mazzucchelli cured cellulose acetate, filigree wire cores, and dual lines (GLCO core + Mr. Leight).
+  # Uses Shopify collection products.json API to bypass HTML 429 rate limits, capturing all 155
+  # unique eyewear frames, 1,293 variant colorways, shapes, and bestseller flags.
+  garrettleight.com:
+    name: "Garrett Leight"
+    base_url: "https://www.garrettleight.com"
+    lang: en
+    country: US                         # Venice Beach, Los Angeles, USA (founded 2010)
+    default_brand: "Garrett Leight"
+    default_currency: USD
+    delay_s: 2.0
+    listing:
+      urls:
+        - { url: "/collections/eyeglasses/products.json?limit=250", categories: "Optique" }
+        - { url: "/collections/mr-leight-eyeglasses/products.json?limit=250", categories: "Optique" }
+        - { url: "/collections/sunglasses/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/mr-leight-sunglasses/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/ml-sunglasses/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/bestsellers/products.json?limit=250", flag: "is_bestseller" }
+        - { url: "/collections/forever-classics/products.json?limit=250", flag: "is_bestseller" }
+        - { url: "/collections/new-eyeglasses/products.json?limit=250", flag: "is_new" }
+        - { url: "/collections/new-sunglasses/products.json?limit=250", flag: "is_new" }
+      product: ".product-card"
+      link: "a"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: ".product-card__title" }
+      price: { css: ".price" }
+      image_url: { css: "img" }
+
 
 
 

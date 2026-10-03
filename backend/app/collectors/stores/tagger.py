@@ -417,6 +417,57 @@ RULES_VERSION = 16  # stored with each tag; bump when the rules below change, th
 # v29: Jacques Marie Mage (USA) 10mm acetate default material and color aliases: argyle, bourbon,
 #      bloodstone, agar, beluga, darjeeling, amarena, frost, vanta, auburn, taupe, rover, solar,
 #      tempest, charbon, suntan, himalaya, viridian, stallion.
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v17: Face à Face: audience words in CATEGORY_TAGS ("feminine", "feminin" -> women, "masculine", "masculin" -> men);
+#      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
+#      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
+#      ("aluminium", "metal"), ("aluminum", "metal").
+# v18: Kuboraum, specs and variants only: rosegold -> gold, gun metal / gunmetal -> grey,
+#      antique light gold -> gold.
+# v19: Lafont, specs, description, and variants: match description against _spec_material (e.g. "acetate", "metal");
+#      shape alias ("p3", "round"); Lafont color code ("100", "black").
+# v20: Cutler and Gross, variants only: olive on black -> two_tone; humble potato, old brown havana,
+#      oil havana -> tortoiseshell; smoke quartz -> grey; horn crystal, sand crystal, smoke crystal -> clear;
+#      obsidian -> black; rhodium -> silver; rhubarb -> red; saffron horn -> orange.
+# v21: Kirk & Kirk, shape and variants: shape aliases ("roundness", "round"), ("upswept", "cat_eye"),
+#      ("aviators", "aviator"), ("angular", "geometric"), ("circular", "round");
+#      color aliases: admiral, capri, indigo, lagoon, ocean, royal -> blue; apple, jungle, juniper, meadow -> green;
+#      candy -> pink; carmine, chilli, matte vamp, passion -> red; citrus, corn, melon -> orange;
+#      coffee, earth, walnut -> brown; glacier -> clear; iris, prince -> purple; jet -> black;
+#      secret, smoke, stone -> grey; tiger -> tortoiseshell.
+# v22: Theo (Belgium), specs and variants: color aliases for Theo's fluorescent, automotive, and poetic shades:
+#      fluo orange, fluo yellow -> orange (Orange / Jaune); fluo red -> red, fluo purple -> purple;
+#      delft ware blue, electric blue, targa blue -> blue; sanremo green -> green;
+#      rosso cavallino -> red; ecail, ecaille -> tortoiseshell; citrus black, dark night -> black.
+# v23: Oliver Goldsmith (UK), description shape and variants: shape alias ("squared aviator", "aviator");
+#      color aliases: tangerine -> orange; tokyo 50, tortoise 50, dark tortoiseshell, earth tortoise,
+#      amberfleck -> tortoiseshell; night sea, bahama, anchor -> blue; rainwater -> clear;
+#      wakame, plankton, military -> green; blacksilver, blackgold, black cat -> black;
+#      slate storm -> grey; etaupe -> beige; rouge -> red.
+# v24: Retrosuperfuture (Italy), shape and color aliases: "flat top" -> square;
+#      "azure" -> blue, "canarino" -> orange, "panna" -> white, "petrolium" -> blue,
+#      "burnt havana" -> tortoiseshell, "spotted havana" -> tortoiseshell.
+# v25: Spektre (Italy), color aliases: "tobacco" -> brown, "avory" -> white, "fuchsia" -> pink.
+# v26: Ahlem (France / USA), color aliases: "dry pampa" -> beige, "smoky quartz" -> grey,
+#      "old fashioned rose" -> pink, "light turtle", "yellow turtle" -> tortoiseshell,
+#      "peony", "peony gold" -> pink, "ashmilk" -> grey, "storm" -> grey, "g15" -> green.
+# v27: Moscot (USA / New York), clean option1 color extraction, shape-<silhouette> tag handling and color aliases: "flesh" -> beige, "bark" -> brown, "butterscotch" -> orange,
+#      "spot tortoise", "tokyo tortoise", "antique tortoise", "heritage tortoise", "burnt tortoise",
+#      "matte tortoise" -> tortoiseshell; "g-15", "g-15 fade" -> green; "umber-crystal" -> brown;
+#      "brown smoke" -> brown, "blue smoke" -> blue.
+# v28: Warby Parker (USA) color aliases: striped sassafras, striped cypress, saltwater matte, oak barrel,
+#      brushed ink, cactus crystal, laguna crystal, seaweed crystal, rose water, eastern bluebird fade,
+#      black walnut, honeydew, canopy, ristretto, tamarind, marzipan.
+# v29: Jacques Marie Mage (USA) 10mm acetate default material and color aliases: argyle, bourbon,
+#      bloodstone, agar, beluga, darjeeling, amarena, frost, vanta, auburn, taupe, rover, solar,
+#      tempest, charbon, suntan, himalaya, viridian, stallion.
+# v30: Garrett Leight (USA / Venice Beach) colorway aliases: true demi, demi, olio, cyprus fade, cyprus,
+#      cola, willow, brew, sandstorm, himalayan salt, strawberry jam, douglas fir, pinewood, pure glass,
+#      oakmoss, barolo, sea glass, truffle, java drift, sandalwood drift, kelp, prosecco, stillwater,
+#      driftwood, pewter, basalt, hunter, limu, serpentine, lipstick, fig; octagonal shape alias.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -610,7 +661,39 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("suntan", "beige"),
               ("himalaya", "clear"),
               ("viridian", "green"),
-              ("stallion", "black")),
+              ("stallion", "black"),
+              # Garrett Leight California Optical (USA)
+              ("true demi", "tortoiseshell"),
+              ("demi", "tortoiseshell"),
+              ("olio", "green"),
+              ("cyprus fade", "green"),
+              ("cyprus", "green"),
+              ("cola", "brown"),
+              ("willow", "green"),
+              ("brew", "brown"),
+              ("sandstorm", "beige"),
+              ("himalayan salt", "pink"),
+              ("strawberry jam", "red"),
+              ("douglas fir", "green"),
+              ("pinewood", "green"),
+              ("pure glass", "clear"),
+              ("oakmoss", "green"),
+              ("barolo", "red"),
+              ("sea glass", "green"),
+              ("truffle", "brown"),
+              ("java drift", "brown"),
+              ("sandalwood drift", "beige"),
+              ("kelp", "green"),
+              ("prosecco", "beige"),
+              ("stillwater", "blue"),
+              ("driftwood", "beige"),
+              ("pewter", "grey"),
+              ("basalt", "grey"),
+              ("hunter", "green"),
+              ("limu", "green"),
+              ("serpentine", "green"),
+              ("lipstick", "red"),
+              ("fig", "purple")),
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("p3", "round"),  # Lafont: P3 / panto shape
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
@@ -631,7 +714,9 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               # Oliver Goldsmith shape words
               ("squared aviator", "aviator"),
               # Retrosuperfuture shape words
-              ("flat top", "square")),
+              ("flat top", "square"),
+              # Garrett Leight shape words
+              ("octagonal", "geometric")),
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men", "masculine", "masculin"),
