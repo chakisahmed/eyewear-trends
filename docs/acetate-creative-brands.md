@@ -18,25 +18,25 @@ at the end with the reason. Priority markets are Europe, USA, Maghreb, Tunisia.
 | Morel | France | `morel.com` | Colourful French acetate with playful shapes | Tracked (crawled) |
 | Alain Mikli | France | `www.alainmikli.com` | Avant-garde shapes, layered and patterned acetates, designer collaborations | Scouted: `docs/scouting/alain-mikli` |
 | J.F. Rey | France | `jfrey.fr` | Saturated colour blocks, mixed colour acetate, graphic details | Scouted: `docs/scouting/jf-rey` |
-| Anne et Valentin | France | `anneetvalentin.com` | Pattern- and colour-driven acetates, a house identity built on prints and colour play | Not scouted |
-| Face à Face | France | `faceaface.com` | Sculptural, oversized acetate shapes with bold colourways | Not scouted |
-| Lafont | France | `lafont.com` | Parisian colourful acetate, retro cat-eye and round shapes | Not scouted |
-| Kuboraum | Germany / Italy | `www.kuboraum.com` | Geometric, sculptural acetate masks and shields | Scouted: `docs/scouting/kuboraum` |
-| Theo | Belgium | `theo.eu` | Experimental shapes, unusual colour pairings, chunky acetate | Not scouted |
+| Anne et Valentin | France | `anneetvalentin.com` | Pattern- and colour-driven acetates, a house identity built on prints and colour play | Tracked (crawled) |
+| Face à Face | France | `faceaface-paris.com` | Sculptural, geometric acetate shapes with bold colour blocking | Tracked (crawled) |
+| Lafont | France | `lafont.com` | Parisian colourful acetate, retro cat-eye and round shapes | Tracked (crawled) |
+| Kuboraum | Germany / Italy | `www.kuboraum.com` | Geometric, sculptural acetate masks and shields | Tracked (crawled) |
+| Theo | Belgium | `theo.be` | Experimental shapes, unusual colour pairings, chunky acetate | Tracked (crawled) |
 | Cubitts | UK | `cubitts.com` | London-named frames in layered, translucent and tortoise acetates | Tracked (crawled) |
 | E.B. Meyrowitz | UK | `ebmeyrowitz.com` | Archive-based reissues in tortoise and rich colour acetates | Tracked (crawled) |
-| Cutler and Gross | UK | `cutlerandgross.com` | Thick handmade acetate, tortoise and graduated colours | Not scouted |
-| Kirk & Kirk | UK | `kirkandkirk.com` | Colourful, playful acetate frames with a strong colour range | Not scouted |
-| Oliver Goldsmith | UK | `olivergoldsmith.com` | Heritage retro acetate shapes, revived archive designs | Not scouted |
-| Retrosuperfuture | Italy | `retrosuperfuture.com` | Italian-made acetate in bold colours and unusual patterns | Not scouted |
-| Spektre | Italy | `spektre.com` | Bold, chunky Italian acetate, many colourways | Not scouted |
+| Cutler and Gross | UK | `cutlerandgross.com` | Thick handmade acetate, tortoise and graduated colours | Tracked (crawled) |
+| Kirk & Kirk | UK | `kirkandkirk.com` | Saturated kaleidoscope acrylic frames, bespoke colours, animal pins | Tracked (crawled) |
+| Oliver Goldsmith | UK | `olivergoldsmith.com` | Heritage retro acetate shapes, revived archive designs | Tracked (crawled) |
+| Retrosuperfuture | Italy | `retrosuperfuture.com` | Italian-made acetate in bold colours and unusual patterns | Tracked (crawled) |
+| Spektre | Italy | `spektre.com` | Bold, chunky Italian acetate, many colourways | Tracked (crawled) |
 | Dita | USA | `dita.com` | Acetate and mixed-material frames, bold tortoise and gradient colours | Tracked (crawled) |
 | Barton Perreira | USA | `bartonperreira.com` | Handcrafted acetate in layered and tortoise patterns | Tracked (crawled) |
-| Moscot | USA | `moscot.com` | Iconic New York acetate shapes (Lemtosh), tortoise and colour classics | Not scouted |
-| Garrett Leight | USA | `garrettleight.com` | California acetate in refined tortoise and translucent tones | Not scouted |
-| Jacques Marie Mage | USA | `jacquesmariemage.com` | Limited-run vintage-inspired acetate, rare colourways | Not scouted |
-| Ahlem | France / USA | `ahlemeyewear.com` | Acetate luxury frames, Paris and Los Angeles | Not scouted |
-| Warby Parker | USA | `warbyparker.com` | Mass-market acetate with a wide, trend-led colour and pattern range | Not scouted |
+| Moscot | USA | `moscot.com` | Iconic New York acetate shapes (Lemtosh), tortoise and colour classics | Tracked (crawled) |
+| Garrett Leight | USA | `garrettleight.com` | California acetate in refined tortoise and translucent tones | Tracked (crawled) |
+| Jacques Marie Mage | USA | `jacquesmariemage.com` | Limited-run vintage-inspired acetate, rare colourways | Tracked (crawled) |
+| Ahlem | France / USA | `ahlemeyewear.com` | Acetate luxury frames, Paris and Los Angeles | Tracked (crawled) |
+| Warby Parker | USA | `warbyparker.com` | Mass-market acetate with a wide, trend-led colour and pattern range | Tracked (crawled) |
 
 ## Fashion houses with a strong acetate line
 
