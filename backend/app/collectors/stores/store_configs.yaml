@@ -626,6 +626,36 @@ stores:
       code: { attr: "data-option-item" }
       label: { attr: "data-option-item" }
 
+  # Retrosuperfuture (Italy), Shopify. Checked 2026-10-02: Milanese creator eyewear house founded
+  # in 2007 by Daniel Beckerman; handmade in Italy with Zeiss lenses. Also produces designer lines
+  # for Marni, MM6 Maison Margiela, and 8000. Listing cards contain full product metadata, pricing,
+  # images, and material classes, enabling fast Zero-Product-Page crawling without PDP rate limits.
+  retrosuperfuture.com:
+    name: "Retrosuperfuture"
+    base_url: "https://retrosuperfuture.com"
+    lang: en
+    country: IT                         # Milan, Italy (founded 2007 by Daniel Beckerman; handmade in Italy, Zeiss lenses)
+    default_brand: "Retrosuperfuture"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/all?filter.v.availability=1&filter.p.vendor=RETROSUPERFUTURE&filter.p.product_type=Eyewear&filter.p.m.rsf.category=Sunglass", categories: "Solaire" }
+        - { url: "/collections/all?filter.v.availability=1&filter.p.vendor=RETROSUPERFUTURE&filter.p.product_type=Eyewear&filter.p.m.rsf.category=Optical", categories: "Optique" }
+        - { url: "/collections/best-seller-in-stock", flag: "is_bestseller" }
+      pagination: { param: page, max_pages: 20 }
+      product: "li.rsf-card-product"
+      link: "a.rsf-card-product__link"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: "p.rsf-card-product__title" }
+      price: { css: "span.rsf-card-product__price" }
+      image_url: { css: "img.rsf-card-product__slide-img", attr: ["src", "data-src"] }
+    flags:
+      description: { css: "img.rsf-card-product__slide-img", attr: "alt" }
+      material: { css: ".rsf-card-product", attr: "class", regex: 'rsf-card-product--material-([a-z]+)' }
+      out_of_stock: { css: "a[data-rsf-find-stockist]", exists: true }
+
 
 
 
