@@ -1,0 +1,3405 @@
+{
+  "total": 240,
+  "items": [
+    [
+      {
+        "id": "esme-opt-sbf-sesame-tortoise",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Sesame Tortoise",
+        "colorCode": "937",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/47895ab67a11512643d88d2bb9802c8a1c0e1c3f.png",
+          "side": "https://i.warbycdn.com/s/c/505a1f238dd1de22d046c136c8798085cd3c39e4",
+          "swatch": "https://i.warbycdn.com/-/f/sesame-1bd96c07.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/d9755e469b82f515af6193e775114b42f5e6e3cf",
+          "angle": "https://i.warbycdn.com/s/c/2348157779a603f31af651d473f635b41e3861c1",
+          "front": "https://i.warbycdn.com/s/c/baaa4fa5d65945f7148e95e1c0ef1ff817b3b1ff",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/a146663db5d4bc124dcec3c9eb64a21b3a2f7b9a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000751",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "718952",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "323107",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1343976",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001195",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/sesame-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-rose-water",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rose Water",
+        "colorCode": "668",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/7cf133750c4189b0c522f2ab2f89b4628b9810e8",
+          "baseTransparent": "https://i.warbycdn.com/s/c/e0516b18dba810afa668e1226dbfe3b04c5dcba3.png",
+          "front": "https://i.warbycdn.com/s/c/a7f4588d0ff9ac1d0660810c1733ceb8a142334f",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/736d5431a981899c4a59666c16fbc921efc540f8",
+          "swatch": "https://i.warbycdn.com/s/f/ef14c8714c2678410c6e982c1e7188d5525ab630.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/7db1df518420d761c2f644cb662f66a24329ad3c"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001141",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001140",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/rose-water/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-aventurine-tortoise-with-polished-gold",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses, gleaming Epigraph end pieces, and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Aventurine Tortoise with Polished Gold",
+        "colorCode": "1236",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/b385d2716f30d75f7254e03c20b489cbe279c6c8.png",
+          "side": "https://i.warbycdn.com/s/c/98f2f438999b5664e208b6fad3c4b547bd6a4ecd",
+          "swatch": "https://i.warbycdn.com/s/f/a947c0388531265f73e688184fb5c95d49e63de9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/1e077af27cebc671c996fb66f5cf8bc66bd1c50d",
+          "angle": "https://i.warbycdn.com/s/c/1867f1691904da91aff08eda92bf76c60f4381b4",
+          "front": "https://i.warbycdn.com/s/c/5713931a285c35a9970314f80c5ccba31d61485b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/e10f6adc08c5b1f88f9468f67290cc51861fd28c"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000452",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1235210",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/aventurine-tortoise-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-bellflower-crystal-with-polished-gold",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses, gleaming Epigraph end pieces, and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Bellflower Crystal with Polished Gold",
+        "colorCode": "1345",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/9e54d67ff7e48fb1d697c0a8cf573d277439c7f6",
+          "baseTransparent": "https://i.warbycdn.com/s/c/9e225f5dc69f0335cf2ff7fd4bbaf15322763546.png",
+          "front": "https://i.warbycdn.com/s/c/15ba1113bf95cd2b2ffaa9eaa923f93a9a9208c9",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/5f0801fbc1f471c604d98c963a9188b85292b621",
+          "swatch": "https://i.warbycdn.com/s/f/f06f1469839eabedb5bab13ecc2ceac8400d9e8e.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/7693852f1f352bd20cd2702281da2f18358f77df"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1367503",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/bellflower-crystal-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-jet-black-with-polished-gold",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses, gleaming Epigraph end pieces, and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black with Polished Gold",
+        "colorCode": "3102",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/d02915e737905c4de7e7f4627bb89f48f72564e7.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/14151ef2621e7f290d45213d1b325b17fd36f778",
+          "swatch": "https://i.warbycdn.com/s/f/6b945b47c44b1a898f8498e4196ecba251c17182.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/11/3/2025",
+          "angle": "https://i.warbycdn.com/s/c/1ed2b99af656a9bdc94e1dac39df756a40344029",
+          "yellowTint": "https://i.warbycdn.com/s/c/11/3/2025",
+          "front": "https://i.warbycdn.com/s/c/e27e533ed400d64fed0763e1d5d0d63ed71f3004",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/11d7f1d211137423749fd0fa96df505cb5f310b1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001051",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/jet-black-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-pearled-tortoise-with-polished-gold",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses, gleaming Epigraph end pieces, and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Pearled Tortoise with Polished Gold",
+        "colorCode": "1360",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/cae37487847f3c0005e9b2339e224ca1b194dd45",
+          "baseTransparent": "https://i.warbycdn.com/s/c/5321f2e269f935802bab92b0b01d2924e0f96471.png",
+          "front": "https://i.warbycdn.com/s/c/68a173fab8338399db81f8a8a6ed43da9845f7d7",
+          "swatch": "https://i.warbycdn.com/s/f/cf4dce39a346d85fbc1b74ee4023e2d02aab3845.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/32f32687b29d59629b52694a43a0bcc7f42ab242",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/e681da5ca8359baad3cfca75ca5f7cee146b0873"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001758",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/pearled-tortoise-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-canopy",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Canopy",
+        "colorCode": "813",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/5a889f5f51d1952e5aa7a91d3b9270889f6deb6d",
+          "baseTransparent": "https://i.warbycdn.com/s/c/9aafd819680a4438db87e65107e8c28b8070a379.png",
+          "front": "https://i.warbycdn.com/s/c/3a5aa73a3dbc98b0e5d8fa23e3d379465109dc08",
+          "swatch": "https://i.warbycdn.com/s/f/37eef26fd46a3d295288c20a91e504994e8a0dea.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/95505cda56468f3d34102c009eb2126cee0bca34",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/a14491fa50d8c812ffed1eb47a1c80fe3f0a30e6"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000601",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/canopy/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-confetti-tortoise",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Confetti Tortoise",
+        "colorCode": "850",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/734d934f27d9d88e54ac0862322f8b46e81945af.png",
+          "angle": "https://i.warbycdn.com/s/c/ca27fad4c3874a3a8ae7de5558f9f9ec4281d96e",
+          "front": "https://i.warbycdn.com/s/c/fa647a4e73a66f287d02d0c2bf8d71c4fa4d159a",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/2a3a59ac9c380fd4d8372ea48b08d3d5f47dba95",
+          "swatch": "https://i.warbycdn.com/s/f/cf4d8e0dfa2fe4b5dace3ee042f272b2d3cbad1b.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/0515445cf605041fa5f0fb05a17f0f322ac188a6"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001569",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001570",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/confetti-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "esme-opt-sbf-crystal",
+        "storeFrameId": "esme-opt-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/3435b33b8f6649ded6fc392bcf9471aa11742d28.png",
+          "angle": "https://i.warbycdn.com/s/c/803431b60fce50cc34fe4d6277ee89aeef7e5979",
+          "front": "https://i.warbycdn.com/s/c/32b13bb7779289462f971b9749fa86ff4f68981d",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/fcf0a433c871cef688a3fbacb4f379b7b468cc89",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/57a78854c363813eecc9222158bd73877c75b456"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000750",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000752",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1306607",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1344129",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-sun-sbf-sesame-tortoise",
+        "crossBridgeFrameColorVariantId": "esme-opt-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/esme/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "brimmer-opt-sbf-black-walnut",
+        "storeFrameId": "brimmer-opt-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and our signature Graduated Rivets: Brimmer has it all.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Black Walnut",
+        "colorCode": "243",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/cc09f0d5736d41777196b0070fcecec9ab2d090a.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a623834cf5762732b439ec3bc469d03667d727ae",
+          "swatch": "https://i.warbycdn.com/-/f/blac23033ad2.jpg",
+          "lifestyleCarousel": "https://i.warbycdn.com/s/c/e87ed080a8ce6b4a98efdf51a924abcd1bbe7472",
+          "angle": "https://i.warbycdn.com/s/c/4472d9c6990b2f86b171ce794725db5ccce61c10",
+          "front": "https://i.warbycdn.com/s/c/c2e67df7fddbd07c29a3f5e7650e7a9aceb88422",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/4aa2366411bc5537d94987eb64e0188055b505a1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001577",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000525",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1144854",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "",
+        "crossKindFrameColorVariantId": "brimmer-sun-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brimmer/black-walnut/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "brimmer-opt-sbf-honeydew",
+        "storeFrameId": "brimmer-opt-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and our signature Graduated Rivets: Brimmer has it all.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Honeydew",
+        "colorCode": "701",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ec4d6783d1d6a8ecca3bd9d2353ddeed17340773.png",
+          "angle": "https://i.warbycdn.com/s/c/501309c3db29d340a25a55a9cbe80e087280627f",
+          "front": "https://i.warbycdn.com/s/c/50495a6ef3e322785e619dd5f1e8836168248acb",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/bb407d9acd34e1c8b514c5e9aff4e7394dbbb736",
+          "swatch": "https://i.warbycdn.com/s/f/fc9d4a8a6dc4aac9572a1a2cc0bc26cb58869fbe.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/ba4658b560c84d0473cf3be2d22659866026ba41"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000530",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1144970",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "brimmer-sun-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brimmer/honeydew/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "brimmer-opt-sbf-jet-black-with-polished-gold",
+        "storeFrameId": "brimmer-opt-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and polished Epigraph end pieces: Brimmer has it all.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black with Polished Gold",
+        "colorCode": "3102",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/424335a2fe351bf88e8e648f2ff726dc84b7cabf",
+          "baseTransparent": "https://i.warbycdn.com/s/c/44b06a491c4ba0ad72019744ffee7069e53087c8.png",
+          "front": "https://i.warbycdn.com/s/c/0eaa10143d1c808c0d27a3de81fa274e71718e1f",
+          "swatch": "https://i.warbycdn.com/s/f/6b945b47c44b1a898f8498e4196ecba251c17182.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ecf8b5b64c40d84ec877a27f93e00ad5c8223008",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/8152c96e181936d5607ecf3881da77b4436b9378"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000017",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "brimmer-sun-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brimmer/jet-black-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "zoya-opt-sbf-ristretto-tortoise",
+        "storeFrameId": "zoya-opt-sbf",
+        "name": "Zoya",
+        "description": "Zoya's square silhouette is bold but airy - with contoured, angular acetate framing the underside of its lenses and soft, classic lines in the browline above.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Ristretto Tortoise",
+        "colorCode": "311",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/f1e857b8e2d318d79591a95cbf09d494cf3d4b49",
+          "baseTransparent": "https://i.warbycdn.com/s/c/94cab6b5d80327f5e6ed7b38c82be690dc26b851.png",
+          "front": "https://i.warbycdn.com/s/c/cecc54031c5e20d8d1b9aa9a5a2285bb821d8b97",
+          "swatch": "https://i.warbycdn.com/s/f/81ed1cfe9ab56031936dbbb3c6d775d0deafdf63.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/1fb3a8db135834c0bbb2f0344d98d306c6411368",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/5b0779981be823deb87a4ccddff386312e22068a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000723",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001575",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "zoya-sun-sbf-lilypad-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/zoya/ristretto-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "zoya-opt-sbf-amarena-with-black-oak-tortoise",
+        "storeFrameId": "zoya-opt-sbf",
+        "name": "Zoya",
+        "description": "Zoya\u2019s square silhouette is bold but airy\u2014with contoured, angular acetate framing the underside of its lenses and soft, classic lines in the browline above.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Amarena with Black Oak Tortoise",
+        "colorCode": "784",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/80081b2e6d2d986817fb83e5bd45f06c7f4d31b2",
+          "baseTransparent": "https://i.warbycdn.com/s/c/ecd8caf2778f8b4ade5f8c4c3f9a72ec774e6b8f.png",
+          "front": "https://i.warbycdn.com/s/c/989c1db5530e0059e3a14c3bb3e4c7954631ba51",
+          "swatch": "https://i.warbycdn.com/s/f/2c7e6fca03532fb24757f51bd38071fdc349d255.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/5916be26f48c9e4f63a866ddda24d1fa9f0c3b7a",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/24f9e9a29284187ed4b4e70dd2322d1509600ff9"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001428",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "zoya-sun-sbf-lilypad-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/zoya/amarena-with-black-oak-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "zoya-opt-sbf-emerald-crystal",
+        "storeFrameId": "zoya-opt-sbf",
+        "name": "Zoya",
+        "description": "Zoya\u2019s square silhouette is bold but airy\u2014with contoured, angular acetate framing the underside of its lenses and soft, classic lines in the browline above.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Emerald Crystal",
+        "colorCode": "425",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/8cae8f9a1e3b6859e1863b4e10a78066eeb9c661",
+          "baseTransparent": "https://i.warbycdn.com/s/c/3d64476d91abb0c6998c38db2b13b5766a40e8cf.png",
+          "front": "https://i.warbycdn.com/s/c/809957a1f21ec60994b3cedb514be82c4fcd6c65",
+          "swatch": "https://i.warbycdn.com/s/f/3e37677baa8b3528bfe287871bfbea218d26e689.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/5518d5736816b5e559c1581d7cf25d16f2590773",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/ac65a39dca97da432175f8c3ff356d273ade9e9f"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000250",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "zoya-sun-sbf-lilypad-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/zoya/emerald-crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "zoya-opt-sbf-lilypad-tortoise",
+        "storeFrameId": "zoya-opt-sbf",
+        "name": "Zoya",
+        "description": "Zoya's square silhouette is bold but airy - with contoured, angular acetate framing the underside of its lenses and soft, classic lines in the browline above.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Lilypad Tortoise",
+        "colorCode": "433",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/1cd43508290e5f13a69bd960d7786554d53d2f4b",
+          "baseTransparent": "https://i.warbycdn.com/s/c/082ef0fea738ec1d8b2e38282caa1e29e1abf6eb.png",
+          "front": "https://i.warbycdn.com/s/c/6c1b6b030daeec5e3022716504b002f1cc9fc530",
+          "swatch": "https://i.warbycdn.com/s/f/dadd52ee97bfa66dbd0d73c389bd9889af79fc9f.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/318e1e81bbadbe246bcf634238daa31fe28d7ba8",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/701a74523edb1b4e42b92a970c4df880bf70e36a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000251",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001578",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "zoya-sun-sbf-lilypad-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/zoya/lilypad-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "blakeley-opt-sbf-violet-magnolia",
+        "storeFrameId": "blakeley-opt-sbf",
+        "name": "Blakeley",
+        "description": "Blakeley\u2019s slim, round acetate rims and scalloped nose bridge scream\u2014no, whisper\u2014refinement.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Violet Magnolia",
+        "colorCode": "252",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/64cb36aa003351fda8be97b928ef8c9aede946ec.png",
+          "side": "https://i.warbycdn.com/s/c/ddac8343ff084123273fb5379a6faf0b67847490",
+          "swatch": "https://i.warbycdn.com/s/f/f745a1f09ddd953811a7507794ae56cef6195120.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/03fc9857cfe24e0c590db07db7e8104959276b3c",
+          "angle": "https://i.warbycdn.com/s/c/990fcfcd80fe65e68ad2780e544a427519643a12",
+          "front": "https://i.warbycdn.com/s/c/7e8104472b3cafd1d7c5863df8cb1130422b1e3c",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/881ba163a0e8b800fac029d481ebf6552928e258"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000732",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1102635",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1306187",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "blakeley-opt-lbf-peacock-green",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/blakeley/violet-magnolia/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "blakeley-opt-sbf-peacock-green",
+        "storeFrameId": "blakeley-opt-sbf",
+        "name": "Blakeley",
+        "description": "Blakeley\u2019s slim, round acetate rims and scalloped nose bridge scream\u2014no, whisper\u2014refinement.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Peacock Green",
+        "colorCode": "728",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/075b373d9eab4aa5f1bf6bdf6d4bb01791ffa1a4.png",
+          "side": "https://i.warbycdn.com/s/c/b7134fd6d7c46eadcd7c9187746251f52bd46e8d",
+          "swatch": "https://i.warbycdn.com/-/f/color-peacock-green-1f16d20c.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a53294a881cac3565da70757f2aa59e041c4d42c",
+          "angle": "https://i.warbycdn.com/s/c/e180a48279607d85531afc83f375805e701f41cf",
+          "front": "https://i.warbycdn.com/s/c/4f38074ac0a162f4cf170d9a435ece7aadd55039",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/520b691f33c76f305c8c9332d58db5cc242f9554"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1234078",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1306327",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "blakeley-opt-lbf-peacock-green",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/blakeley/peacock-green/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "blakeley-opt-sbf-smoky-mauve-tortoise",
+        "storeFrameId": "blakeley-opt-sbf",
+        "name": "Blakeley",
+        "description": "Blakeley\u2019s slim, round acetate rims and scalloped nose bridge scream\u2014no, whisper\u2014refinement.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Smoky Mauve Tortoise",
+        "colorCode": "528",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ae63fe46199f14d0135e478f363fe17f27b37f7d.png",
+          "angle": "https://i.warbycdn.com/s/c/3c708451c93c391e3f8ea0f915ffeddb5aeebd7f",
+          "front": "https://i.warbycdn.com/s/c/fdb9a67248fee7fb0906c4db5e851881961fa03a",
+          "swatch": "https://i.warbycdn.com/s/f/a4fd1c00f378d6276c269847f215e48ed68da0b5.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a10a9377d394d48b2c4d594ec23f8981d08d2cbb",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/1da1d212bcdfab9049a4b809e86cb6f2833c085d"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000784",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000791",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "blakeley-opt-lbf-peacock-green",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/blakeley/smoky-mauve-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "chamberlain-opt-sbf-crystal",
+        "storeFrameId": "chamberlain-opt-sbf",
+        "name": "Chamberlain",
+        "description": "Get the job done in assertive, bold frames with a square shape and a strong bridge.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/06545f2242333a398298c9469a48405808a6c442.png",
+          "side": "https://i.warbycdn.com/s/c/9dbdf67053825c74c40886d9878709c1e8ed12dd",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/d30cf119e10e9b5558e3806519ac6761a91ab724",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "angle": "https://i.warbycdn.com/s/c/12d9058ba715d6f8acc232f23e148d39e70d06f7",
+          "front": "https://i.warbycdn.com/s/c/fec02c0d545ac4cc22828cfdb97446c7711e24a0",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/53dc279eabbf9597fa48766788f4537fbfbf6c23"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000446",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1585",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1102085",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1355171",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "chamberlain-opt-lbf-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/chamberlain/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "chamberlain-opt-sbf-olive-matte",
+        "storeFrameId": "chamberlain-opt-sbf",
+        "name": "Chamberlain",
+        "description": "Get the job done in assertive, bold frames with a square shape and a strong bridge.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Olive Matte",
+        "colorCode": "732",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/92df72d1207c5b315ccb960701dc624c25b3b542",
+          "baseTransparent": "https://i.warbycdn.com/s/c/a3b3ddbb6c6b6347773711040060be5bdc8c5138.png",
+          "front": "https://i.warbycdn.com/s/c/96c33048cb20e7a54ea757be1ca3f6e63e0564f5",
+          "swatch": "https://i.warbycdn.com/s/f/daeb8d620641065d3f4e26a3e1f9400bda21f07b.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/625d6d92a22123662d2c1d388cea58cdfb8a10a9",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/3e66ab761daf5ff5ca2b40fc816b84359522bae5"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1359151",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "chamberlain-opt-lbf-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/chamberlain/olive-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "chamberlain-opt-sbf-amalfi-tortoise-with-riesling",
+        "storeFrameId": "chamberlain-opt-sbf",
+        "name": "Chamberlain",
+        "description": "Get the job done in assertive, bold frames with a square shape, strong bridge, and polished Epigraph end pieces.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Amalfi Tortoise with Riesling",
+        "colorCode": "1169",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/acd04d32c122db06cc995a8be19450d36fcf9eda",
+          "baseTransparent": "https://i.warbycdn.com/s/c/8fdbe1cc62f8de80b42c44560fee3f4175cc16a3.png",
+          "front": "https://i.warbycdn.com/s/c/3f7a5a109e64bb862e058783905bf77d050b1e6d",
+          "swatch": "https://i.warbycdn.com/s/f/e5ac492f65f3a51bca9adad7c427932cf88f0d5c.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/46dcbfb3ff9920fdef6f85aba473035d9db193fd",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/580a72f77f39bbc0c20cf2d4a906559ef08bed42"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000590",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "chamberlain-opt-lbf-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/chamberlain/amalfi-tortoise-with-riesling/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "chamberlain-opt-sbf-whiskey-tortoise",
+        "storeFrameId": "chamberlain-opt-sbf",
+        "name": "Chamberlain",
+        "description": "Get the job done in assertive, bold frames with a square shape and a strong bridge.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Whiskey Tortoise",
+        "colorCode": "200",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/e6dd4fc0d539b3db5ceda7a93af88b5ef73c0210.png",
+          "side": "https://i.warbycdn.com/s/c/de0a3be4074ac3913c90b1e529d0d36a0fe84144",
+          "swatch": "https://i.warbycdn.com/s/f/4f1bfcc5d9a0ac21fab12db8946ab55dd34389a9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/fb193f1ce9114f2330acf96d946df300936475b8",
+          "angle": "https://i.warbycdn.com/s/c/97e9e04e03236b4da3077cdb73c258d6bbde06c3",
+          "front": "https://i.warbycdn.com/s/c/45fcc00e30fce36c1bfe7948824e44500b62a2f7",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/454dbbaf4ee805e4538dbf610f438ba8b5447aec"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000447",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1584",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1102030",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1355322",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "chamberlain-opt-lbf-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/chamberlain/whiskey-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "chamberlain-opt-sbf-jet-black",
+        "storeFrameId": "chamberlain-opt-sbf",
+        "name": "Chamberlain",
+        "description": "Get the job done in assertive, bold frames with a square shape and a strong bridge.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black",
+        "colorCode": "100",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/74181d4b703b156976e751179434ee7b938568ed",
+          "baseTransparent": "https://i.warbycdn.com/s/c/b9ad47cab19a152c185df01f043a56b27e95bf34.png",
+          "side": "https://i.warbycdn.com/s/c/85f531f8297a7a905ab613cd1ecc1ad90a0d03dc",
+          "front": "https://i.warbycdn.com/s/c/bb5f68d66535d5263500f7953d2250913158ba35",
+          "swatch": "https://i.warbycdn.com/s/f/6ec9b1421ab76a54cc42177b63f290539cb5f344.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/9410cfbfee0945c81a82b7589f1a5430bc8e536d"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1588",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "chamberlain-opt-lbf-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/chamberlain/jet-black/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "bodie-opt-sbf-rye-tortoise",
+        "storeFrameId": "bodie-opt-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rye Tortoise",
+        "colorCode": "291",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/2e3f4beac7786d4f9b17a4ab7632540077de0a76",
+          "baseTransparent": "https://i.warbycdn.com/s/c/89b7bcec9a3cefcead987b5e83c4aa3d2f638f58.png",
+          "front": "https://i.warbycdn.com/s/c/40e5336204f2563acde29f17579ca70cd0acfe1a",
+          "swatch": "https://i.warbycdn.com/s/f/8aa8f37a8bb7a8d58956f3f29b482aaa4344d2be.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/fb6cc3ea9545ac51e1cbac25ae1816edb9862ce3",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/e56fbbf9819d1fec4acbdc179657d5a3cda7d898"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000524",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000219",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1358517",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-sun-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/bodie/rye-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "bodie-opt-sbf-crystal-with-english-oak",
+        "storeFrameId": "bodie-opt-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal with English Oak",
+        "colorCode": "506",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ee971b7841b3f51ef0dd5be8c82151528b7f0165.png",
+          "side": "https://i.warbycdn.com/s/c/1b64af9dd2e9428f447b5429c7597cff9ac05d3c",
+          "swatch": "https://i.warbycdn.com/s/f/78ecebd2e4bba9c7ee1d3117d1040faa9641451e.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/af19a1b6ecef602fbe706d07de1f5286f8cefbca",
+          "angle": "https://i.warbycdn.com/s/c/b35b6ff9a4e2c6d31d9436f18f76eff9599f98ef",
+          "front": "https://i.warbycdn.com/s/c/fce2e03de9697ed86c79a02425da8267f48b00ca",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/d32e52977a9d79076b0d1edd86138d983a63ed66"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000523",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1233518",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1102525",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-sun-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/bodie/crystal-with-english-oak/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "bodie-opt-sbf-saltwater-matte",
+        "storeFrameId": "bodie-opt-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Saltwater Matte",
+        "colorCode": "244",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/14df70138c3c43257c630a4965255ea420197058.png",
+          "side": "https://i.warbycdn.com/s/c/d11cd02af26131b16b3637128b6891edb9128465",
+          "swatch": "https://i.warbycdn.com/s/f/a2aa162aeabdd9246be260024738be06766cc622.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/235a6e620eec30c62afea926d9a7b3061b46b34a",
+          "angle": "https://i.warbycdn.com/s/c/9c3302ff11e5f6f35af4e73c9b1f996038e2bf44",
+          "front": "https://i.warbycdn.com/s/c/5afcc9ea6aa7c1c980332313b5f1ab61b00f4747",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/cd88ec073572a3b7c4198178da467f5afa48acbe"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1233378",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1102580",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-sun-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/bodie/saltwater-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "bodie-opt-sbf-striped-spruce-with-caramel-tortoise",
+        "storeFrameId": "bodie-opt-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Striped Spruce with Caramel Tortoise",
+        "colorCode": "788",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/a3c34b40a63bf9313d0130cd9d227fb9b79cd90f",
+          "baseTransparent": "https://i.warbycdn.com/s/c/522052d148de80b217cb63caa39c203142e9fb0e.png",
+          "front": "https://i.warbycdn.com/s/c/e46bae40f6d1fdca0c04196a15727a13390d8dd4",
+          "swatch": "https://i.warbycdn.com/s/f/31549f37b60fbc148f6da81a061a259f19235b98.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/19449efb4dec255f094cb33fc43666082fb10598",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/5f2ee90d633ae5b1a06ad0ed9a8163a296aa9b9f"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001425",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-sun-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/bodie/striped-spruce-with-caramel-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "brady-opt-sbf-black-matte-eclipse",
+        "storeFrameId": "brady-opt-sbf",
+        "name": "Brady",
+        "description": "Brady's sleek lines land it right in the middle of a Venn diagram between sensible and stylish.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Black Matte Eclipse",
+        "colorCode": "103",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/324f36b357a51d911e6cc427f84bb65b9cc90329.png",
+          "side": "https://i.warbycdn.com/s/c/bc01a65e0ab4930ae8f2e22448f2bfc1a4b7724d",
+          "swatch": "https://i.warbycdn.com/s/f/3bee5971237408ea8b34864f32abb1d342108cec.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/68ff7c69aa81df80b7a4b770b458d3c0ad0b6fc2",
+          "angle": "https://i.warbycdn.com/s/c/be86bb114295a912354a0826505f96b7e9e79c25",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "front": "https://i.warbycdn.com/s/c/d3f59acbb299ec73707c15cb8a402650dc81a32e",
+          "family": "https://i.warbycdn.com/s/c/0a421e73adf68d9ae4b813c16eca88be0bf424f4",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/4cf8412ebdf090289f3528d5992a601408847847"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "94160",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "345564",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "345566",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brady/black-matte-eclipse/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "brady-opt-sbf-laguna-crystal-matte",
+        "storeFrameId": "brady-opt-sbf",
+        "name": "Brady",
+        "description": "Brady's sleek lines land it right in the middle of a Venn diagram between sensible and stylish.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Laguna Crystal Matte",
+        "colorCode": "335",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/a5ba1602237600d4e457298e45c7f78959e09797.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/9420a5a195dbda259c55ebb6e90a97c31e2a135f",
+          "swatch": "https://i.warbycdn.com/s/f/59d7a5ab13e861d8ae623b9f125499ef8958ff9f.jpg",
+          "angle": "https://i.warbycdn.com/s/c/d39de22ce53875a13c847eae1455309cb9678e3f",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "front": "https://i.warbycdn.com/s/c/7bf1c5e8078cd25862f5a9235673aed0c9513e73",
+          "family": "https://i.warbycdn.com/s/c/0a421e73adf68d9ae4b813c16eca88be0bf424f4",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/5b9b9095872472eb3906cfb44d2c2a35a0a7a4e3"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001313",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000534",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brady/laguna-crystal-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "brady-opt-sbf-sea-glass-grey",
+        "storeFrameId": "brady-opt-sbf",
+        "name": "Brady",
+        "description": "Brady's sleek lines land it right in the middle of a Venn diagram between sensible and stylish.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Sea Glass Grey",
+        "colorCode": "165",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/a4d59fc1de51ad17a96a86f847817e3acbdd15c6.png",
+          "side": "https://i.warbycdn.com/s/c/3ef9d6aa5d432da5bf8893cc2f352e7b90244f79",
+          "swatch": "https://i.warbycdn.com/s/f/40e399473910489d90f23a833fbe9a04e6e8702d.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ca7a4bd982aa40a4290027cbdf26302a97c891c6",
+          "angle": "https://i.warbycdn.com/s/c/a9955cc7bae870006631ebc80fe2ea158a5d0fcd",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "front": "https://i.warbycdn.com/s/c/70f6f7c0b0dea97d204db448ea3542be0ae180c1",
+          "family": "https://i.warbycdn.com/s/c/0a421e73adf68d9ae4b813c16eca88be0bf424f4",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/80cc24d4c2a4b2970d15bca362df156564b7f5c4"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001316",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "63369",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/brady/sea-glass-grey/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "durand-opt-sbf-whiskey-tortoise",
+        "storeFrameId": "durand-opt-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Whiskey Tortoise",
+        "colorCode": "200",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/188987c8147fc72d047b1fc73fa9dbe2dabb5134.png",
+          "side": "https://i.warbycdn.com/s/c/3c8cb896199876ba5cf9ff8eedbb3ea711e21c2d",
+          "swatch": "https://i.warbycdn.com/s/f/4f1bfcc5d9a0ac21fab12db8946ab55dd34389a9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a76f61a27932aeb73deb90e272b14452295f0d6c",
+          "angle": "https://i.warbycdn.com/s/c/4f8f781996dc8dec9713358ac169ec2bcea93b72",
+          "familyCaption": "From top to bottom: extra wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/a887449139879eba6dff54020045d76f403db961",
+          "family": "https://i.warbycdn.com/s/c/9684e9a4ce1c5d2240020eabfa17b4c9fde677bf",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/9f3ddba814f5eea59b0ab0e9c08ee67a60ce84bd"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "151176",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "126946",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1552",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357808",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-sun-sbf-whiskey-tortoise",
+        "crossBridgeFrameColorVariantId": "durand-opt-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/durand/whiskey-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "durand-opt-sbf-rose-water",
+        "storeFrameId": "durand-opt-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rose Water",
+        "colorCode": "668",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/d003ddef0f384f2323bb462071094a51b14d026e.png",
+          "side": "https://i.warbycdn.com/s/c/81bb7b14c435718cd6ba4241eae5c11e46ae9e0f",
+          "swatch": "https://i.warbycdn.com/s/f/ef14c8714c2678410c6e982c1e7188d5525ab630.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/1e59650c2d7454a2d65b1c6999039b44248aea18",
+          "angle": "https://i.warbycdn.com/s/c/83102b1eb7a5b4d3a88b84318484fe83793b5abc",
+          "familyCaption": "From top to bottom: extra wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/9f29426b16ac74e134f0d59bdd24dc0b11381135",
+          "family": "https://i.warbycdn.com/s/c/9684e9a4ce1c5d2240020eabfa17b4c9fde677bf",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/b088f0a1ce0a6819a2d56a63d66c22fb6d5d737b"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1147659",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "151177",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "126944",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "61814",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357809",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-sun-sbf-whiskey-tortoise",
+        "crossBridgeFrameColorVariantId": "durand-opt-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/durand/rose-water/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "durand-opt-sbf-laguna-crystal-matte",
+        "storeFrameId": "durand-opt-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Laguna Crystal Matte",
+        "colorCode": "335",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/108a262b81558df735fb5b708c9516e8eb8e5f99.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/d92fbd81a3ac811f7fb29ab599186b319c952fb9",
+          "swatch": "https://i.warbycdn.com/s/f/59d7a5ab13e861d8ae623b9f125499ef8958ff9f.jpg",
+          "angle": "https://i.warbycdn.com/s/c/a6a961673ad2d8dff64d66dfab72d9e5c0ae6dd6",
+          "familyCaption": "From top to bottom: extra wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/db895ea93da086b7f77833f48f7ea1f70011ae4c",
+          "family": "https://i.warbycdn.com/s/c/9684e9a4ce1c5d2240020eabfa17b4c9fde677bf",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/df02ff92d46646659ceeeac2cc3fd48b5bc33fe3"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000755",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1503824",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-sun-sbf-whiskey-tortoise",
+        "crossBridgeFrameColorVariantId": "durand-opt-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/durand/laguna-crystal-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "durand-opt-sbf-crystal",
+        "storeFrameId": "durand-opt-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/170e5a562605a17b1385ab85ef92184e41b652a9.png",
+          "side": "https://i.warbycdn.com/s/c/6962c6dbc950269c732331bc4c48d4007b1beeeb",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/f23263765d9e8a8bc72ac11be695f56642aae49f",
+          "angle": "https://i.warbycdn.com/s/c/cac2c7e7ad446acd596d155dc6e70b77a12cdbfb",
+          "familyCaption": "From top to bottom: extra wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/976d03a099c2e77855d8cc6b2561f5530632f826",
+          "family": "https://i.warbycdn.com/s/c/9684e9a4ce1c5d2240020eabfa17b4c9fde677bf",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/6d4bd7a72722614bcb2676eeefea8a26d39cff78"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1098831",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "337478",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1555",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-sun-sbf-whiskey-tortoise",
+        "crossBridgeFrameColorVariantId": "durand-opt-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/durand/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "durand-opt-sbf-crystal-with-oak-barrel",
+        "storeFrameId": "durand-opt-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal with Oak Barrel",
+        "colorCode": "911",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/112f10e979808b2d09c302c9574cf370a06e76aa.png",
+          "side": "https://i.warbycdn.com/s/c/aa0ce86f7c2879a39ebf6a17db143ca76ed9e6bb",
+          "swatch": "https://i.warbycdn.com/s/f/5a81d41ec81c903749b5b503588c9c7a387abdc8.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/caa2066924ddccf19b9f03193cc0d85fafe62fdb",
+          "angle": "https://i.warbycdn.com/s/c/4b3c35c55f95b4142bb18598f8c0739bdb00493f",
+          "familyCaption": "From top to bottom: extra wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/5ed25d582ad74ff024f78b9675193cc135eda7b4",
+          "family": "https://i.warbycdn.com/s/c/9684e9a4ce1c5d2240020eabfa17b4c9fde677bf",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/3935eaf87b116e4040a17b43eeed7601919035ad"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "346439",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "128360",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-sun-sbf-whiskey-tortoise",
+        "crossBridgeFrameColorVariantId": "durand-opt-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/durand/crystal-with-oak-barrel/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "franny-opt-sbf-toffee-tortoise",
+        "storeFrameId": "franny-opt-sbf",
+        "name": "Franny",
+        "description": "Franny is a smart, oval silhouette whose pointed end pieces give it the elegance of a cat-eye.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Toffee Tortoise",
+        "colorCode": "383",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/e5211cfc3055b77871c2c4231ba103e2b9932e1c",
+          "baseTransparent": "https://i.warbycdn.com/s/c/84691446c7315574a26add65b9438b56eced9504.png",
+          "front": "https://i.warbycdn.com/s/c/08d33f3f58fde6c344bc44e9f2ebfeb1dc0bd7d9",
+          "swatch": "https://i.warbycdn.com/s/f/948b97ee19f08be6d3a68389c0bd659ae8fca940.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/77286233088a9be08a929e2086ca2e30208ddcef",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/0b4af35b141af32cf4a7611ce1ed3b4eabbc9988"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001446",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10000357",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001445",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "franny-sun-sbf-toffee-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/franny/toffee-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "franny-opt-sbf-crystal-moss",
+        "storeFrameId": "franny-opt-sbf",
+        "name": "Franny",
+        "description": "Franny is a smart, oval silhouette whose pointed end pieces give it the elegance of a cat-eye.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal Moss",
+        "colorCode": "389",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/eaefc3f92d3afbed045090f101fb928ed285a6a4.png",
+          "angle": "https://i.warbycdn.com/s/c/520d2d03c77fc97586a998e929f600420c409955",
+          "front": "https://i.warbycdn.com/s/c/d825dd207cc89c9fc6d8a5afcbf8a90b9664b95f",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/3ccb4725d45d2e5b07d132364d5a929d98d9ef0e",
+          "swatch": "https://i.warbycdn.com/s/f/7e5d2ee888486df465a311e96493ad186c073a8e.jpg",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/b78b50df8d0b7e201a5e3cd4f31e0a8777872cfb"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001166",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "franny-sun-sbf-toffee-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/franny/crystal-moss/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "franny-opt-sbf-jet-black",
+        "storeFrameId": "franny-opt-sbf",
+        "name": "Franny",
+        "description": "Franny is a smart, oval silhouette whose pointed end pieces give it the elegance of a cat-eye.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black",
+        "colorCode": "100",
+        "images": {
+          "angle": "https://i.warbycdn.com/s/c/b2f67c191d2e19b208d77d158f18cc9c45ba3a30",
+          "baseTransparent": "https://i.warbycdn.com/s/c/8e06e789320c37b1f517536ac07de03cf067e070.png",
+          "front": "https://i.warbycdn.com/s/c/6045d3f11bde0bbe0ec34a1c94a771d8dcf90914",
+          "swatch": "https://i.warbycdn.com/s/f/6ec9b1421ab76a54cc42177b63f290539cb5f344.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/59cfc1dd85e6b44b54e9cfb9ba979b890d9e21c6",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/308a7aca26a1963ee2cd4e9372e2b4d183358946"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001583",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "franny-sun-sbf-toffee-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/franny/jet-black/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ],
+    [
+      {
+        "id": "percey-opt-sbf-chestnut-crystal",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Chestnut Crystal",
+        "colorCode": "207",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/dc257c873d797f458a20fbc7eda14d8a5a69cbad.png",
+          "side": "https://i.warbycdn.com/s/c/252dade5c5b1a7de756cfa557f7a3a796d79ae87",
+          "swatch": "https://i.warbycdn.com/s/f/ecf4938720c336dacbbf1e4f2374be2a5d5c7a44.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/8b077c68508d3c3bc8ebdfbb2f9c2044fb02528e",
+          "angle": "https://i.warbycdn.com/s/c/83c442a9331d968ad0f7590d95d38c3aef6b4310",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/25ded50d3632204e905fb201c4158bfa88849087",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/09fd6118324f1756af2947a247f4e97721684d17"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "151137",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "37632",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "88783",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357779",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/chestnut-crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-jet-black-matte",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black Matte",
+        "colorCode": "101",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/a6d12d86b877061a0256b2ed4fd0ef54db15b27b.png",
+          "side": "https://i.warbycdn.com/s/c/cd2a912eca645910cd16406f9f275fc5881d9383",
+          "swatch": "https://i.warbycdn.com/s/f/bc3c093bb5bafe6cf0f015bed634fd0bcd70105c.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/2dcbccfb06de92cb2bf30b0ccbd62a46683e5a08",
+          "angle": "https://i.warbycdn.com/s/c/90a0f713fa45a0767f477f90e450d5c873f0755a",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/6f04e5dfbb4eac8c548148281de465b346fa6d1c",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/08ac0549ff602b22c4c48b22dd6def370a26174b"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "132796",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "151140",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/jet-black-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-raspberry",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Raspberry",
+        "colorCode": "645",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/2720c47793c4b23327ee332f3dd8ef7ef6392447.png",
+          "swatch": "https://i.warbycdn.com/s/f/937f4fb8eb8a5856ff48b065ebcffd049e3527e3.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/78bbc82379ab1e5ac26b44ae03365aa5b43a6384",
+          "angle": "https://i.warbycdn.com/s/c/fab7370be9c48e7fd280ab2d8d7dc502b8125559",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/c8e53af71d36f67e135d2ea82e8971d8c28eb2ca",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/d37e35c4ec0aef67a3f3bf950bcd78df58684ea8"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1359000",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/raspberry/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-rye-tortoise",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rye Tortoise",
+        "colorCode": "291",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/1fa8b21d87479c9813a389aada6e40867506dd75.png",
+          "side": "https://i.warbycdn.com/s/c/d9d06934c6a2c33b00537091c16101bf4d170410",
+          "swatch": "https://i.warbycdn.com/s/f/8aa8f37a8bb7a8d58956f3f29b482aaa4344d2be.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/e28440376a6c4c993d8d0cbaab61ebda2721ad66",
+          "angle": "https://i.warbycdn.com/s/c/b4303fb916fa5844ee513c4124501dd02515c1d5",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/abb1e3e1293acd8fa509157207a47e36da3da740",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/607d2c4b371ffd2872f85157d1295f3da5cfb5ab"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "94159",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/rye-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-seaweed-crystal-with-amber-tortoise",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Seaweed Crystal with Amber Tortoise",
+        "colorCode": "706",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/4fe21b792692f5a162fe954e162addc7194d7df5.png",
+          "side": "https://i.warbycdn.com/s/c/3ad25103d27d7a1a41def6f8c01a7f3aca39786d",
+          "swatch": "https://i.warbycdn.com/s/f/22c31e5b749c8f99d759aa36e287c9fb3a4401d0.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/28b7c10c9acb95c88052fc3012e7ecb8f1c5d6b5",
+          "angle": "https://i.warbycdn.com/s/c/85c4135d65bc368941d60179fd1a65d761557159",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/5e1d337eb0e90faaaa7cba8492530da5054c3514",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/048bd5de751de8b7ab7d5b67d44160ef64fd124a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1108430",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1108485",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/seaweed-crystal-with-amber-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-striped-sassafras",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Striped Sassafras",
+        "colorCode": "256",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/30780f114d064d3e095f01d7bde3f55dfe34e167.png",
+          "side": "https://i.warbycdn.com/s/c/83398e83605a5a14da3910f7e2a3b266a640551c",
+          "swatch": "https://i.warbycdn.com/-/f/color-striped-sassafras-0d16c1b6.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/e715a985b608c2e56db601011ee0ac1abfc6164f",
+          "angle": "https://i.warbycdn.com/s/c/d31bb40c9e98247914e6bd84123146f111ae3961",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/7815cfc3b97240eeca06e1142b9531746cae2c72",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/2acbc63f90cf40245d1ceed5d57fd59e1cc90add"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "144897",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "70669",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1461",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "75025",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357780",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/striped-sassafras/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-rose-crystal-with-riesling",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "In collaboration with Spike Jonze, we've reissued his favorite, previously sold-out styles for a limited time. Among them is this eye-catching edition of Percey, in airy, pink shade with polished metal endpieces.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rose Crystal with Riesling",
+        "colorCode": "6600",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ccf16d9c08662845935fa7812c78093f897a7f49.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/62f48885126e0634cbcab31dcc74e8d3098c8128",
+          "swatch": "https://i.warbycdn.com/s/f/ae2316b15589fa00c5555623243914e96ea50044.jpg",
+          "angle": "https://i.warbycdn.com/s/c/bc5cc6d5351d1f15951d2fe37b28003c083679d3",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/52453d1b95d515c91489577e5f62651c80795b99",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/9dba22f1faeced39b2be17e5f626b66170356586"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001442",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/rose-crystal-with-riesling/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      },
+      {
+        "id": "percey-opt-sbf-crystal",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/b3f5e8b522ec1c211b673c80b86cc4c7c6c41112.png",
+          "side": "https://i.warbycdn.com/s/c/e1b9e18e64073c0b107d3a80a2bf760c19c5d049",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/804d399b87ca9eb4d67f069038caced997192496",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "angle": "https://i.warbycdn.com/s/c/bfbcecbf8bfdbd68b4bacc87bf33a04cea31fb49",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/e9a58308f0c5645f237fcd0a2d95ded61a65d29b",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/bc6512d866f415208cb423f76b1c550311c71c3a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "64447",
+            "width": "extra-narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1458",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "collection": {
+          "collection": "Ecom Exclusive",
+          "tag": "Online only",
+          "textColor": "white",
+          "backgroundColor": "classroom_green"
+        },
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Online only",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "collection"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true,
+        "calloutTag": "Online only"
+      },
+      {
+        "id": "percey-opt-sbf-crystal-with-oak-barrel-and-blue-bay",
+        "storeFrameId": "percey-opt-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "eyeGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal with Oak Barrel and Blue Bay",
+        "colorCode": "570",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/63e725295f724d5fd050ee37cccc40407ca657ff.png",
+          "side": "https://i.warbycdn.com/s/c/8ad6b55b39514b0a64b795f8af53a59147bdad0f",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ec808cf11eadc16d873c6ef23ca48d83533b0086",
+          "swatch": "https://i.warbycdn.com/s/f/f0b9e5fcbe98f9d6e1297da8d2f087fdf5015fe2.jpg",
+          "angle": "https://i.warbycdn.com/s/c/c01aa2756ad3cff0375115ebdb87a947ef3b19c4",
+          "familyCaption": "From top to bottom: extra wide, wide, medium, extra narrow",
+          "front": "https://i.warbycdn.com/s/c/8447e73b737c318f095ae3edb245e6fd5ae49c8b",
+          "family": "https://i.warbycdn.com/s/c/8f0032bb238c8716dec0c4e7e88d94cc51fc555b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/e0335d2640b11d5ae547f4efbc083b2b4d797e0e"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "138788",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "195.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-sun-sbf-striped-sassafras",
+        "crossBridgeFrameColorVariantId": "percey-opt-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/eyeglasses/percey/crystal-with-oak-barrel-and-blue-bay/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": true
+      }
+    ]
+  ],
+  "facets": {
+    "isIntelligent": {
+      "0": 498
+    },
+    "gender": {
+      "F": 498,
+      "M": 493
+    },
+    "merch": {
+      "classic-and-timeless": 741,
+      "wayfarer-style": 728,
+      "medium-standard-rim-frames": 467,
+      "best-for-diamond-shaped-faces": 342,
+      "vintage-revival": 341,
+      "1950s-inspired": 321,
+      "best-for-heart-shaped-faces": 311,
+      "thin-wire-rim-frames": 303,
+      "tortoiseshell-frames": 244,
+      "best-seller": 216,
+      "2010s-inspired-frames": 180,
+      "1960s-inspired": 117,
+      "oversized-lenses": 111,
+      "trend": 103,
+      "90s": 101,
+      "round-metal-wire-frame-glasses": 98,
+      "retro": 96,
+      "statement-thick-rim": 93,
+      "fall": 82,
+      "minimalist-and-understated": 80,
+      "80s": 72,
+      "1930s-inspired": 71,
+      "1940s-inspired": 70,
+      "boys-frames": 65,
+      "statement-frames": 61,
+      "warby-parker-favorites-2026-lp": 61,
+      "hexagonal-frames": 56,
+      "1920s-inspired": 47,
+      "girls-frames": 46,
+      "70s": 43,
+      "new-arrival": 41,
+      "quiet-luxury": 32,
+      "tech-influenced-futurewear-smart": 29,
+      "y2k-2000s-inspired-frames": 27,
+      "browline-clubmaster-frames": 26,
+      "made-in-italy": 25,
+      "made-in-japan": 19,
+      "sporty-active-utility-driven": 15,
+      "summer": 14,
+      "arch-manning": 7,
+      "winter": 7,
+      "collab": 4,
+      "spring": 4,
+      "shield-sunglasses": 1
+    },
+    "rxNeeds": {
+      "good-for-progressive": 640,
+      "good-for-readers": 475,
+      "good-for-strong-rx": 381
+    },
+    "availableWidths": {
+      "medium": 345,
+      "wide": 246,
+      "narrow": 97,
+      "extra-wide": 54,
+      "extra-narrow": 20
+    },
+    "frameStatus": {
+      "retired": 762,
+      "active": 710,
+      "temp-retired": 7
+    },
+    "construction": {
+      "thin": 228,
+      "nose-pads": 117,
+      "thick": 89,
+      "light-weight": 78,
+      "oversized": 71,
+      "matte-acetate": 33,
+      "graduated-rivets": 30,
+      "semi-rimless": 14,
+      "rimless": 8
+    },
+    "materials": {
+      "Cellulose Acetate": 414,
+      "Acetate": 359,
+      "Stainless Steel": 118,
+      "Metal": 76,
+      "Mixed": 58,
+      "Mixed Materials": 56,
+      "Titanium": 14,
+      "Lightweight Nylon": 10,
+      "Nylon": 10
+    },
+    "collections": {
+      "Ecom Exclusive": 44,
+      "Cool Colors": 33,
+      "Colorful Crystals": 25,
+      "Extended Sizing": 22,
+      "Fall Core 2026": 21,
+      "Fall Core 2023": 20,
+      "Summer Core 2022": 20,
+      "Spring Core 2024": 19,
+      "Spring Core 2022": 16,
+      "Winter Core 2024": 16,
+      "Winter Core 2025": 16,
+      "Extended Sizing 2021": 14,
+      "Fall Core 2025": 14,
+      "Spring Core 2 2026": 14,
+      "Winter Core 2023": 14,
+      "2019 LBF": 13,
+      "Fall Core 2021": 13,
+      "Fall Core 2022": 13,
+      "Fall Core 2024": 13,
+      "New To Home Try On": 13
+    },
+    "shapes": {
+      "Square": 190,
+      "Round": 175,
+      "Rectangle": 155,
+      "Geometric": 45,
+      "Cat-eye": 42,
+      "Oval": 34,
+      "Aviator": 23
+    },
+    "kind": {
+      "eyeGlasses": 498
+    },
+    "includeKids": {
+      "0": 498
+    },
+    "prices": {
+      "95": 347,
+      "125": 1,
+      "145": 84,
+      "175": 44,
+      "195": 22
+    },
+    "bridgeFit": {
+      "lowBridge": 40,
+      "lowBridgeAndNosePads": 135,
+      "standardBridge": 458
+    },
+    "colors": {
+      "tortoise": 168,
+      "neutral": 124,
+      "crystal": 101,
+      "brown": 95,
+      "black": 77,
+      "blue": 68,
+      "gold": 60,
+      "green": 57,
+      "multicolor": 44,
+      "two-tone": 42,
+      "silver": 41,
+      "bright": 30,
+      "pink": 28,
+      "light-tortoise": 27,
+      "grey": 26,
+      "clear": 16,
+      "red": 15,
+      "purple": 14,
+      "amber": 5,
+      "yellow": 4,
+      "white": 1
+    }
+  },
+  "next": "/v1/catalog/frames/search?kind=eyeGlasses&size=10&from=10",
+  "isAffinitiesApplied": false
+}

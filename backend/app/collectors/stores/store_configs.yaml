@@ -749,6 +749,35 @@ stores:
       name: { css: ".card__heading" }
       price: { css: ".price" }
 
+  # Warby Parker (New York, USA), Next.js / Internal Catalog API. Checked 2026-10-02:
+  # Pioneer of DTC acetate eyewear founded in 2010. Hand-polished cellulose acetate,
+  # classic vintage silhouettes, starting at $95. Uses internal catalog search API
+  # (/v1/catalog/frames/search) allowed by robots.txt, capturing all 365 models, 740 colorways,
+  # shapes, materials, and bestseller flags across 6 polite requests.
+  warbyparker.com:
+    name: "Warby Parker"
+    base_url: "https://www.warbyparker.com"
+    lang: en
+    country: US                         # New York City, USA (founded 2010; DTC acetate pioneer)
+    default_brand: "Warby Parker"
+    default_currency: USD
+    delay_s: 2.0
+    listing:
+      urls:
+        - { url: "/v1/catalog/frames/search?kind=eyeGlasses&size=300", categories: "Optique" }
+        - { url: "/v1/catalog/frames/search?kind=sunGlasses&size=300", categories: "Solaire" }
+        - { url: "/v1/catalog/frames/search?kind=eyeGlasses&merch=best-seller&size=300", flag: "is_bestseller" }
+        - { url: "/v1/catalog/frames/search?kind=sunGlasses&merch=best-seller&size=300", flag: "is_bestseller" }
+        - { url: "/v1/catalog/frames/search?kind=eyeGlasses&merch=new-arrival&size=300", flag: "is_new" }
+        - { url: "/v1/catalog/frames/search?kind=sunGlasses&merch=new-arrival&size=300", flag: "is_new" }
+      product: ".frame-card"
+      link: "a"
+      url_regex: '(/sunglasses/[^/?#]+|/eyeglasses/[^/?#]+)'
+    fields:
+      name: { css: ".frame-name" }
+      price: { css: ".frame-price" }
+      image_url: { css: "img" }
+
 
 
 

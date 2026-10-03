@@ -1,0 +1,2228 @@
+{
+  "total": 125,
+  "items": [
+    [
+      {
+        "id": "esme-sun-sbf-sesame-tortoise",
+        "storeFrameId": "esme-sun-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Sesame Tortoise",
+        "colorCode": "937",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/4d724257722f60727c01e309ecfb3326e76bcadc.png",
+          "side": "https://i.warbycdn.com/s/c/f13dc8852f648e227c0be65ec4cd9e461f408579",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/36cf756b637478bdf7f8872478c98fa34050fc3f",
+          "swatch": "https://i.warbycdn.com/-/f/sesame-1bd96c07.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/c9d44725ffb87aa20acb049f928c44b786144c45",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/69d0b084c09cb63728668ae93443245baaf4a966",
+          "angle": "https://i.warbycdn.com/s/c/f5fb01b90f2b777aa49033967fb983604fcd033c",
+          "front": "https://i.warbycdn.com/s/c/cb6f8db36c1ba530703f730f22e3efb67e6b36be",
+          "yellowTint": "https://i.warbycdn.com/s/c/78790640877498d5921fcc136ccb27b5109110da",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/7d1df530039a30d28ee6b1033c04190aca50922e"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "729492",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1343974",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "10001693",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-opt-sbf-pearled-tortoise-with-polished-gold",
+        "crossBridgeFrameColorVariantId": "esme-sun-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/esme/sesame-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "esme-sun-sbf-crystal",
+        "storeFrameId": "esme-sun-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses and overall impression of understated confidence.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/b38890b4be3c4beb652ffb6d114a1543aa80ec6d.png",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/9dc501282185bab4c5af5ed4cbf1c151ffa5cf66",
+          "blueTint": "https://i.warbycdn.com/s/c/4af9092d5e6dd22ba67ad2250017c0709fc1462b",
+          "angle": "https://i.warbycdn.com/s/c/893f7a7ffb3d76eda7f3bc4c6e5e51b1528a4dcc",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/c347e0686af711cc53ed94345890537313a181fd",
+          "front": "https://i.warbycdn.com/s/c/78b14580c45b07be55078a092185fb2f86624650",
+          "yellowTint": "https://i.warbycdn.com/s/c/bd6da6b98f81e4e789d1d6b10dc783043b5abe88",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/b7dd3fe0525c7c18e890f97f62094ffc5e123fc1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1310917",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1344127",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-opt-sbf-pearled-tortoise-with-polished-gold",
+        "crossBridgeFrameColorVariantId": "esme-sun-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/esme/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "esme-sun-sbf-aventurine-tortoise-with-polished-gold",
+        "storeFrameId": "esme-sun-sbf",
+        "name": "Esme",
+        "description": "A head turn here. A double take there. Esme commands just this sort of attention with its squarish cat-eyed lenses, gleaming Epigraph end pieces, and overall impression of understated confidence.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Aventurine Tortoise with Polished Gold",
+        "colorCode": "1236",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/74cfd07d603cd208c95f40e1dfb5e5d62dda161a.png",
+          "side": "https://i.warbycdn.com/s/c/bb9bb5c808f90a5bb8b94bb2e02fe8d693e507c2",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/66d584c4bdc24e5234c6e8053db25fefaa900ea8",
+          "swatch": "https://i.warbycdn.com/s/f/a947c0388531265f73e688184fb5c95d49e63de9.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/2787ae870c1ed85f860015be78ad7a4fa0719ae4",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/d1495fa213559a92c72e5c654490de8bb213adb6",
+          "angle": "https://i.warbycdn.com/s/c/9d7fab8f960e1b9c0342fb7c2872037c06efe4df",
+          "yellowTint": "https://i.warbycdn.com/s/c/d67acece0d3717308eac045b422f8f2f5e4709cd",
+          "front": "https://i.warbycdn.com/s/c/eebabf8d492197862c462e7950bcacddbc845b47",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/5539f34385f6a717e5e7b592eeb7664edc0f12f0"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1235350",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Square",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "esme-opt-sbf-pearled-tortoise-with-polished-gold",
+        "crossBridgeFrameColorVariantId": "esme-sun-lbf-sesame-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/esme/aventurine-tortoise-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "elio-sun-sbf-black-walnut",
+        "storeFrameId": "elio-sun-sbf",
+        "name": "Elio",
+        "description": "Together, the keyhole bridge, scalloped upper edge, and Graduated Rivet design punch up Elio's timeless rectangular silhouette.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Black Walnut",
+        "colorCode": "243",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/07fb666c1a6cdc5c07c85319b4c678b208f95af7.png",
+          "side": "https://i.warbycdn.com/s/c/dfb9fb687f3a04ca35b8b3b559ef1d3516e4162a",
+          "swatch": "https://i.warbycdn.com/-/f/blac23033ad2.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/aad269bebf3d1bfd297c30004b0922988ed9dbce",
+          "blueTint": "https://i.warbycdn.com/s/c/7210893d7413266df65152caa431e607e8a549ee",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/6da962674a1fb9ef0a978e8e266945325ed91a82",
+          "angle": "https://i.warbycdn.com/s/c/d1284b26423473ef54538a15bf1924577eb2234f",
+          "yellowTint": "https://i.warbycdn.com/s/c/f7e79a3cd57da595363c5af2e35cdba16caf770c",
+          "front": "https://i.warbycdn.com/s/c/bb9e80ad0d199eab31795851171010ce4ababca6",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/130f1293c7e35955ed63527eb5541f0a3f4c1ad1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1145556",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "729486",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/elio/black-walnut/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "elio-sun-sbf-crystal",
+        "storeFrameId": "elio-sun-sbf",
+        "name": "Elio",
+        "description": "Together, the keyhole bridge, scalloped upper edge, and Graduated Rivet design punch up Elio's timeless rectangular silhouette.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Crystal",
+        "colorCode": "500",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/882ab92d1bcaaac94529d1cb90131533f81212ed.png",
+          "side": "https://i.warbycdn.com/s/c/2a8a7314144822ec5305af69a987c2d3c15c3962",
+          "swatch": "https://i.warbycdn.com/s/f/0ac9121ee9584067f02788f1ffc8f097f0429ec9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/561ec2c1baee67344a426150ec10e6a3f83790ef",
+          "blueTint": "https://i.warbycdn.com/s/c/a9e45efd4130820bd5226dd34480a286bbf38f48",
+          "angle": "https://i.warbycdn.com/s/c/15b7b68a1c384440d75c45607af04bd727ce7b35",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/bc614d868f842d55614ae0eff304cc8597e56304",
+          "front": "https://i.warbycdn.com/s/c/117aa2e60f55349c1725a3957d99790a4d3b3f02",
+          "yellowTint": "https://i.warbycdn.com/s/c/abc137b192f46f870ac3ed1e5f43c68c98e38fa8",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/edd4fab3a8c3aa6b401a02dd2bfdca90f8ec49bf"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1145674",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "729483",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/elio/crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "elio-sun-sbf-jet-black-matte",
+        "storeFrameId": "elio-sun-sbf",
+        "name": "Elio",
+        "description": "Together, the keyhole bridge, scalloped upper edge, and Graduated Rivet design punch up Elio's timeless rectangular silhouette.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black Matte",
+        "colorCode": "101",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/147c60cad628f3e4a4d14909905ffd0b6859ce0d.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ae3f4359ed491c852d28e461c72e4bb0a94a436f",
+          "swatch": "https://i.warbycdn.com/s/f/bc3c093bb5bafe6cf0f015bed634fd0bcd70105c.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/57b02a6955fdd5dea6c9a719a204b5f54619949d",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/fa2c8f2f85b27c2108b5ccf2806a56b8341d5024",
+          "angle": "https://i.warbycdn.com/s/c/1633d0fb4ebf59f1bfb8ddfe6f5262f825689d32",
+          "yellowTint": "https://i.warbycdn.com/s/c/f33a5e3644d891aeee63efac9dd1ebd047e7db3c",
+          "front": "https://i.warbycdn.com/s/c/318a3a8142c69243a21f29a773ae6308dc2a7fb9",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/51db9127273df11d71d3141a1a206f5a6757984d"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001408",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/elio/jet-black-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "elio-sun-sbf-cactus-crystal-with-polished-silver",
+        "storeFrameId": "elio-sun-sbf",
+        "name": "Elio",
+        "description": "A keyhole bridge, scalloped upper edge, and polished Epigraph end pieces punch up Elio's timeless, rectangular silhouette.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Cactus Crystal with Polished Silver",
+        "colorCode": "1175",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/067b350584283eea1ddbb6ed01b332b3d110d43d.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/3ab098706a07fb986fb940b95231b5d41762c8cb",
+          "swatch": "https://i.warbycdn.com/s/f/992e835f6270665e30fcee6b31ccced03b8f5cc4.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/1b96f7f8fb778986d1e51b1205925164cd393964",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/70e7a0f70c4a6ee51ad9691ddaae84f8b728868a",
+          "angle": "https://i.warbycdn.com/s/c/219150c8938eb4d2f60f45a75cd893ad6dd7b41f",
+          "front": "https://i.warbycdn.com/s/c/26e327c8b2551d2e196b521a8df257fa79736619",
+          "yellowTint": "https://i.warbycdn.com/s/c/478ec5e6a36ce65fb992b4a21cfa59c0ddb05856",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/41b4b2a4cf8bdf254989c4a65b89d1d2dcdd97f7"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000586",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/elio/cactus-crystal-with-polished-silver/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "bix-sun-sbf-umber-crystal",
+        "storeFrameId": "bix-sun-sbf",
+        "name": "Bix",
+        "description": "A filled-in aviator with bold, spacious lenses, a smoothly rounded profile, and polished, horizontal rivets - the Bix frame is innately eye-catching.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Umber Crystal",
+        "colorCode": "426",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/96b68981a86e9f8cf78dd5e2ed9c4834f52172ad.png",
+          "swatch": "https://i.warbycdn.com/s/f/a719b0ea843411006ca020c41ce552ed6356afba.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ab5f0ede57ceb5dd5f8b513f1a15e99d5b193df6",
+          "blueTint": "https://i.warbycdn.com/s/c/f99f0ce68a893b6fca634b25c4c64f8b651ec5f1",
+          "angle": "https://i.warbycdn.com/s/c/21c753aaf81ec114482a707202190f76d597f0e8",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/c8113f28d93853910b6c97e74f537a2a3f3b75c6",
+          "yellowTint": "https://i.warbycdn.com/s/c/5890cac2d7eb94f595216bdf5f5ebc1acc4f4b8f",
+          "front": "https://i.warbycdn.com/s/c/69f9100a25b579ad645d033070ba649ef09fca73",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/ad1777060e62544d83a592d6c89fbfdae3e092d1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001544",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bix-opt-sbf-umber-crystal",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/bix/umber-crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "brimmer-sun-sbf-black-walnut",
+        "storeFrameId": "brimmer-sun-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and our signature Graduated Rivets: Brimmer has it all.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Black Walnut",
+        "colorCode": "243",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/673c9ead972ac543de00c89730f45f71ed39385c.png",
+          "swatch": "https://i.warbycdn.com/-/f/blac23033ad2.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a55cff59ba06247336d0d448b3b05f265def0ae4",
+          "blueTint": "https://i.warbycdn.com/s/c/ac5e35211938d441eb0a0ff25207db02f766e5e3",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/a9e3eb1ecf77f547b8d5947b1447b2c704b143d8",
+          "angle": "https://i.warbycdn.com/s/c/8ca68c8bf03c9a7d93c1c3724d23ad431211af65",
+          "front": "https://i.warbycdn.com/s/c/dadb1c8d211a2c620c4d188b074dee4e46791c6e",
+          "yellowTint": "https://i.warbycdn.com/s/c/0bdaadc2ce3c781a62819d1d238ae3bd5ed7ab5c",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/b27e62262f5cdd0648393218b6fc6cf0f55980ae"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1144852",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "",
+        "crossKindFrameColorVariantId": "brimmer-opt-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/brimmer/black-walnut/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "brimmer-sun-sbf-honeydew",
+        "storeFrameId": "brimmer-sun-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and our signature Graduated Rivets: Brimmer has it all.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Honeydew",
+        "colorCode": "701",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/e07e4f8015c6d5122987b17749d626b0b8e12760.png",
+          "swatch": "https://i.warbycdn.com/s/f/fc9d4a8a6dc4aac9572a1a2cc0bc26cb58869fbe.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/d639a98e6c1f92d9eb9e1eeb68ef5643876aa790",
+          "blueTint": "https://i.warbycdn.com/s/c/a2c605df0ff5fbdae44b9ca83d2f5202dbdc0e96",
+          "angle": "https://i.warbycdn.com/s/c/f5452eec4baf691cb8a6babd7220850378036691",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/20aeaaf8b18432af23c7bfac2488a2ecb82d5f01",
+          "front": "https://i.warbycdn.com/s/c/af26bd5c3cfb58901cb2a32daa3be6244f30e572",
+          "yellowTint": "https://i.warbycdn.com/s/c/494ce1cdb1fc10f57a01937bae5d87fd89721c93",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/1663c3b9cc5a44bc03b93fe8b83fe101df9f4ea3"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1144968",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "brimmer-opt-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/brimmer/honeydew/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "brimmer-sun-sbf-jet-black-with-polished-gold",
+        "storeFrameId": "brimmer-sun-sbf",
+        "name": "Brimmer",
+        "description": "Oversized lenses, a handsome brow bar, and polished Epigraph end pieces: Brimmer has it all.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black with Polished Gold",
+        "colorCode": "3102",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/d53e9241aa7669d913dbcd0818d01dcaae0f6932.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ad3e5b34ffa6c77f9ec1381c9e13bbbf59a79bc4",
+          "swatch": "https://i.warbycdn.com/s/f/6b945b47c44b1a898f8498e4196ecba251c17182.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/7a8db2014538708640ca70fb69b1e8bbe0a18473",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/0c5dc950dc29e06f21aeb6867d5c2544105fbada",
+          "angle": "https://i.warbycdn.com/s/c/b5324518109664099b87651e8dce139a3cbf82c7",
+          "yellowTint": "https://i.warbycdn.com/s/c/bfd591d2b504b461a2cdb1ab56de994c543694e6",
+          "front": "https://i.warbycdn.com/s/c/215d311e6a0a3b3754db9858d489a21b965d4873",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/d2c479d089cc8fd71452e114248daafe598c18f3"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10000018",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "brimmer-opt-sbf-black-walnut",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/brimmer/jet-black-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "monica-sun-sbf-ristretto-tortoise",
+        "storeFrameId": "monica-sun-sbf",
+        "name": "Monica",
+        "description": "Straight from the \u201990s, Monica is a slim cat-eye with plenty of verve to match its elegance.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Ristretto Tortoise",
+        "colorCode": "311",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/93ee7a129ef9aa77644172b6dd9c58347d7c4981.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/1f6cc344d6fcc6971bd7e78554a45b962fcf91f2",
+          "swatch": "https://i.warbycdn.com/s/f/81ed1cfe9ab56031936dbbb3c6d775d0deafdf63.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/6a25ae9d494241c7240fa25eb5d67e8151e8ec05",
+          "angle": "https://i.warbycdn.com/s/c/1d7015b35456380ecf7de00bb5be436d37471127",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/09ff7bcacbd233f5d492cbcd4c72cc0697f8b300",
+          "front": "https://i.warbycdn.com/s/c/b65a908521b935b8476ea2d5207226b0dedb2f17",
+          "yellowTint": "https://i.warbycdn.com/s/c/056057022ae13f6d69c0de1bb674eb1256a6187a",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/862466db118b812f98ba1318b924ded65b72037e"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001222",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Cat-eye",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "monica-opt-sbf-ristretto-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/monica/ristretto-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "raider-sun-sbf-polished-gold",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "The vintage-inspired lines of Raider's aviator shape make it a back-pocket, in-the-glove-compartment, always-on-hand sort of staple.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Polished Gold",
+        "colorCode": "2403",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/438e1e695d6ef7c5c2b259409dd136763ba4d256.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/072c449e0049a1d96de25660be6f7bac4f7f6012",
+          "swatch": "https://i.warbycdn.com/s/f/8968f627ce5022c7b7efa35daba998e82e9c625d.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/f64959a706b7099cc5cb2d1dfb8073e77f6d9c94",
+          "angle": "https://i.warbycdn.com/s/c/834ea95b1e8d2611688866b6d3f905846435beeb",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/ec4859101a1e2c86c4b2e313b99d35ff1a1d79d9",
+          "yellowTint": "https://i.warbycdn.com/s/c/fdc4a209ec5d2de2181961bdf2d108a68bd39eee",
+          "front": "https://i.warbycdn.com/s/c/f85485c3a32f7681e5c584be8e7725a467fbb38c",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/6fa664b0f2708e69f984fdfcf9a56eaa6685487a"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126935",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "61734",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "61738",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1344280",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "raider-sun-sbf-brushed-ink",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "The vintage-inspired lines of Raider's aviator shape make it a back-pocket, in-the-glove-compartment, always-on-hand sort of staple.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Brushed Ink",
+        "colorCode": "2101",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ca4e47f1f37329eb95e4379acf62f51e78dcc16c.png",
+          "swatch": "https://i.warbycdn.com/s/f/c0a2be9f9cf011b1bfdc16d97693f81f4b91e65e.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/c7f1736d96e4283ae4d07ebd15a37bafd2096bcc",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/99e429e155bf514f1778b12d38e4e80554eebf4c",
+          "angle": "https://i.warbycdn.com/s/c/978fbf63f23971b1fe17fc53e30a6f8751c7e664",
+          "yellowTint": "https://i.warbycdn.com/s/c/0dac083340d2569c6b0ae8496ec289bffba8fb5a",
+          "front": "https://i.warbycdn.com/s/c/fb9ca55863289bd9cd567a53afc9beb109d69c18"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "97591",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/brushed-ink/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "raider-sun-sbf-brushed-ink-with-flash-gold-lenses",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "This wider version of Raider has generously sized teardrop lenses, a razor-straight brow, and gleaming metal construction.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Brushed Ink",
+        "colorCode": "2415",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/953b0dd21ee4b6c3360231cc12597cfbaa168ee8.png",
+          "swatch": "https://i.warbycdn.com/s/f/7e328a21335df00f69d3272d02e1c139f976db72.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/16ce96fdc4f82b127932545298d4b6706b292f65",
+          "angle": "https://i.warbycdn.com/s/c/2fd98d3cce71c048b9c43411625fb55dd7d14cc5",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/49c0c2392ea132e8a33711c840b0a8059ca151df",
+          "yellowTint": "https://i.warbycdn.com/s/c/266e4494fc187492e76815f7437cd9c2bf04b747",
+          "front": "https://i.warbycdn.com/s/c/88566e6de4eb8124b28e7b9fb1f283db9a230783"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "97595",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/brushed-ink-with-flash-gold-lenses/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "raider-sun-sbf-brushed-ink-with-polished-gold",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "The vintage-inspired lines of Raider's aviator shape make it a back-pocket, in-the-glove-compartment, always-on-hand sort of staple.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Brushed Ink with Polished Gold",
+        "colorCode": "2120",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/3f03cda84637d544f80d26a836a434595a969703.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/c00d95b1126fdcf79a3708c490437a72200c3986",
+          "swatch": "https://i.warbycdn.com/s/f/988a5d73c2e3d51b04cca331dcbde55e63ab1e0e.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/fb68b23c1220475102ad28fadc4f4ea08427cf79",
+          "angle": "https://i.warbycdn.com/s/c/58b12f668e65d627736f88146e4d58b1459cae18",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/251f0fb2bcc6f630d57358dd6479a3611c332d00",
+          "front": "https://i.warbycdn.com/s/c/ca4e1bbfe6e13ce2fca6be670b2b465146a9b4f9",
+          "yellowTint": "https://i.warbycdn.com/s/c/38059efacb131a6ed41b62ffafecaae465f0ec66",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/8c594375fa1f74a1cd1c79d0af82693bca4e24eb"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1162842",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/brushed-ink-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "raider-sun-sbf-polished-silver",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "The vintage-inspired lines of Raider's aviator shape make it a back-pocket, in-the-glove-compartment, always-on-hand sort of staple.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Polished Silver",
+        "colorCode": "2152",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/4bfd5c32196b7be00d97f144c126954b9bb15202.png",
+          "swatch": "https://i.warbycdn.com/s/f/568ba09970116bceefb097985217806af6211f9c.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/a37ae7d319d997b95c3876e998a4212ce563da16",
+          "blueTint": "https://i.warbycdn.com/s/c/9d85156caea2776ce1d6be5b309394045c0f55dd",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/9c26931bbef2b052cdea245b06e9d937fd39f5c4",
+          "angle": "https://i.warbycdn.com/s/c/e7e12f1fb9cff7659a5a094033de331e1d794d23",
+          "yellowTint": "https://i.warbycdn.com/s/c/d8108f0d158d9283a3c3023072ef6ece18d02fa7",
+          "front": "https://i.warbycdn.com/s/c/7e22fee947c382038f058f0b8714c415beea3966",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/06d12b09ae066b75ea231c2f2884c4b5e94b2b02"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126937",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "61719",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "702439",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1344433",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/polished-silver/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "raider-sun-sbf-rose-gold",
+        "storeFrameId": "raider-sun-sbf",
+        "name": "Raider",
+        "description": "The vintage-inspired lines of Raider's aviator shape make it a back-pocket, in-the-glove-compartment, always-on-hand sort of staple.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rose Gold",
+        "colorCode": "2233",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/8b63346d45d579e783c191681957d17dd5f37bb7.png",
+          "swatch": "https://i.warbycdn.com/s/f/8fc83c97d7d262a01fcac667c2c003712386adc0.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/729c46c6321e4059154e5e1540fa305fd9c3e10d",
+          "angle": "https://i.warbycdn.com/s/c/68f1d1657b2748d2a23893c6311cf800d174236f",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/c5973da7dad0804c07fdda1ef59b380f07561ffd",
+          "yellowTint": "https://i.warbycdn.com/s/c/28c7a9ddea9e76aa88f88a923146d16f2ea9a445",
+          "front": "https://i.warbycdn.com/s/c/3eddd592e025e8e37b4a89fdf0f650fcb4f259ec"
+        },
+        "gender": "female",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "61736",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "145.00",
+        "primaryShape": "Aviator",
+        "eyewireMaterial": "HB",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/raider/rose-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "barkley-sun-sbf-antique-shale-fade",
+        "storeFrameId": "barkley-sun-sbf",
+        "name": "Barkley",
+        "description": "The Barkley frame manages to look at once midcentury and contemporary and totally stylish on everyone.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Antique Shale Fade",
+        "colorCode": "125",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/531aa5870b81c614434f0f153daa4e57874b4bc2.png",
+          "side": "https://i.warbycdn.com/s/c/93639910ff48ea33802b68bee4ac7b2cf35711da",
+          "swatch": "https://i.warbycdn.com/-/f/color-antique-shale-fade-c8cc3110.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/676aab7b296bbcc15616de1d4b74746d6c01a0c5",
+          "blueTint": "https://i.warbycdn.com/s/c/5d6c22d7dcb9ef72cc88a87573a8949d8e9fd142",
+          "angle": "https://i.warbycdn.com/s/c/205d69c6bf8c93eb13643bd6f76a17d46b855a90",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/537adf77594bda6a7c6ac9f8dc0c93896a3a0bde",
+          "familyCaption": "From top to bottom: wide, medium, narrow",
+          "front": "https://i.warbycdn.com/s/c/45afdf11b7981d6bd8498fc4d46162a968591a7f",
+          "yellowTint": "https://i.warbycdn.com/s/c/dd9a0e274dd5ec47a40ec82223695891559bf52a",
+          "family": "https://i.warbycdn.com/s/c/84cb51bf4c0ba31c404a7a082fab25fef5adf96b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/f47b5902737205489a07b01dd513878f91cfa2c3"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126939",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "2103",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "66159",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357787",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "barkley-sun-lbf-antique-shale-fade",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/barkley/antique-shale-fade/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "barkley-sun-sbf-azure-crystal",
+        "storeFrameId": "barkley-sun-sbf",
+        "name": "Barkley",
+        "description": "The Barkley frame manages to look at once midcentury and contemporary and totally stylish on everyone.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Azure Crystal",
+        "colorCode": "754",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/a31bba8eb8347dfdf30111acd722e6ad8153a1f8.png",
+          "side": "https://i.warbycdn.com/s/c/82610fbd00414aa279e462c9fbb7d956b8fe77f5",
+          "swatch": "https://i.warbycdn.com/s/f/03d91a8dd0f27334942896364eba05601108fea2.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/3b39a60eff1cc92a88d0bb330bd17fe65afb87e0",
+          "blueTint": "https://i.warbycdn.com/s/c/31d4693c9e562cae32a874ad00ab01c2ea4c70b0",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/9e285f4cdb18593830c121e1266282ccf38c277d",
+          "angle": "https://i.warbycdn.com/s/c/2a7863a85ee2c85aa7748df10f1d7bb1ff3c95db",
+          "familyCaption": "From top to bottom: wide, medium, narrow",
+          "yellowTint": "https://i.warbycdn.com/s/c/38d34bb49ffe4c2a24121f9fe9c20e2c92aa6495",
+          "front": "https://i.warbycdn.com/s/c/734cdf3da5270a28ec95d54b3821da61ffe0f1f7",
+          "family": "https://i.warbycdn.com/s/c/84cb51bf4c0ba31c404a7a082fab25fef5adf96b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/936707dc09a5baba2e79cc98cf520efac07369b0"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "718962",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "718964",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "barkley-sun-lbf-antique-shale-fade",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/barkley/azure-crystal/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "barkley-sun-sbf-black-matte-eclipse",
+        "storeFrameId": "barkley-sun-sbf",
+        "name": "Barkley",
+        "description": "The Barkley frame manages to look at once midcentury and contemporary and totally stylish on everyone.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Black Matte Eclipse",
+        "colorCode": "103",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/a2f9830ef5899bdba8aa0d524930c95dd94d3e22.png",
+          "side": "https://i.warbycdn.com/s/c/f9a0d82f054ce100a778017231de1ade1f2aa5c6",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/2c78ccd6f7087e1a5ad3a1d9dc49938d61e892cb",
+          "swatch": "https://i.warbycdn.com/s/f/3bee5971237408ea8b34864f32abb1d342108cec.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/b1801331147537a97b1abf9f950f5ddbce09097f",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/ea0329acb2f69bcc4e183d66a0c0cc296b06d90e",
+          "angle": "https://i.warbycdn.com/s/c/80b6b3c930fcf47fc8c9a1c027199466c9982926",
+          "familyCaption": "From top to bottom: wide, medium, narrow",
+          "yellowTint": "https://i.warbycdn.com/s/c/b7bacaad059e540f5369cbc1512dde808bc61217",
+          "front": "https://i.warbycdn.com/s/c/941177ac75782487539a56c18aae32018341aacd",
+          "family": "https://i.warbycdn.com/s/c/84cb51bf4c0ba31c404a7a082fab25fef5adf96b",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/5ac12b268e364f0ae33d7a9fa7253d861fbf9fb1"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126941",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "64557",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "88769",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357785",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Rectangle",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "barkley-sun-lbf-antique-shale-fade",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/barkley/black-matte-eclipse/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "durand-sun-sbf-whiskey-tortoise",
+        "storeFrameId": "durand-sun-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Whiskey Tortoise",
+        "colorCode": "200",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ee8d97fc94b9f97406b3596805611d0e505f114b.png",
+          "side": "https://i.warbycdn.com/s/c/b4821fd04fd22c26d04a8c35e879dc0c543f1d68",
+          "swatch": "https://i.warbycdn.com/s/f/4f1bfcc5d9a0ac21fab12db8946ab55dd34389a9.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/b801292200bdab1c920983a6ac5cd58750bb1276",
+          "blueTint": "https://i.warbycdn.com/s/c/a160506e5c4ca9ce2ede52c1bc14c3184013d64e",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/836968acbac227da3951e94893ccf3cc2badfdc9",
+          "angle": "https://i.warbycdn.com/s/c/874cf7e5fa239b6aa9f85e40e0e762d7cdc4da56",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "front": "https://i.warbycdn.com/s/c/78b5e315b661dc003bb579a96cd8286c7d91707f",
+          "yellowTint": "https://i.warbycdn.com/s/c/4ccd9e896875a3b87b0941b54f8b954a7d44c04f",
+          "family": "https://i.warbycdn.com/s/c/1f339368c81e614c88308d223afe05a61d525dcd",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/2802bb8e1b81179a2b8f3f6acdf301fdbd7e6c70"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "729505",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "126945",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "1553",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357690",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-opt-sbf-rose-water",
+        "crossBridgeFrameColorVariantId": "durand-sun-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/durand/whiskey-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "durand-sun-sbf-jet-black-with-polished-gold",
+        "storeFrameId": "durand-sun-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance, all while making a sharp impression with polished Epigraph end pieces.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black with Polished Gold",
+        "colorCode": "3100",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/9e7c0f7bef636df2cbb363f49a55f8b6bb23de56.png",
+          "side": "https://i.warbycdn.com/s/c/1de6e126dd8e59550eb103a9385119742b723e73",
+          "swatch": "https://i.warbycdn.com/s/f/6b945b47c44b1a898f8498e4196ecba251c17182.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/45947ada6a57be777ef2012b60e6f2b899231de1",
+          "blueTint": "https://i.warbycdn.com/s/c/a4f05352f6d8ad4f770c479a68c9e3716806be1d",
+          "angle": "https://i.warbycdn.com/s/c/e3a46319bf5a6c737864f2ee563fd649655bb24e",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/0c633e627fe1887f5edde0a8860e07cfaed94dbc",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "yellowTint": "https://i.warbycdn.com/s/c/318b0fe2b3e05a8a96665854d0c3990344829fff",
+          "front": "https://i.warbycdn.com/s/c/134b848fd02f30ed5597cf2a85b2745f02a01515",
+          "family": "https://i.warbycdn.com/s/c/1f339368c81e614c88308d223afe05a61d525dcd",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/2cda12b576fad137ebf99bb4674fe289a147c624"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "302018",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "175.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-opt-sbf-rose-water",
+        "crossBridgeFrameColorVariantId": "durand-sun-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [
+          {
+            "label": "Made in Italy",
+            "textColor": "white",
+            "backgroundColor": "classroom_green",
+            "kind": "merch"
+          }
+        ],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/durand/jet-black-with-polished-gold/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "durand-sun-sbf-rose-water",
+        "storeFrameId": "durand-sun-sbf",
+        "name": "Durand",
+        "description": "Not quite square, not quite round, Durand strikes a perfect balance all while making a sharp first impression.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rose Water",
+        "colorCode": "668",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/45f1ae1820074be3d13231df234a57c6bdd583e3.png",
+          "side": "https://i.warbycdn.com/s/c/c1b12f2ca7063978e308d914b6fa9497cbaf41bd",
+          "swatch": "https://i.warbycdn.com/s/f/ef14c8714c2678410c6e982c1e7188d5525ab630.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/f5a943f1dcedc4d45830bd2e72ea01693108fa43",
+          "blueTint": "https://i.warbycdn.com/s/c/31c5b542ed22a8bdec81a99c3a83ed27b31209e8",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/8d696156dabdd2399c224b98855eb0cc25efa660",
+          "angle": "https://i.warbycdn.com/s/c/6e153261a7c49e20c0b232393e54bdd597bddd3b",
+          "familyCaption": "From top to bottom: extra wide, wide, medium",
+          "front": "https://i.warbycdn.com/s/c/3f355c73cfa326463f9868bca2321c93ab927d0f",
+          "yellowTint": "https://i.warbycdn.com/s/c/591b7285eb7522a2c8bea87f290f8ecaf5bf2234",
+          "family": "https://i.warbycdn.com/s/c/1f339368c81e614c88308d223afe05a61d525dcd",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/206ef68dd57dd6cd4f1423386756f6dab9b80807"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "729503",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "126943",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "62286",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "357689",
+            "width": "extra-wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "durand-opt-sbf-rose-water",
+        "crossBridgeFrameColorVariantId": "durand-sun-lbf-whiskey-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/durand/rose-water/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "aubrey-sun-sbf-jet-black",
+        "storeFrameId": "aubrey-sun-sbf",
+        "name": "Aubrey",
+        "description": "Bigger is better. Aubrey's oversized rectangular silhouette is wearable and glamour at its finest.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Jet Black",
+        "colorCode": "1100",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/61f3b174778d54832e36d3c5781cf6d2b18d05df.png",
+          "side": "https://i.warbycdn.com/s/c/a7f29960cec48a22046241300bca07520945d8c7",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/dd5516ca6b314345bbc48f93b399423c2b627ecb",
+          "swatch": "https://i.warbycdn.com/s/f/675ee19309c966da1a1ab651f0053ca9b3a7fff4.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/c8552450679b44ff36b8e8005f874317a6a42139",
+          "angle": "https://i.warbycdn.com/s/c/d4bff1a14e57a0b5d768b9b7508ec68fd1c06927",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/20b5256f09ffbecb08dfd32de36b478904702e08",
+          "yellowTint": "https://i.warbycdn.com/s/c/e2ff3fe2851b06c758b7748818f59ef3aadd55f4",
+          "front": "https://i.warbycdn.com/s/c/6589e740ce6805cd462bda60544c2dd38ef48deb"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126931",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "70645",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Cat-eye",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "aubrey-sun-lbf-marzipan-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/aubrey/jet-black/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "aubrey-sun-sbf-garnet-tortoise",
+        "storeFrameId": "aubrey-sun-sbf",
+        "name": "Aubrey",
+        "description": "Bigger is better. Aubrey's oversized rectangular silhouette is wearable and glamour at its finest.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Garnet Tortoise",
+        "colorCode": "171",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/7626091fba1a8742c8f0b4b36b3c1b23e660995a.png",
+          "side": "https://i.warbycdn.com/s/c/bf6c7d53dc401a169ad3ba18bf2f747e4794af36",
+          "swatch": "https://i.warbycdn.com/s/f/a7fb3c629bd9a57e99f1541070db7389149746e2.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/3057c11126a941ed0c1f3e5d15ebbe886f39b957",
+          "blueTint": "https://i.warbycdn.com/s/c/edac7a9baaa4c07c7c7e193fb57ba0158a4c4fe2",
+          "angle": "https://i.warbycdn.com/s/c/dd47c5c4c65a1b042e2353d363d0baaf357321be",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/1f3cb1f8c67d8340f54a7705e8b8820b23d4ed4a",
+          "yellowTint": "https://i.warbycdn.com/s/c/687cb95b4a51ffcb3469ac9360c984581921510f",
+          "front": "https://i.warbycdn.com/s/c/461db23263255bc3fd576ed6126164e0abd54695",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/c86946d2742fa6e8b9888801ec73bb20713db8bc"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1145906",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Cat-eye",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "aubrey-sun-lbf-marzipan-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/aubrey/garnet-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "aubrey-sun-sbf-marzipan-tortoise",
+        "storeFrameId": "aubrey-sun-sbf",
+        "name": "Aubrey",
+        "description": "Bigger is better. Aubrey's oversized rectangular silhouette is wearable glamour at its finest.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Marzipan Tortoise",
+        "colorCode": "195",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/ce3ea784f3efbd475067063354941de28080eeec.png",
+          "side": "https://i.warbycdn.com/s/c/6445fdbf65fa9a92b440fcf9c1ea58e6110d836d",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/ca2178474a1aac7163c09a8df93ffcffbadfa37a",
+          "swatch": "https://i.warbycdn.com/-/f/color-marzipan-tortoise-9ae0ec23.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/402c611f11499508aaeb280e91771b636826c9f5",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/6cd0d15774313b1eae66041188c315d11c58d6d1",
+          "angle": "https://i.warbycdn.com/s/c/9255ceb721c19e4a1efb86aa2573538a278247b9",
+          "front": "https://i.warbycdn.com/s/c/68dc7a941585bdb8e4cc7ca949c06b83e0bbdb6a",
+          "yellowTint": "https://i.warbycdn.com/s/c/44502e5fdf60f5bd215e05e808d721a9d6abca3d"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "126933",
+            "width": "narrow",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "64537",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Cat-eye",
+        "eyewireMaterial": "HB",
+        "crossBridgeFrameColorVariantId": "aubrey-sun-lbf-marzipan-tortoise",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/aubrey/marzipan-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "percey-sun-sbf-striped-sassafras",
+        "storeFrameId": "percey-sun-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Striped Sassafras",
+        "colorCode": "256",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/38ea472a568e5d90130ecff127176916243d9865.png",
+          "side": "https://i.warbycdn.com/s/c/4cadb4e58b5f8b1faaafbcbee584e75c90f27938",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/54abfd614887671b4955374e2b3203a1a8aa34f0",
+          "swatch": "https://i.warbycdn.com/-/f/color-striped-sassafras-0d16c1b6.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/5000d216d430251c69379bffbfb49ce1e7b0ed11",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/4f3c26745e7e7cdd1cbf52ec430d48b4e725c553",
+          "angle": "https://i.warbycdn.com/s/c/8be71454548071a63f6a20335012bcfde19a913a",
+          "yellowTint": "https://i.warbycdn.com/s/c/451229a5508d789d5d614d03fa58ef20b861a437",
+          "front": "https://i.warbycdn.com/s/c/6a1f8da53225839a4ca02b177b0d7874689b2b6f",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/91fad086106c6a543fbd3b4e6e92239538490f72"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "1462",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "126949",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-opt-sbf-chestnut-crystal",
+        "crossBridgeFrameColorVariantId": "percey-sun-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/percey/striped-sassafras/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "percey-sun-sbf-viridian",
+        "storeFrameId": "percey-sun-sbf",
+        "name": "Percey",
+        "description": "With round lenses and a keyhole bridge, Percey is a bookish modern classic.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Viridian",
+        "colorCode": "319",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/70a0311d500faeb10442a616bdc237adc62085cb.png",
+          "side": "https://i.warbycdn.com/s/c/bed7b59c137c5b8122ab107b7578e3106bc81cdd",
+          "swatch": "https://i.warbycdn.com/s/f/067a9f3dd2935390866d61d5bb5259304b8f8e88.jpg",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/299c5a26988ea9adb8fb05873381cb3abc606c1e",
+          "blueTint": "https://i.warbycdn.com/s/c/9bfd105beede9c4b80c932e7bab9ed69cebce32f",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/a6b0f269deba85931fdd805e229857f8867b1c42",
+          "angle": "https://i.warbycdn.com/s/c/f21ef9e879d6abe36de48df47b304e592f042fc9",
+          "front": "https://i.warbycdn.com/s/c/2ec824fddc7c7b57c7b3c9df3973f1dcb5d153fc",
+          "yellowTint": "https://i.warbycdn.com/s/c/64aaa2e82c0c23ead67cebbc7bb97c2920a058be",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/7ebdb3587e1b21f40b5ca92f7145a2cb5e2c3069"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "337327",
+            "width": "medium",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          },
+          {
+            "id": "337329",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "percey-opt-sbf-chestnut-crystal",
+        "crossBridgeFrameColorVariantId": "percey-sun-lbf-striped-sassafras",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/percey/viridian/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ],
+    [
+      {
+        "id": "bodie-sun-sbf-rye-tortoise",
+        "storeFrameId": "bodie-sun-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Rye Tortoise",
+        "colorCode": "291",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/16feceba87f239a323b17de4739fb6dae3212277.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/15a9985c33215000e41c230d0c62f509ae531252",
+          "swatch": "https://i.warbycdn.com/s/f/8aa8f37a8bb7a8d58956f3f29b482aaa4344d2be.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/8846135005c6b10cfd97e3161e63fd49afa824f5",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/09035c6490bccb7f905ed03388076c82bf9d6213",
+          "angle": "https://i.warbycdn.com/s/c/d7965e633de59f391bd9b7981bef3f5cdec18c49",
+          "yellowTint": "https://i.warbycdn.com/s/c/08f89c7d3ff9d404d06da39ea9dc6f547cbb1f23",
+          "front": "https://i.warbycdn.com/s/c/6ad5aaf6e8d709b9c0886dded3ff948c172c55e4",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/37c107aca3efcc81dc810705ae76d3b1d3585d08"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001237",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-opt-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/bodie/rye-tortoise/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      },
+      {
+        "id": "bodie-sun-sbf-saltwater-matte",
+        "storeFrameId": "bodie-sun-sbf",
+        "name": "Bodie",
+        "description": "Spacious, rectangular lenses and a gently sloped browline make Bodie's silhouette bold but inviting.",
+        "kind": "sunGlasses",
+        "bridgeFit": "standardBridge",
+        "color": "Saltwater Matte",
+        "colorCode": "244",
+        "images": {
+          "baseTransparent": "https://i.warbycdn.com/s/c/9c0f3ec1ef4ba899ca99714a0ff831b5ca9d3261.png",
+          "small_head_turn_f": "https://i.warbycdn.com/s/c/e867670ac6e1799d05ef735e6f27fb0ed794f9df",
+          "swatch": "https://i.warbycdn.com/s/f/a2aa162aeabdd9246be260024738be06766cc622.jpg",
+          "blueTint": "https://i.warbycdn.com/s/c/305ff914e1515edad985e41849394196aaa92c86",
+          "rosyBrownTint": "https://i.warbycdn.com/s/c/4459588492b831f79586bcb31489604d09e64aff",
+          "angle": "https://i.warbycdn.com/s/c/1938800277025f9ca3e19bc3d0ae0c1c4a8cdb84",
+          "front": "https://i.warbycdn.com/s/c/08174935b6e476b4db53f3bf7e6684a5d2cdc4a0",
+          "yellowTint": "https://i.warbycdn.com/s/c/6bb8add8c4e40c9e8f8190ee95617081d9236b3d",
+          "small_head_turn_m": "https://i.warbycdn.com/s/c/f4d58dc77ee8bd504ba53a8ba52224c69dd29743"
+        },
+        "gender": "both",
+        "isAvailable": true,
+        "widthVariants": [
+          {
+            "id": "10001224",
+            "width": "wide",
+            "statusInfo": {
+              "status": "active"
+            },
+            "isInStock": true,
+            "isHtoAvailable": false
+          }
+        ],
+        "isKidsFrame": false,
+        "price": "95.00",
+        "primaryShape": "Round",
+        "eyewireMaterial": "HB",
+        "crossKindFrameColorVariantId": "bodie-opt-sbf-saltwater-matte",
+        "statusesInfo": [
+          {
+            "status": "active"
+          }
+        ],
+        "tags": [],
+        "action": {
+          "disabled": false,
+          "cta": {
+            "copy": "Select lenses and buy",
+            "type": "pill",
+            "route": "/sunglasses/bodie/saltwater-matte/atc"
+          }
+        },
+        "isInStock": true,
+        "isPreorderable": false,
+        "needsPreAtcUrx": false
+      }
+    ]
+  ],
+  "facets": {
+    "isIntelligent": {
+      "0": 242
+    },
+    "gender": {
+      "F": 242,
+      "M": 230
+    },
+    "merch": {
+      "classic-and-timeless": 376,
+      "wayfarer-style": 368,
+      "medium-standard-rim-frames": 242,
+      "vintage-revival": 216,
+      "best-for-diamond-shaped-faces": 198,
+      "1950s-inspired": 184,
+      "best-seller": 178,
+      "best-for-heart-shaped-faces": 176,
+      "thin-wire-rim-frames": 136,
+      "tortoiseshell-frames": 133,
+      "trend": 77,
+      "oversized-lenses": 72,
+      "statement-thick-rim": 68,
+      "2010s-inspired-frames": 67,
+      "1960s-inspired": 63,
+      "statement-frames": 62,
+      "y2k-2000s-inspired-frames": 60,
+      "80s": 58,
+      "fall": 55,
+      "1940s-inspired": 54,
+      "90s": 54,
+      "new-arrival": 39,
+      "1930s-inspired": 34,
+      "hexagonal-frames": 34,
+      "70s": 33,
+      "retro": 27,
+      "round-metal-wire-frame-glasses": 24,
+      "quiet-luxury": 23,
+      "warby-parker-favorites-2026-lp": 22,
+      "sporty-active-utility-driven": 21,
+      "summer": 21,
+      "boys-frames": 19,
+      "girls-frames": 19,
+      "tech-influenced-futurewear-smart": 15,
+      "made-in-italy": 14,
+      "made-in-japan": 14,
+      "1920s-inspired": 12,
+      "arch-manning": 11,
+      "minimalist-and-understated": 11,
+      "shield-sunglasses": 11,
+      "wraparound-sunglasses": 10,
+      "performance-lenses": 9,
+      "winter": 8,
+      "browline-clubmaster-frames": 7,
+      "sport-collections": 7,
+      "oversized-butterfly-frames": 3,
+      "spring": 3,
+      "collab": 2
+    },
+    "rxNeeds": {
+      "good-for-progressive": 277,
+      "good-for-readers": 189,
+      "good-for-strong-rx": 121
+    },
+    "availableWidths": {
+      "wide": 166,
+      "medium": 140,
+      "extra-wide": 44,
+      "narrow": 34,
+      "extra-narrow": 4
+    },
+    "frameStatus": {
+      "retired": 388,
+      "active": 312,
+      "temp-retired": 2
+    },
+    "construction": {
+      "thin": 114,
+      "oversized": 65,
+      "thick": 58,
+      "nose-pads": 48,
+      "light-weight": 44,
+      "matte-acetate": 33,
+      "graduated-rivets": 22
+    },
+    "materials": {
+      "Cellulose Acetate": 203,
+      "Acetate": 171,
+      "Stainless Steel": 54,
+      "Mixed": 32,
+      "Mixed Materials": 32,
+      "Metal": 23,
+      "Lightweight Nylon": 16,
+      "Nylon": 16,
+      "Titanium": 1
+    },
+    "collections": {
+      "Cool Colors": 16,
+      "Colorful Crystals": 14,
+      "Summer Core 2022": 12,
+      "Sun Standards": 12,
+      "Summer Core 2 2023": 11,
+      "Fall Core 2026": 10,
+      "Spring Core 2 2026": 10,
+      "Summer Sun 2022": 10,
+      "-- Face Fit Expansion--": 9,
+      "May Sun 2019": 9,
+      "Spring Core 2022": 9,
+      "Extended Sizing 2021": 8,
+      "Extended Sizing 2021 Sun": 8,
+      "Fall Core 2021": 8,
+      "Off Cadence 2026": 8,
+      "Spring Core 2024": 8,
+      "Winter Core 2022": 8,
+      "Everywhere Series 2.0": 7,
+      "Fall Core 2023": 7,
+      "Quintessentials": 7
+    },
+    "shapes": {
+      "Square": 109,
+      "Round": 80,
+      "Rectangle": 61,
+      "Geometric": 27,
+      "Cat-eye": 25,
+      "Aviator": 24,
+      "Oval": 17
+    },
+    "kind": {
+      "sunGlasses": 242
+    },
+    "includeKids": {
+      "0": 242
+    },
+    "prices": {
+      "95": 167,
+      "145": 41,
+      "175": 25,
+      "195": 9
+    },
+    "bridgeFit": {
+      "lowBridge": 19,
+      "lowBridgeAndNosePads": 48,
+      "standardBridge": 223
+    },
+    "colors": {
+      "tortoise": 93,
+      "neutral": 74,
+      "black": 66,
+      "brown": 61,
+      "crystal": 36,
+      "gold": 28,
+      "green": 23,
+      "blue": 22,
+      "two-tone": 18,
+      "bright": 14,
+      "light-tortoise": 12,
+      "multicolor": 12,
+      "red": 11,
+      "pink": 9,
+      "silver": 9,
+      "grey": 8,
+      "clear": 6,
+      "yellow": 2,
+      "amber": 1,
+      "purple": 1
+    }
+  },
+  "next": "/v1/catalog/frames/search?kind=sunGlasses&size=10&from=10",
+  "isAffinitiesApplied": false
+}
