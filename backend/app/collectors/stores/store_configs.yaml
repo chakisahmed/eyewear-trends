@@ -353,6 +353,65 @@ stores:
       code: { regex: '(?i)\s+in\s+(.+)$' }    # "The Vigo In Amber Mottle" -> "Amber Mottle" (the store's own name is the code)
       label: { regex: '(?i)\s+in\s+(.+)$' }
 
+  # Anne & Valentin (France, custom CMS), scouted 2026-10-01 (docs/scouting/anne-et-valentin):
+  # - 16 optical concept hubs (~109 models) and 3 sun concept hubs (~30 models); presence-only (no retail price displayed);
+  # - product pages carry clean specs (Dimensions, Matière, Fabrication) and editorial descriptions whose opening words
+  #   name the frame's shape ("Octogonale...", "Grande pantos...", "Petite ovale...", "Rectangle moyen...");
+  # - variants are inline swatches with reference codes in data-c ("VELISKA_26A40" -> "26A40", Palier 3) and dual acetate hex layers;
+  # - robots.txt allows everything; no pagination parameters (each concept page lists its full model line).
+  anneetvalentin.com:
+    name: "Anne & Valentin"
+    base_url: "https://anneetvalentin.com"
+    lang: fr
+    country: FR                        # French creator brand, catalog tracked for design and material trends
+    default_brand: "Anne & Valentin"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/fr/optique/alpha", categories: "Optique" }
+        - { url: "/fr/optique/bakkelite", categories: "Optique" }
+        - { url: "/fr/optique/balloon", categories: "Optique" }
+        - { url: "/fr/optique/fold", categories: "Optique" }
+        - { url: "/fr/optique/formacolor", categories: "Optique" }
+        - { url: "/fr/optique/hypercut", categories: "Optique" }
+        - { url: "/fr/optique/krafties", categories: "Optique" }
+        - { url: "/fr/optique/metro", categories: "Optique" }
+        - { url: "/fr/optique/minimalist", categories: "Optique" }
+        - { url: "/fr/optique/onthedot", categories: "Optique" }
+        - { url: "/fr/optique/pictogram", categories: "Optique" }
+        - { url: "/fr/optique/prismatiks", categories: "Optique" }
+        - { url: "/fr/optique/punchline", categories: "Optique" }
+        - { url: "/fr/optique/puzzle", categories: "Optique" }
+        - { url: "/fr/optique/simplecut", categories: "Optique" }
+        - { url: "/fr/optique/symboliques", categories: "Optique" }
+        - { url: "/fr/solaire/juxtapoz", categories: "Solaire" }
+        - { url: "/fr/solaire/sunny-bold", categories: "Solaire" }
+        - { url: "/fr/solaire/sunset", categories: "Solaire" }
+      product: "main ul > li"
+      link: "a"
+      url_regex: '(/fr/(?:optique|solaire)/[^/]+/[^/?#]+)'
+    product_pages:
+      enabled: true
+      max_products: 400
+    fields:
+      name: { css: "article h1", scope: page }
+      image_url: { css: "#visu img, picture img", attr: ["src", "data-src"], scope: page }
+    flags:
+      description: { css: "article > p", scope: page }
+    specs:
+      rows: "article dl:has(dt)"
+      key: "dt"
+      value: "dd"
+    variants:
+      rows: "ul#cou li"
+      code: { attr: "data-c", regex: '^(?:.*_)?([0-9A-Z]+)$' }
+      label: { attr: "data-a" }
+
+
+
+
+
 # Template (copy under `stores:` and adapt the selectors to the site):
 #
 #  noe-noah.com:

@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 from app.taxonomy import Taxonomy, clean_supplier_code, fold, load_taxonomy
 
-RULES_VERSION = 15  # stored with each tag; bump when the rules below change, then run retag-products
+RULES_VERSION = 16  # stored with each tag; bump when the rules below change, then run retag-products
 # v2: frame-material and gender spec labels, store vocabulary aliases (mykenza.tn, lunettek.com)
 # v3: "Rond" / "Ronds" (masculine forms, MyKenza) -> round
 # v4: "Forme Lunette" and similar frame-shape labels (lamode.tn). Its "VISAGE" rows (recommended face
@@ -56,6 +56,10 @@ RULES_VERSION = 15  # stored with each tag; bump when the rules below change, th
 #      Ochre -> brown; Moss, Jade -> green; Midnight, Atlantic, Cyan, Aqua -> blue; Shadow, Cloud -> grey; Barley, Savannah,
 #      Desert Sun -> beige; Saffron, Sunshine, Sunburst -> orange (the taxonomy's orange / yellow family). Left untagged on
 #      purpose: Jello, Opal, Mirage, Bonfire, Lava, Mountain Rain and the placeholder "Colour 8".
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -96,7 +100,11 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("almond", "oval"),  # Morel: a softly pointed oval
               ("polyangular", "geometric"), ("diamond", "geometric"),  # Dita's shape filter
               ("rounded", "round"), ("ovular", "oval"),  # E.B. Meyrowitz's "Build" line
-              ("navigator", "aviator")),  # Dita: an aviator with a square lens
+              ("navigator", "aviator"),  # Dita: an aviator with a square lens
+              # Anne & Valentin editorial shape forms
+              ("papillonnante", "butterfly"), ("papillonnant", "butterfly"),
+              ("trapezoidale", "wayfarer"), ("hexagone", "geometric"),
+              ("octogone", "geometric"), ("bandeau", "shield")),
 }
 CATEGORY_TAGS = {  # (dimension, code) -> folded category words, FR + EN
     ("audience", "men"): ("homme", "hommes", "man", "men"),
@@ -206,6 +214,11 @@ def tag_product(name: str, flags: dict | None, taxonomy: Taxonomy | None = None)
         if f"_spec_{dim}" in idx and isinstance(value, str):
             for code, term in _match(value, idx[f"_spec_{dim}"], skip_ambiguous=False):
                 add(dim, code, f"spec:{key}", term)
+
+    desc = flags.get("description")
+    if isinstance(desc, str):
+        for code, term in _match(desc, idx["_spec_shape"], skip_ambiguous=True):
+            add("shape", code, "description", term)
 
     categories = flags.get("categories")
     if isinstance(categories, str):
