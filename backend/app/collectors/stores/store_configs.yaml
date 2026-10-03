@@ -506,6 +506,34 @@ stores:
       label: { css: "img", attr: "alt", regex: 'Color:\s*(.+)' }
       swatch: { css: "img", attr: "src" }
 
+  cutlerandgross.com:
+    name: "Cutler and Gross"
+    base_url: "https://www.cutlerandgross.com"
+    lang: en
+    country: GB                         # Knightsbridge, London (UK), handmade in Cadore, Italy
+    default_brand: "Cutler and Gross"
+    default_currency: GBP
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/collections/optical-designer-glasses", categories: "Optique" }
+        - { url: "/collections/sunglasses", categories: "Solaire" }
+      pagination: { param: page, max_pages: 6 }
+      product: "product-card.product-card"
+      link: "a[title^='Go to ']"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: "a[title^='Go to ']", attr: "title", regex: 'Go to (.+)' }
+      price: { css: "span.product-card__price" }
+      image_url: { css: "img[data-card-media-image]", attr: ["src", "data-src"] }
+    flags:
+      is_new: { css: "span.product-card__badge", regex: '(?i)^new$', exists: true }
+    variants:
+      rows: "fieldset div.button--variant"
+      code: { css: "input", attr: "value" }
+      label: { css: "input", attr: "value" }
+      swatch: { css: "span.swatch", attr: "style", regex: 'url\(([^)]+)\)' }
+
 
 
 
