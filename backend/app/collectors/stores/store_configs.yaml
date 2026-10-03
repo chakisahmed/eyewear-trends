@@ -561,6 +561,43 @@ stores:
       label: { css: "img.kak-card-controls__dot", attr: "title" }
       swatch: { css: "img.kak-card-controls__dot", attr: "src" }
 
+  theo.be:
+    name: "Theo"
+    base_url: "https://www.theo.be"
+    lang: en
+    country: BE                         # Antwerp, Belgium ("theo loves you", Patrick Hoet & Wim Somers)
+    default_brand: "Theo"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/families/tubes", categories: "Optique" }
+        - { url: "/families/friskos", categories: "Optique" }
+        - { url: "/families/isolines", categories: "Optique" }
+        - { url: "/families/flow", categories: "Optique" }
+        - { url: "/families/waves", categories: "Optique" }
+        - { url: "/families/glues", categories: "Optique" }
+        - { url: "/families/locks", categories: "Optique" }
+        - { url: "/families/clin-d-oeil", categories: "Optique" }
+        - { url: "/families/bourbon-way", categories: "Optique" }
+      product: "a.product-item[data-family-item]"
+      link: "a.product-item[data-family-item]"
+      url_regex: '(/mothers/[^/?#]+)'
+    product_pages:
+      enabled: true
+      max_products: 60                  # covers all 48 models
+    fields:
+      name: { css: "h2.product-item__name" }
+      image_url: { css: "img.product-item__img", attr: ["src", "data-src"] }
+    flags:
+      description: { css: ".product-item__info", regex: '(\d+\s*colours?)' }
+    variants:
+      rows: "div.product-item.is--wide"
+      code: { css: "a.save-icon", attr: "data-model", regex: '^[A-Z0-9-]+\s+(\d+)' }
+      label: { css: "a.save-icon", attr: "data-model", regex: '^[A-Z0-9-]+\s+\d+\s+(.+)' }
+      swatch: { css: "img.product-item__img.is--wide", attr: "src" }
+      color_split: { sep: " + ", color: 0 }
+
 
 
 
