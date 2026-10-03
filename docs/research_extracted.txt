@@ -1,0 +1,525 @@
+=== PAGE 1 ===
+Strategic Architecture and 
+Computational Framework for the 
+Generative Eyewear Design Studio 
+1. Strategic Context and Analytical Directives 
+The transition from conventional eyewear manufacturing to a digitally native, computationally 
+driven design ecosystem requires the synthesis of generative artificial intelligence, parametric 
+computer-aided design (CAD), and advanced computer-aided manufacturing (CAM). Within 
+the broader framework of developing an intelligent eyewear design platform, Phase 3 
+(Interactive Studio: Sketch-to-Color) and Phase 4 (Advanced Generation & Automation) 
+represent the critical junctures where raw trend telemetry and aesthetic concepts are 
+translated into physical, manufacturable products1. 
+Phase 3 demands an interactive graphical environment where designers can upload 
+monochromatic 2D sketches, delineate specific lamination zones, and apply photorealistic 
+material textures derived from actual supplier catalogs, such as those from Mazzucchelli 18491. 
+Phase 4 requires the deployment of an autonomous generative engine capable of synthesizing 
+market trend data and brand-specific aesthetic codes (Brand DNA) to propose novel frame 
+variations that are ready for prototyping and industrial production1. 
+This report provides an exhaustive analysis of the technological prerequisites for these phases. 
+It addresses three primary directives: the identification of analogous projects and market 
+precedents, the definitive necessity of Large Language Models (LLMs) and Image Models, and 
+the comprehensive software stack required to bridge generative AI with high-precision CNC 
+(Computer Numerical Control) milling. 
+2. Market Precedents and Analogous Technological 
+Projects 
+While a fully integrated, end-to-end generative AI studio specifically tailored for physically 
+manufactured acetate eyewear is a highly novel proposition, various components of the 
+required technology are actively being pioneered across adjacent sectors. Analyzing these 
+precedents validates the technological feasibility of the proposed studio and highlights critical 
+architectural patterns. 
+2.1. Industrial Sketch-to-Render Platforms 
+The foundational requirement of Phase 3—converting rough 2D linework into a photorealistic 
+render while strictly preserving the underlying geometry—is currently being spearheaded by 
+specialized industrial design platforms. 
+Vizcom stands out as a leading AI-powered rendering tool that accelerates product 
+development from concept to prototype3. The platform enables industrial designers to visualize 
+form, materials, and lighting instantaneously by utilizing advanced neural networks that respect 
+
+=== PAGE 2 ===
+edges, proportions, and original linework, allowing users to apply region masks for specific 
+material renderings4. Similarly, platforms like Floyo.ai utilize specialized "Lineart" and "Previz" 
+workflows to convert rough sketches into polished, colorized concepts, providing designers 
+with a range of unique model outputs suitable for establishing visual consistency6. These 
+platforms demonstrate that pixel-perfect structural retention during the diffusion generation 
+process is computationally viable and highly effective for industrial ideation. 
+2.2. Eyewear-Specific Virtual Try-On (VTO) and Augmented Reality 
+In the consumer-facing eyewear market, generative AI and computer vision are heavily utilized 
+to create 3D assets from 2D inputs, a mechanism directly applicable to the rendering engine 
+required for the proposed studio. 
+The platform Jeeliz utilizes generative artificial intelligence to automatically create detailed 3D 
+models of glasses directly from 2D product page pictures, standardizing lighting to match the 
+user's face for unmatched realism in Virtual Try-On (VTO) applications7. Makeover.so operates 
+on a similar paradigm, utilizing computer vision and generative AI to scale frames to a user's 
+exact facial proportions—measuring pupillary distance, cheekbone height, and jawline 
+curves—to generate photorealistic previews8. 
+Furthermore, Kivicube utilizes generative AI to automate 3D content generation for WebAR, 
+completely shifting the paradigm of traditional 3D modeling9. Kivicube's engines can turn 
+simple text prompts or 2D images into AR-ready 3D assets featuring physically based rendering 
+(PBR) textures that perfectly replicate the visual characteristics of real acetate frames and 
+lenses9. This capability to accurately synthesize the translucency and reflectivity of acetate is a 
+critical prerequisite for Phase 31. 
+2.3. Algorithmic Aesthetic Decoding and Brand DNA 
+Phase 4 requires the AI to understand and autonomously generate designs that align with a 
+specific brand's stylistic signatures (Brand DNA)1. This moves the system from a passive 
+rendering tool to an active creative participant. 
+A highly relevant precedent is the collaboration between British eyewear brand Black Eyewear 
+and Google Cloud10. Facing the challenge of scaling the highly subjective, refined taste of its 
+founder, the brand trained specialized models on curated datasets to see if AI could replicate 
+elite creative judgment10. The project demonstrated that AI can move beyond being an 
+"averaging machine" to actively preserve and extend elite creative expertise, a capability 
+essential for maintaining the distinct aesthetic boundaries of brands like Noe Noah1. Similarly, 
+platforms like InAirSpace leverage machine learning to decode personal aesthetics, moving 
+from pure biometric measurement to understanding qualitative style parameters like "bold," 
+"minimalist," or "vintage"11. 
+ 
+Precedent Platform 
+Core Technology Utilized 
+Application to the 
+Generative Studio 
+(Phases 3 & 4) 
+
+=== PAGE 3 ===
+Vizcom / Floyo.ai 
+ControlNet, Edge 
+Preservation, Region 
+Masking 
+Validates the 
+Sketch-to-Lamination 
+workflow; ensures 2D 
+sketches maintain 
+geometric accuracy during 
+rendering3. 
+Kivicube 
+Generative 3D AR, PBR 
+Texture Synthesis 
+Demonstrates the ability to 
+synthesize physically 
+accurate acetate and lens 
+reflections from 2D/text 
+inputs9. 
+Makeover.so / Jeeliz 
+Computer Vision, 2D-to-3D 
+Extrapolation 
+Provides frameworks for 
+extracting precise spatial 
+data and standardizing 
+lighting across generated 
+frame models7. 
+Black Eyewear (Google 
+Cloud) 
+Custom Model Fine-Tuning, 
+Aesthetic Decoding 
+Proves the viability of 
+training generative models 
+to adhere strictly to elite, 
+proprietary Brand DNA10. 
+3. The Necessity and Architecture of Image Models 
+To address the core strategic query: The deployment of an advanced, composite Image 
+Model architecture is absolutely and strictly necessary. 
+Standard, off-the-shelf text-to-image models (e.g., standard Midjourney or DALL-E) are 
+fundamentally incompatible with industrial eyewear design. They operate on a stochastic basis, 
+frequently "hallucinating" geometries, violating mechanical constraints, and failing to adhere to 
+the rigid dimensional tolerances required for physical manufacturing1. Eyewear design is an 
+exercise in millimeters; a slight deviation in the bridge or tenon renders a frame unwearable or 
+un-millable1. 
+Therefore, the studio must utilize open-weights latent diffusion models (such as Stable 
+Diffusion XL or Flux) heavily augmented with deterministic neural conditioning adapters. 
+3.1. Structural Conditioning: ControlNet and SAM 
+To execute Phase 3, the generative engine must ingest a designer's 2D vector or bitmap sketch 
+and generate a render without altering the silhouette1. This requires ControlNet, a neural 
+network architecture designed to add spatial conditioning controls to large, pretrained 
+text-to-image diffusion models13. By freezing the original weights of the diffusion model and 
+creating a trainable copy via zero convolutions, ControlNet injects structural priors without 
+
+=== PAGE 4 ===
+destroying the model's base generative capabilities14. 
+Specific ControlNet models are required for the eyewear pipeline: 
+●​ Lineart and Canny Models: These models extract high-frequency geometric contours 
+from the input sketch and force the latent noise generation to strictly follow these 
+boundaries15. This guarantees that the shape of the lenses and the curvature of the frame 
+face remain identical to the designer's intent. 
+●​ Depth Estimation Models: Eyewear frames are three-dimensional objects. Depth 
+models analyze spatial relationships, differentiating the foreground (frame face) from the 
+midground (temples) and background, which is essential for simulating the thickness of 
+acetate laminations15. 
+Furthermore, to facilitate the manual delineation of lamination zones (e.g., specifying a different 
+acetate for the lower rim versus the upper browline), the architecture must incorporate the 
+Segment Anything Model (SAM)1. SAM provides zero-shot image segmentation, allowing the 
+designer to interactively select regions of the sketch to generate precise masks17. These masks 
+constrain the subsequent material diffusion strictly to the designated areas, enabling complex 
+bi-layer or tri-layer acetate renderings1. 
+3.2. Material Injection: IP-Adapter and Texture Synthesis 
+The studio's value proposition relies on rendering frames using actual, procurable materials 
+from suppliers like Mazzucchelli 1849, rather than AI-hallucinated colors1. Textual prompts are 
+fundamentally inadequate for this task; describing a "translucent Havana tortoise shell with fine 
+amber marbling" will yield inconsistent and inaccurate results. 
+The solution is the Image Prompt Adapter (IP-Adapter). This lightweight adapter introduces a 
+decoupled cross-attention mechanism that works in parallel with the standard text 
+cross-attention layers in the diffusion model20. 
+●​ Mechanism: When a designer selects a specific acetate swatch from the digitized 
+supplier catalog, the IP-Adapter uses an image encoder (like CLIP) to project the visual 
+embeddings of that swatch directly into the denoising process20. 
+●​ Application: The diffusion model effectively "paints" the exact visual texture, color 
+distribution, and structural pattern of the physical acetate onto the geometry locked by 
+the ControlNet23. 
+3.3. Physically Based Rendering (PBR) Latent Generation 
+Acetate interacts dynamically with light through subsurface scattering, specular reflection, and 
+varying degrees of opacity. Standard RGB image generation cannot capture these properties 
+accurately. To achieve true industrial fidelity, the Image Model stack must be capable of 
+generating Physically Based Rendering (PBR) materials25. 
+Recent advancements in texture synthesis, such as TexGaussian, DreamMat, and MatLat, 
+address this by forcing diffusion models to generate separated material maps—specifically 
+Albedo (base color), Roughness, and Metallic/Specular channels—rather than baked-in RGB 
+lighting25. By utilizing geometry- and light-aware diffusion models, the studio can synthesize 
+the high-gloss polish of premium cellulose acetate or the matte finish of 3D-printed polyamide 
+without unwanted baked-in shadows, ensuring the render accurately reflects how the physical 
+
+=== PAGE 5 ===
+product will interact with real-world environments25. 
+3.4. Brand DNA Encoding: Low-Rank Adaptation (LoRA) 
+Phase 4 mandates that the AI autonomously generates designs that fit within a brand's existing 
+portfolio1. This is achieved through LoRA (Low-Rank Adaptation). 
+LoRA is a parameter-efficient fine-tuning technique that injects trainable rank decomposition 
+matrices into the frozen layers of a pre-trained diffusion model29. By compiling a dataset of a 
+brand's historical models, technical drawings, and aesthetic signatures, a custom LoRA can be 
+trained rapidly31. When applied during generation, the LoRA steers the model's output to 
+inherently adopt the brand's preferred proportions, hinge styles, and geometric flow, ensuring 
+the autonomous outputs are highly curated rather than generic14. 
+Model / Adapter 
+Architectural Function 
+Phase Application 
+Stable Diffusion XL / Flux 
+Base latent diffusion 
+foundation for pixel 
+generation. 
+Phases 3 & 4 
+ControlNet 
+(Lineart/Depth) 
+Constrains pixel generation 
+to exact sketch boundaries. 
+Phase 3 
+Segment Anything (SAM) 
+Generates precise spatial 
+masks for lamination zones. 
+Phase 3 
+IP-Adapter 
+Bypasses text prompts to 
+directly inject photographic 
+material textures. 
+Phases 3 & 4 
+PBR Synthesis Models 
+Generates Albedo, 
+Roughness, and Metallic 
+maps for accurate lighting. 
+Phases 3 & 4 
+LoRA 
+Fine-tunes the base model 
+to adhere to specific Brand 
+DNA parameters. 
+Phase 4 
+4. The Necessity and Architecture of Large Language 
+Models (LLMs) 
+While Image Models handle the spatial and textural synthesis, a Large Language Model (LLM) 
+
+=== PAGE 6 ===
+is strictly necessary to serve as the cognitive orchestration engine, translating statistical 
+market data into actionable creative directives. Image models cannot natively parse trend 
+statistics, filter supplier databases, or reason about manufacturing constraints; the LLM bridges 
+this gap. 
+4.1. Semantic Orchestration and Trend Translation 
+Phases 1 and 2 of the overarching project involve the continuous ingestion of market telemetry 
+via a Trend Radar, tracking the popularity of specific shapes, materials, and colors across global 
+markets1. This data is structured and quantitative. 
+The LLM is required to analyze this telemetry and synthesize it into generative parameters. For 
+example, if the Trend Radar detects a statistically significant increase in the adoption of 
+geometric titanium-acetate hybrid frames in the European market, the LLM interprets this 
+trend and formulates the specific semantic instructions required to drive the image generation 
+pipeline in Phase 41. 
+4.2. Retrieval-Augmented Generation (RAG) 
+To ensure the LLM's outputs are firmly grounded in reality and physical supply chains, it must 
+be integrated with a Retrieval-Augmented Generation (RAG) architecture33. RAG connects 
+the LLM to external, proprietary vector databases, feeding verified, domain-specific data into 
+the model's context window prior to generation35. 
+In the context of the generative studio, the RAG system will index: 
+1.​ The Material Database: Digitized supplier catalogs (e.g., Mazzucchelli acetate codes, 
+thicknesses, and availability)1. 
+2.​ Trend Telemetry: Real-time data from the Phase 1 Radar1. 
+3.​ Manufacturing Constraints: Rules defining the minimum thickness required for 
+lamination, the necessary mechanical clearances for tenon hinges, and CNC milling 
+tolerances1. 
+When the LLM is prompted to suggest a new design, it first retrieves the available in-stock 
+acetates and cross-references them against the trending color palettes, ensuring it never 
+proposes a material that cannot be physically procured or manufactured. 
+4.3. Automated Prompt Engineering (APE) 
+In Phase 4, the LLM acts autonomously through Automated Prompt Engineering (APE)36. APE 
+allows the LLM to construct and optimize highly complex, multimodal prompts for the diffusion 
+backend36. 
+The LLM algorithmically compiles a multi-layered directive: it selects a base shape influenced 
+by the brand's LoRA, retrieves the exact image embedding of an in-stock acetate to feed into 
+the IP-Adapter, defines the geometric boundaries for the ControlNet, and sets the negative 
+prompts to avoid common visual artifacts15. This transforms the LLM into a fully automated art 
+director, orchestrating the various image adapters to produce highly curated, trend-aligned 
+capsule collections1. 
+5. Software Stack: Interactive Frontend Canvas 
+The user interface for Phase 3 must provide a highly responsive, intuitive environment where 
+
+=== PAGE 7 ===
+designers can upload sketches, draw bounding boxes, manipulate splines for lamination zones, 
+and assign materials. This requires a sophisticated frontend graphics library. 
+5.1. WebGL vs. HTML5 Canvas 
+The architectural decision fundamentally rests between WebGL and HTML5 Canvas APIs37. 
+●​ WebGL: A JavaScript API that brings hardware-accelerated, GPU-powered graphics to 
+the browser. It excels in handling complex 3D models, large datasets, and real-time 
+rendering of advanced lighting and shading37. 
+●​ Canvas: A simpler, CPU-based API optimized for 2D graphics, basic interactivity, and 
+rapid prototyping37. 
+For the primary 2D interaction of Phase 3 (sketch uploading, vector drawing, and masking), 
+HTML5 Canvas is the most pragmatic choice. While WebGL offers superior performance for 
+3D assemblies, the initial interaction involves 2D vectors and bitmaps, for which Canvas 
+provides smoother native text rendering, easier DOM event handling, and seamless integration 
+with specialized 2D libraries37. However, if the studio expands to allow users to rotate the 
+AI-generated frame in 3D space to inspect PBR reflections, a hybrid approach utilizing a 
+WebGL wrapper like Three.js for the final output viewer will be necessary39. 
+5.2. Canvas Libraries: Fabric.js vs. Konva.js 
+Within the Canvas ecosystem, the two dominant libraries for building interactive graphic 
+editors are Fabric.js and Konva.js. 
+●​ Konva.js: Known for its high performance and declarative nature, Konva is excellent for 
+applications requiring complex animations or deep node hierarchies37. However, it 
+requires developers to build many interactive shortcuts from scratch39. 
+●​ Fabric.js: Fabric provides a highly robust object-oriented model specifically designed for 
+interactive drawing37. It features built-in support for image filters, free-hand drawing, 
+complex vector manipulation, and critically, native serialization to and from SVG (Scalable 
+Vector Graphics)39. 
+Given that the core interaction in Phase 3 involves designers delineating lamination zones over 
+a sketch, Fabric.js is the optimal choice. Its out-of-the-box support for interactive bounding 
+boxes, bezier curve manipulation, and SVG serialization perfectly aligns with the requirement to 
+translate designer inputs into precise masks for the SAM and ControlNet models37. 
+6. Software Stack: Backend, CAD, and CAM 
+Integration 
+The most critical challenge of the entire project is ensuring "faisabilité technique" (technical 
+feasibility)—bridging the gap between the AI-generated image and the physical CNC milling of 
+cellulose acetate1. An AI rendering is useless to an industrialist if it cannot be converted into a 
+machine toolpath. 
+6.1. Backend Orchestration 
+The backend must handle the asynchronous, computationally heavy inference of the diffusion 
+models and the LLM. 
+
+=== PAGE 8 ===
+●​ API Framework: A Python-based framework, such as FastAPI, is standard due to its high 
+performance and native compatibility with machine learning ecosystems like PyTorch. 
+●​ Inference Middleware: To manage the complex chaining of models (SDXL + ControlNet 
++ IP-Adapter + LoRA), the backend should utilize a graph-based execution engine like 
+ComfyUI or Hugging Face's Diffusers library41. These frameworks allow developers to 
+programmatically define the generative pipeline via API calls, dynamically adjusting the 
+weights of the IP-Adapter or the strength of the ControlNet based on the user's frontend 
+input20. 
+6.2. Parametric CAD Interoperability 
+In the eyewear industry, physical frames are engineered using parametric CAD software, with 
+Rhinoceros 3D (Rhino) and its visual programming plugin Grasshopper being the undisputed 
+industry standards43. Grasshopper allows designers to build algorithmic definitions where 
+dimensions are mathematically dependent, enabling rapid iterations of frame sizes, base 
+curves, and lamination thicknesses44. 
+To move from the web-based studio to Rhino, the system requires precise vector data 
+exchange46. The frontend Fabric.js canvas must export the designer's validated sketch and 
+lamination boundaries as SVG (Scalable Vector Graphics) or DXF (Drawing Exchange 
+Format) files47. These formats preserve the mathematical curves (NURBS and polylines) rather 
+than pixels, allowing them to be imported directly into Rhino46. 
+Once in Rhino, these 2D vectors are parametrically extruded into 3D solid models or surfaces 
+(B-rep), representing the precise thickness of the acetate sheets46. The Grasshopper 
+algorithms can automatically apply necessary manufacturing tolerances, such as the draft 
+angles required for milling tools and the specific embossing cutouts for the temple core 
+wires44. 
+6.3. CAM and CNC Milling (G-Code Generation) 
+The final stage of the software stack involves translating the 3D CAD model into instructions for 
+the manufacturing hardware. 
+●​ Computer-Aided Manufacturing (CAM): The Rhino models are processed through 
+CAM software. The CAM software analyzes the geometry and calculates the optimal 
+toolpaths for the milling cutters to remove excess material from the raw Mazzucchelli 
+acetate blanks12. 
+●​ CNC Machining: The CAM software outputs G-Code, the standardized programming 
+language that controls CNC (Computer Numerical Control) machines51. The G-Code 
+dictates the exact Cartesian coordinates, feed rates, and spindle speeds for the 3-axis or 
+5-axis CNC milling machines51. 
+High-speed CNC milling is the primary method for manufacturing premium acetate frames, 
+allowing for complex 3D reliefs, gradient cuts, and precise lamination assemblies12. By ensuring 
+the frontend studio exports clean DXF/SVG data, the platform guarantees that the AI-assisted 
+designs flow seamlessly into standard industrial CAM pipelines, preventing the "digital 
+dead-end" common to many generative art platforms46. 
+
+=== PAGE 9 ===
+7. Execution Strategy and Implementation Roadmap 
+Synthesizing these technological components yields a clear, executable roadmap for deploying 
+Phases 3 and 4, ensuring the outputs are both aesthetically superior and industrially viable. 
+7.1. Executing Phase 3: Interactive Sketch-to-Lamination Studio 
+1.​ Material Ingestion: Digitize physical supplier catalogs (e.g., Mazzucchelli 1849 PDFs)1. 
+Extract high-resolution swatches and convert them into image embeddings optimized 
+for the IP-Adapter20. 
+2.​ Frontend Interaction: The designer uploads a 2D DXF or bitmap sketch to the 
+React/Fabric.js canvas1. Using intuitive tools, the designer draws splines to delineate 
+lamination zones. 
+3.​ Semantic Masking: The backend utilizes the Segment Anything Model (SAM) to 
+perfectly map the designer's rough inputs to the exact geometric boundaries of the 
+sketch, generating precise alpha masks for each frame component1. 
+4.​ Generative Inference: The designer selects an acetate material from the database. The 
+API triggers the ComfyUI pipeline. ControlNet Lineart locks the geometry, while the 
+IP-Adapter injects the specific acetate texture solely within the SAM-defined mask15. The 
+model outputs a photorealistic PBR render showcasing the material's true specular 
+highlights and thickness1. 
+5.​ Parametric Export: Upon approval, the Fabric.js canvas serializes the vector boundaries 
+and exports them as a DXF file, ready for immediate import into Rhino/Grasshopper for 
+3D extrusion and CAM processing47. 
+7.2. Executing Phase 4: Autonomous Generation and Automation 
+1.​ Telemetry Ingestion: The LLM continuously ingests statistical data from the Phase 1/2 
+Trend Radar, identifying emerging shifts in color preferences, morphological shapes, and 
+lamination techniques within the target markets1. 
+2.​ RAG-Assisted Ideation: The LLM queries the vector database via Retrieval-Augmented 
+Generation to identify available, in-stock materials that align with the identified trends, 
+ensuring supply chain viability33. 
+3.​ Automated Prompt Construction: Utilizing Automated Prompt Engineering, the LLM 
+constructs the complex JSON payload for the diffusion engine36. It selects a base 
+geometry profile, retrieves the appropriate acetate image embeddings for the 
+IP-Adapter, and formulates the negative prompts. 
+4.​ Brand DNA Application: The LLM activates the brand-specific LoRA model, ensuring the 
+generative output conforms to the proprietary stylistic signatures, hinge geometries, and 
+aesthetic codes of the target brand1. 
+5.​ Industrial Output: The system autonomously renders a highly curated capsule collection 
+of variants. These are presented to the creative director with attached trend justification, 
+fully prepped for DXF export and physical CNC prototyping, completing the cycle from 
+raw market data to physical product1. 
+By strictly adhering to this architectural framework, the generative design studio bridges the 
+
+=== PAGE 10 ===
+computational capabilities of modern artificial intelligence with the rigid physical constraints of 
+industrial eyewear manufacturing. 
+Works cited 
+1.​ cadrage_projet_radar_tendances_studio_ia_lunetterie.md 
+2.​ Materials For Design | PDF | Wood | Oak - Scribd, 
+https://www.scribd.com/document/352592415/Materials-for-Design 
+3.​ Vizcom for Industrial Design | Sketch to Render in Seconds, 
+https://vizcom.com/solutions/industrial-design 
+4.​ Vizcom Features | AI Rendering, Collaboration & Design Tools, 
+https://vizcom.com/product 
+5.​ Vizcom AI: Sketch to Render and 3D Models for Designers - AiTing AI, 
+https://aitools.aiting.com/ai/vizcom 
+6.​ floyoofficial, https://www.floyo.ai/creators/floyoofficial 
+7.​ Eyewear Virtual Try-on for the Web, https://jeeliz.com/ 
+8.​ Virtual Glasses Try On: Find Your Frame Shape Free - Makeover, 
+https://www.makeover.so/blog/guide/virtual-glasses-try-on 
+9.​ Kivicube AI AR: Where Generative AI Meets Augmented Reality, 
+https://www.kivicube.com/post/gen-ai-for-augmented-reality-how-to-build-imm
+ersive-experiences-without-coding/ 
+10.​Black Eyewear case study | Google Cloud, 
+https://cloud.google.com/customers/black-eyewear 
+11.​AI Choose My Glasses: The Ultimate Guide to Algorithmic Eyewear, 
+https://inairspace.com/blogs/learn-with-inair/ai-choose-my-glasses-the-ultimate-
+guide-to-algorithmic-eyewear-selection 
+12.​CAD/CAM Principles and Applications Textbook - Studylib, 
+https://studylib.net/doc/27048695/p.-n.-rao---cad-cam--principles-and-applicati
+ons--3rd-edn... 
+13.​RefAdGen: High-Fidelity Advertising Image Generation, 
+https://ojs.aaai.org/index.php/AAAI/article/download/37307/41269 
+14.​GAPS: Generative Active Pseudo-view Selection for Sparse ... - arXiv, 
+https://arxiv.org/html/2609.23436 
+15.​A Cross-Stage Human-GenAI Collaborative Workflow for Landscape, 
+https://www.mdpi.com/2075-5309/16/19/3819 
+16.​Paper Digest: Recent Papers on Style Transfer, 
+https://www.paperdigest.org/2020/06/recent-papers-on-style-transfer/ 
+17.​Daily Papers - Hugging Face, https://huggingface.co/papers?q=reference-based 
+18.​Help! Is there a way to get real object exactly into a generated image?, 
+https://www.reddit.com/r/StableDiffusion/comments/18y87ud/help_is_there_a_wa
+y_to_get_real_object_exactly/ 
+19.​nnanwube/controlnet-brand-fidelity-benchmark - Hugging Face, 
+https://huggingface.co/datasets/nnanwube/controlnet-brand-fidelity-benchmark 
+20.​IPAdapter Tutorial - Comflowy, 
+https://www.comflowy.com/blog/IPAdapter-Tutorial 
+
+=== PAGE 11 ===
+21.​Efficient and Controllable Image Generation on the Edge: A Survey, 
+https://www.mdpi.com/2079-9292/15/4/828 
+22.​Text Compatible Image Prompt Adapter for Text-to-Image Diffusion, 
+https://www.researchgate.net/publication/373116447_IP-Adapter_Text_Compatibl
+e_Image_Prompt_Adapter_for_Text-to-Image_Diffusion_Models 
+23.​DecorAI - AI Interior Design | Room Redesign App, https://www.mydecor.app/ 
+24.​ICAS: IP Adapter and ControlNet-based Attention Structure for Multi, 
+https://www.researchgate.net/publication/390959314_ICAS_IP_Adapter_and_Cont
+rolNet-based_Attention_Structure_for_Multi-Subject_Style_Transfer_Optimization 
+25.​TexGaussian: Generating High-quality PBR Material via Octree, 
+https://openaccess.thecvf.com/content/CVPR2025/papers/Xiong_TexGaussian_G
+enerating_High-quality_PBR_Material_via_Octree-based_3D_Gaussian_Splatting_
+CVPR_2025_paper.pdf 
+26.​(PDF) MatLat: Material Latent Space for PBR Texture Generation, 
+https://www.researchgate.net/publication/398937058_MatLat_Material_Latent_Sp
+ace_for_PBR_Texture_Generation 
+27.​DreamMat: High-quality PBR Material Generation with Geometry, 
+https://zzzyuqing.github.io/dreammat.github.io/ 
+28.​Physically Consistent PBR Material Estimation at Interactive Rates, 
+https://openaccess.thecvf.com/content/ICCV2025/papers/Hong_SuperMat_Physi
+cally_Consistent_PBR_Material_Estimation_at_Interactive_Rates_ICCV_2025_pape
+r.pdf 
+29.​Lora Finetuning Guide - a Hugging Face Space by Bar-Fin, 
+https://huggingface.co/spaces/Bar-Fin/lora-finetuning-guide 
+30.​Mastering AI: Model Training, Fine-Tuning, and LoRA Explained, 
+https://www.blackcubelabs.com/blog/mastering-ai-model-training-fine-tuning-a
+nd-lora-explained 
+31.​Corporate AI Image Generator - Stellans, 
+https://stellans.io/corporate-ai-image-generator/ 
+32.​Harnessing the Power of Foundation Models for your Business with, 
+https://www.ml6.eu/en/blog/harnessing-the-power-of-foundation-models-for-yo
+ur-business-with-lora 
+33.​What is RAG? - Retrieval-Augmented Generation AI Explained - AWS, 
+https://aws.amazon.com/what-is/retrieval-augmented-generation/ 
+34.​Emerging Patterns in Building GenAI Products - Martin Fowler, 
+https://martinfowler.com/articles/gen-ai-patterns/ 
+35.​RAG vs fine-tuning vs. prompt engineering - IBM, 
+https://www.ibm.com/think/topics/rag-vs-fine-tuning-vs-prompt-engineering 
+36.​What Is Automated Prompt Engineering? Guide & Uses - Truefoundry, 
+https://www.truefoundry.com/glossary/automated-prompt-engineering 
+37.​WebGL vs Canvas: Best Choice for Browser-Based CAD Tools, 
+https://altersquare.io/blog/webgl-vs-canvas-best-choice-for-browser-based-cad
+-tools 
+38.​WebGL vs Canvas: Best Choice for Browser-Based CAD Tools, 
+https://altersquare.medium.com/webgl-vs-canvas-best-choice-for-browser-bas
+
+=== PAGE 12 ===
+ed-cad-tools-231097daf063 
+39.​[AskJS] What is the best canvas library to make an app like figma or, 
+https://www.reddit.com/r/javascript/comments/pdib99/askjs_what_is_the_best_ca
+nvas_library_to_make_an/ 
+40.​Best canvas library for React? : r/reactjs - Reddit, 
+https://www.reddit.com/r/reactjs/comments/qoq2m2/best_canvas_library_for_rea
+ct/ 
+41.​A guide for beginners on a controlnet workflow (Nothing new for, 
+https://www.reddit.com/r/StableDiffusion/comments/1167j0a/a_guide_for_beginne
+rs_on_a_controlnet_workflow/ 
+42.​GitHub - tencent-ailab/IP-Adapter: The image prompt adapter is, 
+https://github.com/tencent-ailab/IP-Adapter 
+43.​CNC Machining Line – Precision for Metal & Acetate Frames, 
+https://eyewearbeyond.com/killing-page/cnc-machining-line-precision-for-metal
+-acetate-frames/ 
+44.​Automating Product Design and Fabrication Within the Furniture, 
+https://www.mdpi.com/2411-9660/9/5/116 
+45.​1 2 This doctoral thesis offers a profound exploration of ... - IRIS UniGe, 
+https://unige.iris.cineca.it/retrieve/5118bdf0-e6ba-48c4-8ab4-b01e65f9c3a0/phd
+unige_4958989.pdf 
+46.​GitHub - naranyala/awesome-3d-modeling-for-cad: A curated list of, 
+https://github.com/naranyala/awesome-3d-modeling-for-cad 
+47.​3D Modeling in CAD: Complete Guide 2026 | SimuTecra, 
+https://simutecra.com/blogs/3d-modeling-in-cad-complete-guide 
+48.​SolidVents | Parametric Pattern Generator — SVG, DXF & STEP, 
+https://solidvents.com/en/ 
+49.​China Cheap Full-Rim Round Frames Manufacturers Factory, 
+https://www.songraineyewear.com/optical-frames/full-rim-eyewear/full-rim-roun
+d-frames.html 
+50.​Design and development of 3D printed fins integrated into an, 
+https://ro.uow.edu.au/ndownloader/files/50392377/1 
+51.​3D Printed Track and Turnouts - Templot Club, 
+https://85a.uk/templot/archive/topics/topic_2734.php 
+52.​CNC Programming Handbook A Comprehensive Guide To Practical, 
+https://www.scribd.com/document/1021770006/CNC-Programming-Handbook-
+A-Comprehensive-Guide-to-Practical-CNC-Programming-3rd-Edition-Edition-S
+mid-official-digital-release 
+53.​CAD/CAM Course Material Overview | PDF | Computer Aided Design, 
+https://www.scribd.com/document/461232762/COMPUTER-AIDED-DESIGN-COM
+PUTER-AIDED-MANUFACTURING-pdf 
+
