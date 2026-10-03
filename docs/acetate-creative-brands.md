@@ -44,7 +44,7 @@ at the end with the reason. Priority markets are Europe, USA, Maghreb, Tunisia.
 |---|---|---|---|---|
 | Gucci | Italy | `www.gucci.com` | Oversized, loud acetate shapes, logo and stripe details | On the client's list; redirect loop (see `docs/reference-brands.md`) |
 | Prada | Italy | `www.prada.com` | Geometric acetate (Symbole line), graphic colour use | On the client's list; redirect loop |
-| Oliver Peoples | USA | `www.oliverpeoples.com` | Refined vintage acetate, signature tortoise | On the client's list; answered 200 |
+| Oliver Peoples | USA | `www.oliverpeoples.com` | Refined vintage acetate, signature tortoise | Scouted (ready to crawl via Algolia) |
 | Persol | Italy | `www.persol.com` | Classic acetate frames with the arrow detail | On the client's list; answered 200 |
 
 ## Set aside: outside the target markets (Asia)
