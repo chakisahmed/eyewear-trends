@@ -129,9 +129,13 @@ class BaseStoreCrawler:
         while True:
             try:
                 r = await self.client.get(url)
+                if hasattr(self.client, "cookies"):
+                    self.client.cookies.clear()
                 r.raise_for_status()
                 return r.text
             except httpx.HTTPError as e:
+                if hasattr(self.client, "cookies"):
+                    self.client.cookies.clear()
                 what = f"{type(e).__name__}: {e}" if str(e) else type(e).__name__  # httpx timeouts have no message
                 wait = self._retry_wait(e, attempt)
                 if wait is None:

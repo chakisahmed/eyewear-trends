@@ -122,7 +122,14 @@ def shelf_by_attribute(session: Session, product_type: str | None = None, countr
     tagged_ids = {dim: set().union(*codes.values()) if codes else set() for dim, codes in products_by_code.items()}
     for pid, p in by_id.items():
         specs = (p.flags or {}).get("raw_specs") if isinstance(p.flags, dict) else None
-        dims_stated = {SPEC_DIMENSIONS.get(fold(str(k))) for k in (specs or {})} & set(DIMENSIONS)
+        raw_dims: list[str] = []
+        for k in (specs or {}):
+            d = SPEC_DIMENSIONS.get(fold(str(k)))
+            if isinstance(d, str):
+                raw_dims.append(d)
+            elif d:
+                raw_dims.extend(d)
+        dims_stated = set(raw_dims) & set(DIMENSIONS)
         for dim in dims_stated:
             with_value[dim] += 1
             unmapped[dim] += pid not in tagged_ids.get(dim, set())

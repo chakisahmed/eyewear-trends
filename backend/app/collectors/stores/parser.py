@@ -244,7 +244,10 @@ def css_flags(element, cfg: ScraperConfig, scope: str) -> dict[str, Any]:
         if rule.scope != scope:
             continue
         if rule.exists:
-            flags[name] = bool(element.cssselect(rule.css))
+            if rule.regex:
+                flags[name] = bool(_extract(element, rule))
+            else:
+                flags[name] = bool(element.cssselect(rule.css))
         elif (value := _extract(element, rule)) is not None:
             flags[name] = value
     return flags
@@ -357,6 +360,8 @@ def parse_variants(tree, rule: VariantsRule, node: dict | None = None) -> list[d
         variant: dict[str, Any] = {"code": code}
         if label := value(row, rule.label):
             variant["color"] = label
+        if swatch := value(row, rule.swatch):
+            variant["swatch"] = swatch
         available = {"true": True, "1": True, "false": False, "0": False}.get((value(row, rule.available) or "").lower())
         if available is not None:
             variant["in_stock"] = available
@@ -426,9 +431,243 @@ def vto_layers(tree) -> dict[str, list[str]]:
     return out
 
 
+def parse_shopify_json_listing(products: list[dict], page_url: str, cfg: ScraperConfig, start_rank: int = 1) -> list[ListingItem]:
+    """Extract ListingItems directly from a Shopify collection's products array (from products.json or embedded JSON script)."""
+    items: list[ListingItem] = []
+    for p in products:
+        handle = p.get("handle")
+        if not handle:
+            continue
+        raw_url = urljoin(page_url, f"/products/{handle}")
+        url = canonical_url(raw_url, cfg.listing.url_regex)
+
+        css: dict[str, Any] = {}
+        title = p.get("title")
+        if title:
+            css["name"] = title
+        vendor = p.get("vendor") or cfg.default_brand
+        if vendor:
+            if cfg.default_brand and (vendor.strip().upper() == cfg.default_brand.upper() or vendor.strip().upper().startswith(cfg.default_brand.upper())):
+                vendor = cfg.default_brand
+            elif cfg.default_brand == "Garrett Leight" and vendor.strip().upper() == "GLCO":
+                vendor = cfg.default_brand
+            css["brand"] = vendor
+
+        variants = p.get("variants") or []
+        price_val = None
+        if variants and isinstance(variants[0], dict) and variants[0].get("price"):
+            try:
+                price_val = float(variants[0]["price"])
+            except ValueError:
+                pass
+        elif p.get("price"):
+            price_val = _to_number(str(p["price"]))
+            if price_val and price_val > 1000:
+                price_val = price_val / 100.0
+        if price_val is not None:
+            css["price"] = price_val
+
+        images = p.get("images") or []
+        if images and isinstance(images[0], dict) and images[0].get("src"):
+            css["image_url"] = images[0]["src"]
+        elif p.get("featured_image"):
+            feat = p["featured_image"]
+            css["image_url"] = feat.get("src") if isinstance(feat, dict) else str(feat)
+
+        flags: dict[str, Any] = {}
+        options = p.get("options") or []
+        color_opt_key = None
+        if isinstance(options, list):
+            for idx, opt in enumerate(options):
+                if isinstance(opt, dict) and opt.get("name", "").lower() in ("color", "colour", "couleur"):
+                    color_opt_key = f"option{idx + 1}"
+                    break
+
+        if variants:
+            flags["out_of_stock"] = not any(v.get("available") for v in variants if isinstance(v, dict) and "available" in v)
+            parsed_vars = []
+            for v in variants:
+                if not isinstance(v, dict):
+                    continue
+                code = v.get("sku") or str(v.get("id") or "")
+                color = v.get(color_opt_key) if color_opt_key and v.get(color_opt_key) else v.get("title")
+                if color and color.lower() != "default title":
+                    parsed_vars.append({"code": code, "color": color, "in_stock": v.get("available", True)})
+            if parsed_vars:
+                flags["variants"] = parsed_vars
+
+        tags = [str(t) for t in p.get("tags") or ()]
+        if tags:
+            flags["tags"] = tags
+            lower_tags = [t.lower() for t in tags]
+            if any("acetate" in t for t in lower_tags) or any("combo" in t for t in lower_tags):
+                flags["material"] = "acetate"
+            elif any("metal" in t or "titanium" in t for t in lower_tags):
+                flags["material"] = "metal"
+            elif cfg.default_brand == "Jacques Marie Mage":
+                if "ti" in p.get("title", "").lower().split() or "titanium" in p.get("title", "").lower():
+                    flags["material"] = "metal"
+                else:
+                    flags["material"] = "acetate"
+            elif cfg.default_brand == "Garrett Leight":
+                flags["material"] = "acetate"
+            if any(t in ("new", "new arrivals") for t in lower_tags):
+                flags["is_new"] = True
+            if any(t in ("limited", "limited edition", "limited editions") for t in lower_tags):
+                flags["is_limited"] = True
+            if any(t in ("best seller", "best sellers", "bestseller", "bestsellers", "the icons") for t in lower_tags):
+                flags["is_bestseller"] = True
+        elif cfg.default_brand == "Jacques Marie Mage":
+            title_lower = p.get("title", "").lower()
+            if " ti" in title_lower or "titanium" in title_lower:
+                flags["material"] = "metal"
+            else:
+                flags["material"] = "acetate"
+        elif cfg.default_brand == "Garrett Leight":
+            flags["material"] = "acetate"
+
+        desc_parts = []
+        if p.get("body_html"):
+            desc_parts.append(re.sub(r"<[^>]+>", " ", p["body_html"]).strip())
+        for t in tags:
+            clean_t = t.lower()
+            if clean_t.startswith("shape-") or clean_t.startswith("shape:"):
+                clean_t = clean_t[6:].replace("-", " ")
+            if clean_t in ("aviator", "oval", "round", "square", "rectangle", "rectangular", "cat eye", "cateye", "geometric", "octagonal"):
+                desc_parts.append(clean_t)
+        if desc_parts:
+            flags["description"] = " ".join(" ".join(desc_parts).split())
+
+        items.append(ListingItem(
+            url=url,
+            rank=start_rank + len(items),
+            css=css,
+            flags=flags,
+        ))
+    return items
+
+
+def parse_warby_parker_json_listing(items: list, page_url: str, cfg: ScraperConfig, start_rank: int = 1) -> list[ListingItem]:
+    """Extract ListingItems directly from a Warby Parker catalog search response (/v1/catalog/frames/search)."""
+    out: list[ListingItem] = []
+    for fam in items:
+        if not fam:
+            continue
+        v0 = fam[0] if isinstance(fam, list) else fam
+        if not isinstance(v0, dict):
+            continue
+
+        route = v0.get("action", {}).get("cta", {}).get("route") or ""
+        parts = [p for p in route.split("/") if p and p != "atc"]
+        kind_slug = "sunglasses" if v0.get("kind") == "sunGlasses" else "eyeglasses"
+        name_slug = re.sub(r"[^a-z0-9]+", "-", (v0.get("name") or "").lower()).strip("-")
+        if len(parts) >= 2 and parts[0] in ("eyeglasses", "sunglasses"):
+            rel_url = f"/{parts[0]}/{parts[1]}"
+        else:
+            rel_url = f"/{kind_slug}/{name_slug}"
+
+        raw_url = urljoin(page_url, rel_url)
+        url = canonical_url(raw_url, cfg.listing.url_regex)
+
+        css: dict[str, Any] = {}
+        name = v0.get("name")
+        if name:
+            css["name"] = name
+        css["brand"] = cfg.default_brand or "Warby Parker"
+
+        price_val = None
+        if v0.get("price"):
+            try:
+                price_val = float(str(v0["price"]).replace("$", "").strip())
+            except ValueError:
+                pass
+        if price_val is not None:
+            css["price"] = price_val
+
+        images = v0.get("images") or {}
+        if isinstance(images, dict):
+            img_url = images.get("front") or images.get("angle") or images.get("baseTransparent")
+            if img_url:
+                css["image_url"] = img_url
+
+        flags: dict[str, Any] = {}
+        fam_list = fam if isinstance(fam, list) else [fam]
+        parsed_vars = []
+        for v in fam_list:
+            if not isinstance(v, dict):
+                continue
+            code = v.get("id") or v.get("colorCode") or ""
+            color = v.get("color")
+            if color:
+                parsed_vars.append({
+                    "code": str(code),
+                    "color": color,
+                    "in_stock": bool(v.get("isInStock", True)),
+                })
+        if parsed_vars:
+            flags["variants"] = parsed_vars
+            flags["out_of_stock"] = not any(v.get("in_stock") for v in parsed_vars)
+
+        eyewire_mat = (v0.get("eyewireMaterial") or "").upper()
+        desc_text = v0.get("description") or ""
+        if eyewire_mat == "HB" or "cellulose acetate" in desc_text.lower() or "acetate" in desc_text.lower():
+            flags["material"] = "acetate"
+        elif eyewire_mat in ("GD", "SB", "DM") or "titanium" in desc_text.lower() or "stainless steel" in desc_text.lower():
+            flags["material"] = "metal"
+
+        desc_parts = []
+        if desc_text:
+            desc_parts.append(desc_text)
+        primary_shape = v0.get("primaryShape")
+        if primary_shape:
+            desc_parts.append(primary_shape.lower())
+        if desc_parts:
+            flags["description"] = " ".join(" ".join(desc_parts).split())
+
+        tags = [t.get("label", "") if isinstance(t, dict) else str(t) for t in v0.get("tags") or ()]
+        if tags:
+            flags["tags"] = tags
+            if any(t.lower() == "made in italy" for t in tags):
+                flags["made_in"] = "Italy"
+
+        out.append(ListingItem(
+            url=url,
+            rank=start_rank + len(out),
+            css=css,
+            flags=flags,
+        ))
+    return out
+
+
 def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int = 1) -> list[ListingItem]:
     """One item per product card, ranked in page order; JSON-LD matched to cards by absolute URL."""
+    stripped = html.strip()
+    if stripped.startswith("{"):
+        if '"products"' in stripped[:300]:
+            try:
+                data = json.loads(stripped)
+                if isinstance(data, dict) and isinstance(data.get("products"), list):
+                    return parse_shopify_json_listing(data["products"], page_url, cfg, start_rank)
+            except json.JSONDecodeError:
+                pass
+        elif '"items"' in stripped[:300] and ('"total"' in stripped[:300] or 'warbyparker' in page_url or cfg.default_brand == "Warby Parker"):
+            try:
+                data = json.loads(stripped)
+                if isinstance(data, dict) and isinstance(data.get("items"), list):
+                    return parse_warby_parker_json_listing(data["items"], page_url, cfg, start_rank)
+            except json.JSONDecodeError:
+                pass
+
     tree = _tree(html)
+    script_data = tree.cssselect("script#data-collection")
+    if script_data and script_data[0].text:
+        try:
+            data = json.loads(script_data[0].text)
+            if isinstance(data, dict) and isinstance(data.get("products"), list):
+                return parse_shopify_json_listing(data["products"], page_url, cfg, start_rank)
+        except json.JSONDecodeError:
+            pass
+
     by_url = {}
     for node in extract_json_ld_products(tree):
         fields = json_ld_fields(node, page_url)
@@ -444,9 +683,14 @@ def parse_listing(html: str, page_url: str, cfg: ScraperConfig, start_rank: int 
             continue
         raw_url = urljoin(page_url, href)
         url = canonical_url(raw_url, cfg.listing.url_regex)
+        flags = css_flags(card, cfg, "card")
+        if cfg.variants and not cfg.product_pages.enabled:
+            card_variants = parse_variants(card, cfg.variants)
+            if card_variants:
+                flags["variants"] = card_variants
         items.append(ListingItem(
             url=url, rank=start_rank + len(items), json_ld=by_url.get(url, {}),
-            css=css_fields(card, cfg.fields, "card", page_url), flags=css_flags(card, cfg, "card"),
+            css=css_fields(card, cfg.fields, "card", page_url), flags=flags,
             variant_id=link_variant_id(raw_url),
         ))
     return items
@@ -468,11 +712,17 @@ def parse_product_page(html: str, page_url: str, cfg: ScraperConfig) -> ProductP
     specs: dict[str, str] = {}
     if cfg.specs:
         for row in tree.cssselect(cfg.specs.rows):
-            k = row.cssselect(cfg.specs.key)
+            k = row.cssselect(cfg.specs.key) if cfg.specs.key else [row]
             key = " ".join(k[0].text_content().split()) if k else ""
             if not key:
                 continue
-            if cfg.specs.value is None:  # the row's own text after the key's
+            if cfg.specs.key_regex:
+                m = re.search(cfg.specs.key_regex, key)
+                if m:
+                    key = m.group(1).strip() if m.lastindex else m.group(0).strip()
+            if cfg.specs.tail:
+                value = " ".join((k[0].tail or "").split())
+            elif cfg.specs.value is None:  # the row's own text after the key's
                 text = " ".join(row.text_content().split())
                 value = text[len(key):].strip() if text.startswith(key) else ""
             else:

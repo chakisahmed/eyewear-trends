@@ -74,15 +74,23 @@ class FlagRule(FieldRule):
 class SpecsRule(_Strict):
     """A product page's spec rows -> flags["raw_specs"]. `value` is a CSS selector inside the row; left out, the value
     is the row's own text after the key's text (a row like `<p><span>Build</span> Rectangular</p>`, where the value is a
-    bare text node that CSS cannot select)."""
+    bare text node that CSS cannot select). If `tail` is true, the value is read from the key element's tail text node
+    (e.g. `<span class="bold">KEY:</span> VALUE <br>`). `key_regex` optionally refines the key from text."""
     rows: str
-    key: str
+    key: str | None = None
     value: str | None = None
+    tail: bool = False
+    key_regex: str | None = None
 
     @field_validator("rows", "key", "value")
     @classmethod
     def _css(cls, v: str | None) -> str | None:
         return check_css(v) if v is not None else v
+
+    @field_validator("key_regex")
+    @classmethod
+    def _compiles(cls, v: str | None) -> str | None:
+        return check_regex(v)
 
 
 class ValueRule(_Strict):
@@ -124,6 +132,7 @@ class VariantsRule(_Strict):
     json_ld_offers: bool = False
     color_split: ColorSplit | None = None
     label: ValueRule | None = None
+    swatch: ValueRule | None = None
     available: ValueRule | None = None  # "true" / "false"
     # Acetate layers of a multi-colour variant ("Havana/Blue") -> variant["layers"], from a named reader since the
     # source is JSON in a script, not markup: "vto_carousel" = a virtual try-on widget's <script data-vto-carousel>.
