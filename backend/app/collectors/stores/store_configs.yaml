@@ -722,6 +722,33 @@ stores:
       price: { css: ".price" }
       image_url: { css: "img" }
 
+  # Moscot (New York, USA), Shopify. Checked 2026-10-02: Iconic American creator eyewear house
+  # founded in 1915 on Manhattan's Lower East Side by Hyman Moscot. Five generations of family
+  # optical expertise. Known for timeless classic acetate silhouettes (Lemtosh, Miltzen, Dahven)
+  # with real riveted hinges and rich colorways. Captures all 290 frames across 4 polite requests.
+  moscot.com:
+    name: "Moscot"
+    base_url: "https://moscot.com"
+    lang: en
+    country: US                         # New York City, Lower East Side (heritage since 1915)
+    default_brand: "Moscot"
+    default_currency: USD
+    delay_s: 2.0
+    listing:
+      urls:
+        - { url: "/collections/eyeglasses/products.json?limit=250", categories: "Optique" }
+        - { url: "/collections/sunglasses/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/best-selling-eyeglasses/products.json?limit=250", flag: "is_bestseller" }
+        - { url: "/collections/best-selling-sunglasses/products.json?limit=250", flag: "is_bestseller" }
+        - { url: "/collections/new-eyeglasses/products.json?limit=250", flag: "is_new" }
+        - { url: "/collections/new-sunglasses/products.json?limit=250", flag: "is_new" }
+      product: ".card-product"
+      link: "a[href*='/products/']"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: ".card__heading" }
+      price: { css: ".price" }
+
 
 
 
