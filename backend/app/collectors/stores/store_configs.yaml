@@ -656,6 +656,47 @@ stores:
       material: { css: ".rsf-card-product", attr: "class", regex: 'rsf-card-product--material-([a-z]+)' }
       out_of_stock: { css: "a[data-rsf-find-stockist]", exists: true }
 
+  # Spektre (Italy), WooCommerce. Checked 2026-10-02: Milanese creator eyewear brand founded
+  # in 2009 by Niccolò Pocchini; handcrafted in Italy with bold Mazzucchelli acetate and steel.
+  # Listing cards carry title, price, images, and best-seller classes; product pages supply
+  # precise material specs (Acetate vs Stainless Steel), caliber/nose/temple, and color variants.
+  spektre.com:
+    name: "Spektre"
+    base_url: "https://spektre.com"
+    lang: en
+    country: IT                         # Milan, Italy (founded 2009 by Niccolò Pocchini; handcrafted in Italy)
+    default_brand: "Spektre"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/product-category/sun/", categories: "Solaire" }
+        - { url: "/product-category/optical/", categories: "Optique" }
+        - { url: "/product-category/best/", flag: "is_bestseller" }
+      pagination: { next: "a.next.page-numbers", max_pages: 10 }
+      product: "li.product.type-product"
+      link: "a.woocommerce-LoopProduct-link"
+      url_regex: '(/product/[^/?#]+)'
+    product_pages:
+      enabled: true
+      max_products: 250
+    fields:
+      name: { css: "h2.woocommerce-loop-product__title" }
+      price: { css: "span.price span.woocommerce-Price-amount" }
+      image_url: { css: "img.attachment-woocommerce_thumbnail, img", attr: ["src", "data-src"] }
+    flags:
+      is_bestseller: { css: ".product_cat-best", exists: true }
+      out_of_stock: { css: ".outofstock", exists: true }
+    specs:
+      rows: "p.m-0"
+      key: "b"
+      key_regex: '(?i)(materials|caliber|nose|temple)'
+      tail: true
+    variants:
+      rows: "select[name=attribute_pa_color] option:not([value=''])"
+      code: { attr: "value" }
+      label: { }
+
 
 
 

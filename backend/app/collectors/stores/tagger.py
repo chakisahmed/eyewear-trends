@@ -214,6 +214,40 @@ RULES_VERSION = 16  # stored with each tag; bump when the rules below change, th
 # v24: Retrosuperfuture (Italy), shape and color aliases: "flat top" -> square;
 #      "azure" -> blue, "canarino" -> orange, "panna" -> white, "petrolium" -> blue,
 #      "burnt havana" -> tortoiseshell, "spotted havana" -> tortoiseshell.
+# v16: Anne & Valentin, shape from description: flags["description"] (opening editorial sentences like
+#      "Octogonale. Douce..." -> geometric, "Grande pantos..." -> round, "Petite ovale..." -> oval).
+#      Only matched against _spec_shape with skip_ambiguous=True to avoid figurative language affecting
+#      materials or colors. Added shape alias ("papillon", "cat_eye").
+# v17: Face à Face: audience words in CATEGORY_TAGS ("feminine", "feminin" -> women, "masculine", "masculin" -> men);
+#      allow tuple targets in SPEC_DIMENSIONS and map "style": ("style", "audience") so "Style: feminine" tags
+#      audience: women; map "front type": "shape" for semi-rimless -> rimless; SPEC_ALIASES["material"]
+#      ("aluminium", "metal"), ("aluminum", "metal").
+# v18: Kuboraum, specs and variants only: rosegold -> gold, gun metal / gunmetal -> grey,
+#      antique light gold -> gold.
+# v19: Lafont, specs, description, and variants: match description against _spec_material (e.g. "acetate", "metal");
+#      shape alias ("p3", "round"); Lafont color code ("100", "black").
+# v20: Cutler and Gross, variants only: olive on black -> two_tone; humble potato, old brown havana,
+#      oil havana -> tortoiseshell; smoke quartz -> grey; horn crystal, sand crystal, smoke crystal -> clear;
+#      obsidian -> black; rhodium -> silver; rhubarb -> red; saffron horn -> orange.
+# v21: Kirk & Kirk, shape and variants: shape aliases ("roundness", "round"), ("upswept", "cat_eye"),
+#      ("aviators", "aviator"), ("angular", "geometric"), ("circular", "round");
+#      color aliases: admiral, capri, indigo, lagoon, ocean, royal -> blue; apple, jungle, juniper, meadow -> green;
+#      candy -> pink; carmine, chilli, matte vamp, passion -> red; citrus, corn, melon -> orange;
+#      coffee, earth, walnut -> brown; glacier -> clear; iris, prince -> purple; jet -> black;
+#      secret, smoke, stone -> grey; tiger -> tortoiseshell.
+# v22: Theo (Belgium), specs and variants: color aliases for Theo's fluorescent, automotive, and poetic shades:
+#      fluo orange, fluo yellow -> orange (Orange / Jaune); fluo red -> red, fluo purple -> purple;
+#      delft ware blue, electric blue, targa blue -> blue; sanremo green -> green;
+#      rosso cavallino -> red; ecail, ecaille -> tortoiseshell; citrus black, dark night -> black.
+# v23: Oliver Goldsmith (UK), description shape and variants: shape alias ("squared aviator", "aviator");
+#      color aliases: tangerine -> orange; tokyo 50, tortoise 50, dark tortoiseshell, earth tortoise,
+#      amberfleck -> tortoiseshell; night sea, bahama, anchor -> blue; rainwater -> clear;
+#      wakame, plankton, military -> green; blacksilver, blackgold, black cat -> black;
+#      slate storm -> grey; etaupe -> beige; rouge -> red.
+# v24: Retrosuperfuture (Italy), shape and color aliases: "flat top" -> square;
+#      "azure" -> blue, "canarino" -> orange, "panna" -> white, "petrolium" -> blue,
+#      "burnt havana" -> tortoiseshell, "spotted havana" -> tortoiseshell.
+# v25: Spektre (Italy), color aliases: "tobacco" -> brown, "avory" -> white, "fuchsia" -> pink.
 
 AMBIGUOUS_FREE_TEXT = frozenset({"or", "bold", "wrap", "wire", "xl", "sport",
                                  "rose", "marine", "orange", "olive", "sage", "honey", "lemon", "wine", "cherry", "plum", "slate"})
@@ -340,7 +374,11 @@ SPEC_ALIASES = {  # dimension -> (folded phrase, code)
               ("panna", "white"),
               ("petrolium", "blue"),
               ("burnt havana", "tortoiseshell"),
-              ("spotted havana", "tortoiseshell")),
+              ("spotted havana", "tortoiseshell"),
+              # Spektre (Italy)
+              ("tobacco", "brown"),
+              ("avory", "white"),
+              ("fuchsia", "pink")),
     "shape": (("rond", "round"), ("ronds", "round"),  # masculine forms; the taxonomy lists ronde / rondes
               ("p3", "round"),  # Lafont: P3 / panto shape
               ("pantos square", "square"), ("cat eye butterfly", "cat_eye"),  # Etnia's one-shape labels
