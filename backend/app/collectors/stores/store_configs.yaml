@@ -778,6 +778,32 @@ stores:
       price: { css: ".frame-price" }
       image_url: { css: "img" }
 
+  # Jacques Marie Mage (Los Angeles, USA), Shopify headless storefront. Checked 2026-10-02:
+  # Pinnacle of artisanal limited-edition creator acetate eyewear founded in 2014 by Jerome Mage.
+  # Handcrafted in Sabae, Japan with thick 10mm cured cellulose acetate, sterling silver 925 and
+  # 18k gold hardware. Uses Shopify collection products.json API to bypass HTML 429 rate limits,
+  # capturing all 259 unique frames, 1,962 variant colorways, shapes, and bestseller flags.
+  jacquesmariemage.com:
+    name: "Jacques Marie Mage"
+    base_url: "https://jacquesmariemage.com"
+    lang: en
+    country: US                         # Los Angeles, California, USA (founded 2014)
+    default_brand: "Jacques Marie Mage"
+    default_currency: USD
+    delay_s: 2.0
+    listing:
+      urls:
+        - { url: "/collections/optical-1/products.json?limit=250", categories: "Optique" }
+        - { url: "/collections/sunglasses/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/the-icons/products.json?limit=250", flag: "is_bestseller" }
+      product: ".product-card"
+      link: "a"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: ".product-card__title" }
+      price: { css: ".price" }
+      image_url: { css: "img" }
+
 
 
 
