@@ -470,6 +470,42 @@ stores:
       code: { regex: 'CODE:\s*(.+?)\s*MATERIAL:' }
       label: { regex: 'COLOR:\s*(.+?)\s*(?:TEMPLES COLOR|LENS):' }
 
+  lafont.com:
+    name: "Lafont"
+    base_url: "https://www.lafont.com"
+    lang: en
+    country: FR                         # Parisian eyewear house, manufactured in Oyonnax, Jura (France)
+    default_brand: "Lafont"
+    default_currency: EUR
+    delay_s: 1.5
+    listing:
+      urls:
+        - { url: "/eyeglasses", categories: "Optique" }
+        - { url: "/sunglasses", categories: "Solaire" }
+      product: "div.article_mosaic_catalog"
+      link: "a[href*='/catalog/article/']"
+      url_regex: '(/catalog/article/[A-Z0-9]+)'
+      model_regex: '(/catalog/article/[A-Z]{3,4})'
+    product_pages:
+      enabled: true
+      max_products: 300                 # Catalog has 122 unique models (111 optical, 11 sun)
+    fields:
+      name: { css: "h1.title_article", scope: page }
+      image_url: { css: "#image-face, .fiche_article_img img", attr: ["src", "data-src"], scope: page }
+    flags:
+      description: { css: ".info_article > p", scope: page }
+      is_new: { css: "p", regex: '(?i)^new$', exists: true, scope: card }
+      material: { css: ".article_mosaic_catalog img", attr: "alt", regex: '-\s*([A-Za-z]+)\s*$', scope: card }
+    specs:
+      rows: ".technique .info_tech ul.edi li"
+      value: "b"
+      key_regex: '\.\s*(?:\(\d+\)\s*)?([^:]+):?'
+    variants:
+      rows: ".article_color_article a"
+      code: { css: "p" }
+      label: { css: "img", attr: "alt", regex: 'Color:\s*(.+)' }
+      swatch: { css: "img", attr: "src" }
+
 
 
 
