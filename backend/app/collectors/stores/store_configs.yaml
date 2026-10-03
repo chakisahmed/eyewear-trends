@@ -697,6 +697,31 @@ stores:
       code: { attr: "value" }
       label: { }
 
+  # Ahlem (France / USA), Shopify Headless. Checked 2026-10-02: Luxury creator eyewear founded
+  # in 2014 by Ahlem Manai-Platt; handcrafted in Oyonnax (Jura, France) from thick 8mm Mazzucchelli
+  # acetate and Japanese titanium. Uses Shopify products.json API to bypass headless SPA DOM
+  # rendering and PDP HTTP 429 rate limits, capturing all 178 frames in 2 requests.
+  ahlemeyewear.com:
+    name: "Ahlem"
+    base_url: "https://www.ahlemeyewear.com"
+    lang: en
+    country: FR                         # Paris, France / Los Angeles (handcrafted in Jura, France)
+    default_brand: "Ahlem"
+    default_currency: USD
+    delay_s: 2.0
+    listing:
+      urls:
+        - { url: "/collections/sun/products.json?limit=250", categories: "Solaire" }
+        - { url: "/collections/optical/products.json?limit=250", categories: "Optique" }
+        - { url: "/collections/new-arrivals/products.json?limit=250", flag: "is_new" }
+      product: "script#data-collection, .product-card"
+      link: "a.product-link, a"
+      url_regex: '(/products/[^/?#]+)'
+    fields:
+      name: { css: ".product-card__title" }
+      price: { css: ".price" }
+      image_url: { css: "img" }
+
 
 
 
